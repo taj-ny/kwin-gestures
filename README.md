@@ -9,6 +9,8 @@ See [kwin-better-blur](https://github.com/taj-ny/kwin-effects-forceblur). Instru
 # Configuration
 There is currently no configuration UI. You need to manually modify the ``~/.config/kwingesturesrc`` file. The format may change at any time until 1.0.0 is released.
 
+Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures`` or toggle the effect in system settings after updating the file.
+
 ## Keys
 ### Type
 Type of the gesture. 
