@@ -138,19 +138,20 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta)
                 it = m_activeSwipeGestures.erase(it);
                 continue;
             }
-            else if (gesture->triggerAfterReachingThreshold() && gesture->thresholdReached(m_currentDelta))
+            else if (i == 1 && gesture->triggerAfterReachingThreshold() && gesture->thresholdReached(m_currentDelta))
             {
                 Q_EMIT gesture->triggered();
                 m_activeSwipeGestures.erase(it);
-                pinchGestureEnd();
-                break;
+                m_hasActiveTriggeredSwipeGesture = true;
+                swipeGestureEnd(false);
+                return true;
             }
 
             it++;
         }
     }
 
-    return !m_activeSwipeGestures.isEmpty();
+    return m_hasActiveTriggeredSwipeGesture || !m_activeSwipeGestures.isEmpty();
 }
 
 bool GestureRecognizer::swipeGestureCancelled()
@@ -169,7 +170,7 @@ bool GestureRecognizer::swipeGestureCancelled()
     return hadActiveGestures;
 }
 
-bool GestureRecognizer::swipeGestureEnd()
+bool GestureRecognizer::swipeGestureEnd(bool resetHasActiveTriggeredGesture)
 {
     bool hadActiveGestures = !m_activeSwipeGestures.isEmpty();
     const QPointF delta = m_currentDelta;
@@ -177,6 +178,7 @@ bool GestureRecognizer::swipeGestureEnd()
     {
         if (gesture->thresholdReached(delta))
         {
+            qWarning() << "triggering lol!";
             Q_EMIT gesture->triggered();
         }
         else
@@ -188,6 +190,8 @@ bool GestureRecognizer::swipeGestureEnd()
     m_currentFingerCount = 0;
     m_currentDelta = QPointF(0, 0);
     m_currentSwipeAxis = Axis::None;
+    if (resetHasActiveTriggeredGesture)
+        m_hasActiveTriggeredSwipeGesture = false;
 
     return hadActiveGestures;
 }
