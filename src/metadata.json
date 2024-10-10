@@ -1,0 +1,14 @@
+{
+    "KPlugin": {
+        "Authors": [
+            {
+                "Name": "taj_ny"
+            }
+        ],
+        "Category": "Appearance",
+        "Description": "TODO",
+        "EnabledByDefault": true,
+        "License": "GPL",
+        "Name": "Gestures"
+    }
+}
