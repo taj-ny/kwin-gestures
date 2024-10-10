@@ -73,7 +73,7 @@ bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
         Q_EMIT gesture->started();
     }
 
-    return !m_activeSwipeGestures.isEmpty();
+    return false;
 }
 
 bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta)
