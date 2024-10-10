@@ -35,8 +35,20 @@ void GesturesEffect::reconfigure(ReconfigureFlags flags)
         const auto gestureGroup = gesturesGroup.group(gestureGroupName);
 
         const auto type = gestureGroup.readEntry("Type", "Swipe");
-        const uint minimumFingerCount = gestureGroup.readEntry("MinimumFingerCount", 3);
-        const uint maximumFingerCount = gestureGroup.readEntry("MaximumFingerCount", 3);
+
+        const int fingerCount = gestureGroup.readEntry("FingerCount", -1);
+        uint minimumFingerCount;
+        uint maximumFingerCount;
+        if (fingerCount == -1)
+        {
+            minimumFingerCount = gestureGroup.readEntry("MinimumFingerCount", 3);
+            maximumFingerCount = gestureGroup.readEntry("MaximumFingerCount", 3);
+        }
+        else
+        {
+            minimumFingerCount = maximumFingerCount = fingerCount;
+        }
+
         const bool triggerAfterReachingThreshold = gestureGroup.readEntry("TriggerAfterReachingThreshold", false);
 
         Gesture *gesture;
