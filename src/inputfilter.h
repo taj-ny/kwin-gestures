@@ -16,7 +16,13 @@ public:
     bool swipeGestureEnd(std::chrono::microseconds time) override;
     bool swipeGestureCancelled(std::chrono::microseconds time) override;
 
+    bool pinchGestureBegin(int fingerCount, std::chrono::microseconds time) override;
+    bool pinchGestureUpdate(qreal scale, qreal angleDelta, const QPointF &delta, std::chrono::microseconds time) override;
+    bool pinchGestureEnd(std::chrono::microseconds time) override;
+    bool pinchGestureCancelled(std::chrono::microseconds time) override;
+
     void registerTouchpadGesture(SwipeGesture *gesture);
+    void registerTouchpadGesture(PinchGesture *gesture);
     void unregisterGestures();
 
 private:

@@ -16,34 +16,53 @@ enum class Axis {
 class Gesture : public QObject
 {
     Q_OBJECT
+public:
+    int minimumFingerCount() const;
+    int maximumFingerCount() const;
+    bool triggerAfterReachingThreshold() const;
+
+protected:
+    Gesture(int minimumFingerCount, int maximumFingerCount, bool triggerAfterReachingThreshold);
 
 Q_SIGNALS:
     void started();
     void triggered();
     void cancelled();
+
+private:
+    int m_minimumFingerCount;
+    int m_maximumFingerCount;
+
+    bool m_triggerAfterReachingThreshold;
 };
 
 class SwipeGesture : public Gesture
 {
 public:
-    SwipeGesture(SwipeDirection direction, int minimumFingerCount, int maximumFingerCount);
+    SwipeGesture(SwipeDirection direction, int minimumFingerCount, int maximumFingerCount, bool triggerAfterReachingThreshold, const QPointF &threshold);
 
-    SwipeDirection direction() const {
-        return m_direction;
-    }
+    SwipeDirection direction() const;
 
-    int minimumFingerCount() const {
-        return m_minimumFingerCount;
-    }
-
-    int maximumFingerCount() const {
-        return m_maximumFingerCount;
-    }
+    bool thresholdReached(const QPointF &delta) const;
 
 private:
-    SwipeDirection m_direction;
-    int m_minimumFingerCount;
-    int m_maximumFingerCount;
+    const SwipeDirection m_direction;
+    const QPointF m_threshold;
+};
+
+class PinchGesture : public Gesture
+{
+public:
+    PinchGesture(PinchDirection direction, int minimumFingerCount, int maximumFingerCount, bool triggerAfterReachingThreshold, qreal threshold);
+
+    PinchDirection direction() const;
+
+    bool thresholdReached(const qreal &scale) const;
+
+private:
+    const PinchDirection m_direction;
+    const qreal m_threshold;
+
 };
 
 };

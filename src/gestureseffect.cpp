@@ -27,22 +27,23 @@ void GesturesEffect::reconfigure(ReconfigureFlags flags)
 {
     m_inputEventFilter->unregisterGestures();
 
-    const KConfig config("testrc", KConfig::SimpleConfig);
+    const KConfig config("kwingesturesrc", KConfig::SimpleConfig);
     const auto gesturesGroup = config.group("Gestures");
 
     for (const auto &gestureGroupName : gesturesGroup.groupList())
     {
         const auto gestureGroup = gesturesGroup.group(gestureGroupName);
 
-        const QString type = gestureGroup.readEntry("Type", "Swipe");
-
+        const auto type = gestureGroup.readEntry("Type", "Swipe");
         const uint minimumFingerCount = gestureGroup.readEntry("MinimumFingerCount", 3);
         const uint maximumFingerCount = gestureGroup.readEntry("MaximumFingerCount", 3);
+        const bool triggerAfterReachingThreshold = gestureGroup.readEntry("TriggerAfterReachingThreshold", false);
 
         Gesture *gesture;
+        if (type == "Swipe")
         {
-            const QString directionString = gestureGroup.readEntry("Direction", "Left");
-            SwipeDirection direction = SwipeDirection::Left;
+            const auto directionString = gestureGroup.readEntry("Direction", "Left");
+            auto direction = SwipeDirection::Left;
             if (directionString == "Right")
                 direction = SwipeDirection::Right;
             else if (directionString == "Up")
@@ -50,9 +51,24 @@ void GesturesEffect::reconfigure(ReconfigureFlags flags)
             else if (directionString == "Down")
                 direction = SwipeDirection::Down;
 
-            SwipeGesture *swipeGesture = new SwipeGesture(direction, minimumFingerCount, maximumFingerCount);
+            const qreal thresholdX = gestureGroup.readEntry("SwipeThresholdX", 0.0);
+            const qreal thresholdY = gestureGroup.readEntry("SwipeThresholdY", 0.0);
+            const QPointF threshold(thresholdX, thresholdY);
+
+            SwipeGesture *swipeGesture = new SwipeGesture(direction, minimumFingerCount, maximumFingerCount, triggerAfterReachingThreshold, threshold);
             m_inputEventFilter->registerTouchpadGesture(swipeGesture);
             gesture = swipeGesture;
+        }
+        else if (type == "Pinch")
+        {
+            const auto direction = gestureGroup.readEntry("Direction", "Contracting") == "Contracting"
+                ? PinchDirection::Contracting
+                : PinchDirection::Expanding;
+            const qreal threshold = gestureGroup.readEntry("PinchThreshold", 1.0);
+
+            PinchGesture *pinchGesture = new PinchGesture(direction, minimumFingerCount, maximumFingerCount, triggerAfterReachingThreshold, threshold);
+            m_inputEventFilter->registerTouchpadGesture(pinchGesture);
+            gesture = pinchGesture;
         }
 
         const QString actionString = gestureGroup.readEntry("Action", "None");
