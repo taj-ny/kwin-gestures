@@ -8,6 +8,10 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
     Q_OBJECT
 
 public:
+#ifdef KWIN_6_2_OR_GREATER
+    GestureInputEventFilter();
+#endif
+
     bool swipeGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     bool swipeGestureUpdate(const QPointF &delta, std::chrono::microseconds time) override;
     bool swipeGestureEnd(std::chrono::microseconds time) override;

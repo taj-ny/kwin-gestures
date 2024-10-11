@@ -5,7 +5,11 @@
 GesturesEffect::GesturesEffect()
     : m_inputEventFilter(new GestureInputEventFilter())
 {
+#ifdef KWIN_6_2_OR_GREATER
+    KWin::input()->installInputEventFilter(m_inputEventFilter.get());
+#else
     KWin::input()->prependInputEventFilter(m_inputEventFilter.get());
+#endif
 
     reconfigure(ReconfigureAll);
 }

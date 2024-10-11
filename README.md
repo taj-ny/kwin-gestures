@@ -1,7 +1,9 @@
 # KWin Gestures
 KWin Gestures allows you to create custom touchpad gestures and override existing ones.
 
-Tested on 6.1.5, may not compile on 6.2.
+Tested on 6.1.5. Compiled on 6.2 but not tested yet.
+
+X11 is not supported.
 
 # Installation
 See [kwin-better-blur](https://github.com/taj-ny/kwin-effects-forceblur). Instructions will be added later.

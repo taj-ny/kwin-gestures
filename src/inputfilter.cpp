@@ -1,6 +1,13 @@
 #include "inputfilter.h"
 #include "wayland_server.h"
 
+#ifdef KWIN_6_2_OR_GREATER
+GestureInputEventFilter::GestureInputEventFilter()
+    : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
+{
+}
+#endif
+
 bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
     Q_UNUSED(time)
