@@ -32,6 +32,7 @@ void Config::read()
                 minimumFingers = maximumFingers = fingers;
             }
             const bool triggerAfterReachingThreshold = gestureGroup.readEntry("TriggerAfterReachingThreshold", false);
+            const QRegularExpression windowRegex(gestureGroup.readEntry("WindowRegex", ""));
 
             std::shared_ptr<Gesture> gesture;
             if (gestureType == "Hold")
@@ -47,7 +48,7 @@ void Config::read()
                    : KWin::PinchDirection::Expanding;
                 const qreal threshold = pinchGestureGroup.readEntry("Threshold", 1.0);
 
-                gesture = std::make_shared<PinchGesture>(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, direction, threshold);
+                gesture = std::make_shared<PinchGesture>(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, windowRegex, direction, threshold);
             }
             else if (gestureType == "Swipe")
             {
@@ -66,7 +67,7 @@ void Config::read()
                 const qreal thresholdY = swipeGesture.readEntry("ThresholdY", 0.0);
                 const QPointF threshold(thresholdX, thresholdY);
 
-                gesture = std::make_shared<SwipeGesture>(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, direction, threshold);
+                gesture = std::make_shared<SwipeGesture>(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, windowRegex, direction, threshold);
             }
 
             if (!gesture)

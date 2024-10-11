@@ -21,6 +21,7 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
       - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
       - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
       - **TriggerAfterReachingThreshold** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>&nbsp;
+      - **WindowRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the gesture will be skipped. This allows you to create gestures only for specific applications.
       - **[Hold]** - Configuration for hold gestures.
         - **Threshold** (int) - In milliseconds.
       - **[Pinch]** - Configuration for pinch gestures.
@@ -44,6 +45,24 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
 
 ### Example
 ```
+[Gestures][Touchpad][Lock Screen]
+Type=Pinch
+Fingers=2
+TriggerAfterReachingThreshold=true
+WindowRegex=plasmashell
+
+[Gestures][Touchpad][Lock Screen][Pinch]
+Direction=Contracting
+Threshold=0.9
+
+[Gestures][Touchpad][Lock Screen][Actions][0]
+Type=GlobalShortcut
+
+[Gestures][Touchpad][Lock Screen][Actions][0][GlobalShortcut]
+Component=ksmserver
+Shortcut=Lock Session
+
+
 [Gestures][Touchpad][Close Window]
 Type=Pinch
 Fingers=2
@@ -76,4 +95,20 @@ Type=GlobalShortcut
 [Gestures][Touchpad][Yakuake][Actions][0][GlobalShortcut]
 Component=yakuake
 Shortcut=toggle-window-state
+
+
+[Gestures][Touchpad][Konsole]
+Type=Swipe
+Fingers=3
+TriggerAfterReachingThreshold=true
+
+[Gestures][Touchpad][Konsole][Swipe]
+Direction=Up
+ThresholdY=10
+
+[Gestures][Touchpad][Konsole][Actions][0]
+Type=Command
+
+[Gestures][Touchpad][Konsole][Actions][0][Command]
+Command=dolphin
 ```

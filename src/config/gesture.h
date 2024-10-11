@@ -4,6 +4,7 @@
 #include "effect/globals.h"
 #include "options.h"
 #include <QPointF>
+#include <QRegularExpression>
 
 enum InputDevice
 {
@@ -55,6 +56,7 @@ public:
     bool triggerAfterReachingThreshold;
     uint minimumFingers;
     uint maximumFingers;
+    QRegularExpression windowRegex;
 
     std::vector<std::unique_ptr<GestureAction>> cancelledActions;
     std::vector<std::unique_ptr<GestureAction>> startedActions;
@@ -65,20 +67,19 @@ public:
     void triggered();
 
 protected:
-    Gesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers);
+    Gesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex);
 };
 
 class HoldGesture : public Gesture
 {
-    uint threshold;
+public:
 
-    bool thresholdReached(uint time) const;
 };
 
 class SwipeGesture : public Gesture
 {
 public:
-    SwipeGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, KWin::SwipeDirection direction, QPointF threshold);
+    SwipeGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::SwipeDirection direction, QPointF threshold);
 
     KWin::SwipeDirection direction;
     QPointF threshold;
@@ -89,7 +90,7 @@ public:
 class PinchGesture : public Gesture
 {
 public:
-    PinchGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, KWin::PinchDirection direction, qreal threshold);
+    PinchGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::PinchDirection direction, qreal threshold);
 
     KWin::PinchDirection direction;
     qreal threshold;

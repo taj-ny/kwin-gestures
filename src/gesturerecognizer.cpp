@@ -10,7 +10,9 @@
 */
 
 #include "config/config.h"
+#include "effect/effecthandler.h"
 #include "gesturerecognizer.h"
+#include "window.h"
 
 bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
 {
@@ -26,6 +28,12 @@ bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
             continue;
 
         if (swipeGesture->minimumFingers > fingerCount || swipeGesture->maximumFingers < fingerCount)
+            continue;
+
+        const auto activeWindow = KWin::effects->activeWindow();
+        if (activeWindow && !gesture->windowRegex.pattern().isEmpty()
+            && !(gesture->windowRegex.match(activeWindow->window()->resourceClass()).hasMatch()
+                || gesture->windowRegex.match(activeWindow->window()->resourceName()).hasMatch()))
             continue;
 
         switch (swipeGesture->direction)
@@ -180,6 +188,12 @@ bool GestureRecognizer::pinchGestureBegin(int fingerCount)
             continue;
 
         if (gesture->minimumFingers > fingerCount || gesture->maximumFingers < fingerCount)
+            continue;
+
+        const auto activeWindow = KWin::effects->activeWindow();
+        if (activeWindow && !gesture->windowRegex.pattern().isEmpty()
+            && !(gesture->windowRegex.match(activeWindow->window()->resourceClass()).hasMatch()
+                 || gesture->windowRegex.match(activeWindow->window()->resourceName()).hasMatch()))
             continue;
 
         // direction doesn't matter yet

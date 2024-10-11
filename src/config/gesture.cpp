@@ -23,8 +23,8 @@ void GlobalShortcutGestureAction::execute()
     interface.call("invokeShortcut", shortcut);
 }
 
-Gesture::Gesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers)
-    : device(device), triggerAfterReachingThreshold(triggerAfterReachingThreshold), minimumFingers(minimumFingers), maximumFingers(maximumFingers)
+Gesture::Gesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex)
+    : device(device), triggerAfterReachingThreshold(triggerAfterReachingThreshold), minimumFingers(minimumFingers), maximumFingers(maximumFingers), windowRegex(std::move(windowRegex))
 {
 }
 
@@ -46,8 +46,8 @@ void Gesture::triggered()
         action->execute();
 }
 
-SwipeGesture::SwipeGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, KWin::SwipeDirection direction, QPointF threshold)
-    : Gesture(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers), direction(direction), threshold(threshold)
+SwipeGesture::SwipeGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::SwipeDirection direction, QPointF threshold)
+    : Gesture(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, windowRegex), direction(direction), threshold(threshold)
 {
 }
 
@@ -66,8 +66,8 @@ bool SwipeGesture::thresholdReached(const QPointF &delta) const
     }
 }
 
-PinchGesture::PinchGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, KWin::PinchDirection direction, qreal threshold)
-    : Gesture(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers), direction(direction), threshold(threshold)
+PinchGesture::PinchGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::PinchDirection direction, qreal threshold)
+    : Gesture(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, windowRegex), direction(direction), threshold(threshold)
 {
 }
 
