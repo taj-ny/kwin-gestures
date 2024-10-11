@@ -3,10 +3,7 @@
 #include "gesturerecognizer.h"
 #include "input.h"
 
-namespace KWin
-{
-
-class GestureInputEventFilter : public QObject, public InputEventFilter
+class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 {
     Q_OBJECT
 
@@ -21,13 +18,7 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
-    void registerTouchpadGesture(SwipeGesture *gesture);
-    void registerTouchpadGesture(PinchGesture *gesture);
-    void unregisterGestures();
-
 private:
     GestureRecognizer m_touchpadGestureRecognizer;
     uint m_touchpadGestureFingerCount = 0;
 };
-
-}

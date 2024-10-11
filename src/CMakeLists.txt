@@ -1,11 +1,10 @@
 set(kwin_gestures_SOURCES
-        gestureseffect.cpp
+    gestureseffect.cpp
     inputfilter.cpp
     main.cpp
-        gesturerecognizer.cpp
-        gesturerecognizer.h
-        gestures.cpp
-        gestures.h
+    gesturerecognizer.cpp
+    config/gesture.cpp
+    config/config.cpp
 )
 
 add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})

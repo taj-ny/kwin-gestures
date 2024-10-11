@@ -1,23 +1,19 @@
 #pragma once
 
-#include "gestures.h"
+#include "config/gesture.h"
 #include <QObject>
 #include <QPointF>
 
-namespace KWin
+enum Axis
 {
+    Horizontal,
+    Vertical,
+    None
+};
 
 class GestureRecognizer
 {
-
 public:
-    GestureRecognizer() = default;
-    ~GestureRecognizer();
-
-    void registerGesture(SwipeGesture *gesture);
-    void registerGesture(PinchGesture *gesture);
-    void unregisterGestures();
-
     bool swipeGestureBegin(uint fingerCount);
     bool swipeGestureUpdate(const QPointF &delta);
     bool swipeGestureEnd(bool resetHasActiveTriggeredGesture = true);
@@ -29,18 +25,13 @@ public:
     bool pinchGestureCancelled();
 
 private:
-    QList<SwipeGesture*> m_swipeGestures;
-    QList<SwipeGesture*> m_activeSwipeGestures;
+    QList<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
     bool m_hasActiveTriggeredSwipeGesture = false;
 
-    QList<PinchGesture*> m_pinchGestures;
-    QList<PinchGesture*> m_activePinchGestures;
-
+    QList<std::shared_ptr<PinchGesture>> m_activePinchGestures;
 
     uint m_currentFingerCount = 0;
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentDelta;
     qreal m_currentScale = 1;
-};
-
 };

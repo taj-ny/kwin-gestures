@@ -11,65 +11,34 @@ There is currently no configuration UI. You need to manually modify the ``~/.con
 
 Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures`` or toggle the effect in system settings after updating the file.
 
-## Keys
-### Type
-Type of the gesture. 
+### Configuration file structure
 
-``Swipe`` or ``Pinch``
+- **[Gestures]**
+  - **[$device]** (enum) - Which device to add this gesture for (``Touchpad``).<br>
+    - **[$name]** (string) - Unique name for the gesture.
+      - **Type** (enum) - ``Hold``, ``Pinch``, ``Swipe``
+      - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets ``MinimumFingers`` and ``MaximumFingers``.<br>Minimum value is 2 for pinch gestures, 3 for hold and swipe.<br>Maximum value is 4. 
+      - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
+      - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
+      - **TriggerAfterReachingThreshold** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>&nbsp;
+      - **[Hold]** - Configuration for hold gestures.
+        - **Threshold** (int) - In milliseconds.
+      - **[Pinch]** - Configuration for pinch gestures.
+        - **Direction** (enum) - ``Contracting``, ``Expanding``
+        - **Threshold** (float) - Should be > 1.0 for expanding gestures and < 1.0 for contracting gestures.
+      - **[Swipe]** - Configuration for swipe gestures.
+        - **Direction** (enum) - ``Left``, ``Right``, ``Up``, ``Down``
+        - **ThresholdX** (int) - Threshold for the X axis in pixels.<br>Only used if **Direction** is ``Left`` or ``Right``.
+        - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>&nbsp;
+      - **[Actions]** - What do to when the gesture is triggered. Actions are executed in order as they appear in the configuration file.
+        - **[$name]** (string) - Unique name for the action.
+          - **Type** (enum) - ``GlobalShortcut``
+          - **When** (enum) - TODO<br>&nbsp;
+          - **[GlobalShortcut]** - Configuration for GlobalShortcut action.
+            - **Component** (string) - TODO
+            - **Shortcut** (string) - TODO
 
-### Direction
-``Left``, ``Right``, ``Up``, ``Down`` if ``Type`` is ``Swipe``,
-
-``Contracting`` or ``Expanding`` if ``Type`` is ``Pinch``.
-
-### FingerCount (int)
-Amount of fingers required to trigger the gesture. Must be at least ``3``.
-
-Sets ``MinimumFingerCount`` and ``MaximumFingerCount``.
-
-### MinimumFingerCount (int)
-Minimum amount of fingers required to trigger the gesture. Must be at least ``3``.
-
-### MaximumFingerCount (int)
-Maximum amount of fingers required to trigger the gesture. Must be at least ``3``.
-
-### TriggerAfterReachingThreshold (bool)
-Whether to trigger the gesture immediately after the threshold is reached.
-
-### PinchThreshold (float)
-Threshold for pinch gestures.
-
-Should be > 1 for expanding gestures and < 1 for contracting gestures.
-
-### SwipeThresholdX (int)
-Threshold for left/right swipe gestures in pixels. 
-
-### SwipeThresholdY (int)
-Threshold for up/down swipe gestures in pixels.
-
-### Action
-What to do after the gesture is triggered.
-
-``GlobalShortcut`` - Invoke a global shortcut. Shortcuts can be found in ``~/.config/kglobalshortcutsrc``.
-
-### Example configuration
+### Example
 ```
-[Gestures][Yakuake]
-Type=Swipe
-Direction=Down
-FingerCount=3
-TriggerAfterReachingThreshold=true
-ThresholdY=50
-Action=GlobalShortcut
-ActionGlobalShortcutComponent=yakuake
-ActionGlobalShortcutShortcut=toggle-window-state
-
-[Gestures][CloseWindow]
-Type=Pinch
-Direction=Contracting
-PinchThreshold=0.75
-FingerCount=3
-Action=GlobalShortcut
-ActionGlobalShortcutComponent=kwin
-ActionGlobalShortcutShortcut=Window Close
+TODO
 ```

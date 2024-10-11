@@ -1,17 +1,10 @@
 #pragma once
 
 #include "effect/effect.h"
-#include "input.h"
 #include "inputfilter.h"
-#include "gestures.h"
 
-namespace KWin
+class GesturesEffect : public KWin::Effect
 {
-
-class GesturesEffect : public Effect
-{
-    Q_OBJECT
-
 public:
     GesturesEffect();
     ~GesturesEffect();
@@ -24,7 +17,3 @@ public:
 private:
     std::unique_ptr<GestureInputEventFilter> m_inputEventFilter;
 };
-
-
-
-} // namespace KWin
