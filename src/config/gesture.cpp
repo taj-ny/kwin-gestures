@@ -2,6 +2,16 @@
 #include <QDBusInterface>
 #include <utility>
 
+CommandGestureAction::CommandGestureAction(QString command)
+    : m_command(std::move(command))
+{
+}
+
+void CommandGestureAction::execute()
+{
+    std::system((m_command + " &").toStdString().c_str());
+}
+
 GlobalShortcutGestureAction::GlobalShortcutGestureAction(QString component, QString shortcut)
     : component(std::move(component)), shortcut(std::move(shortcut))
 {

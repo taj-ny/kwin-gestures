@@ -80,7 +80,13 @@ void Config::read()
 //                const auto actionWhen = actionGroup.readEntry("When");
 
                 std::unique_ptr<GestureAction> action;
-                if (actionType == "GlobalShortcut")
+                if (actionType == "Command")
+                {
+                    const auto commandActionGroup = actionGroup.group("Command");
+                    const auto command = commandActionGroup.readEntry("Command", "");
+                    action = std::make_unique<CommandGestureAction>(command);
+                }
+                else if (actionType == "GlobalShortcut")
                 {
                     const auto globalShortcutActionGroup = actionGroup.group("GlobalShortcut");
                     const auto component = globalShortcutActionGroup.readEntry("Component", "");

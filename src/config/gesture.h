@@ -19,6 +19,16 @@ protected:
     GestureAction() = default;
 };
 
+class CommandGestureAction : public GestureAction
+{
+public:
+    CommandGestureAction(QString command);
+
+    void execute() override;
+private:
+    const QString m_command;
+};
+
 class GlobalShortcutGestureAction : public GestureAction
 {
 public:

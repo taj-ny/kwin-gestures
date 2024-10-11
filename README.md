@@ -32,9 +32,13 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
         - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>&nbsp;
       - **[Actions]** - What do to when the gesture is triggered. Actions are executed in order as they appear in the configuration file.
         - **[$name]** (string) - Unique name for the action.
-          - **Type** (enum) - ``GlobalShortcut``
+          - **Type** (enum)
+            - ``Command`` - Run a command. See **[Command]** for configuration.
+            - ``GlobalShortcut`` - Invoke a global shortcut. See **[GlobalShortcut]** for configuration.
           - **When** (enum) - TODO<br>&nbsp;
-          - **[GlobalShortcut]** - Configuration for GlobalShortcut action.
+          - **[Command]** - Configuration for the GlobalShortcut action.
+            - **Command** (string) - The command to run.
+          - **[GlobalShortcut]** - Configuration for the GlobalShortcut action.
             - **Component** (string) - TODO
             - **Shortcut** (string) - TODO
 
