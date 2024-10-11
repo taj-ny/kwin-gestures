@@ -40,5 +40,36 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
 
 ### Example
 ```
-TODO
+[Gestures][Touchpad][Close Window]
+Type=Pinch
+Fingers=2
+TriggerAfterReachingThreshold=true
+
+[Gestures][Touchpad][Close Window][Pinch]
+Direction=Contracting
+Threshold=0.9
+
+[Gestures][Touchpad][Close Window][Actions][0]
+Type=GlobalShortcut
+
+[Gestures][Touchpad][Close Window][Actions][0][GlobalShortcut]
+Component=kwin
+Shortcut=Window Close
+
+
+[Gestures][Touchpad][Yakuake]
+Type=Swipe
+Fingers=4
+TriggerAfterReachingThreshold=true
+
+[Gestures][Touchpad][Yakuake][Swipe]
+Direction=Down
+ThresholdY=10
+
+[Gestures][Touchpad][Yakuake][Actions][0]
+Type=GlobalShortcut
+
+[Gestures][Touchpad][Yakuake][Actions][0][GlobalShortcut]
+Component=yakuake
+Shortcut=toggle-window-state
 ```
