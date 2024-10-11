@@ -20,8 +20,8 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
       - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets ``MinimumFingers`` and ``MaximumFingers``.<br>Minimum value is 2 for pinch gestures, 3 for hold and swipe.<br>Maximum value is 4. 
       - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
       - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
-      - **TriggerAfterReachingThreshold** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>&nbsp;
-      - **WindowRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the gesture will be skipped. This allows you to create gestures only for specific applications.
+      - **TriggerAfterReachingThreshold** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.
+      - **WindowRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the gesture will be skipped. This allows you to create gestures only for specific applications.<br>&nbsp;
       - **[Hold]** - Configuration for hold gestures.
         - **Threshold** (int) - In milliseconds.
       - **[Pinch]** - Configuration for pinch gestures.
