@@ -11,8 +11,8 @@ void KeySequenceGestureAction::execute()
     VirtualKeyboard virtualKeyboard;
     for (const auto &command : script.split(","))
     {
-        const auto &action = command.split(" ")[0];
-        const auto &key = command.split(" ")[1];
+        const auto action = command.split(" ")[0];
+        const auto key = command.split(" ")[1];
 
         if (!KEY_MAP.contains(key))
             continue;
