@@ -12,8 +12,10 @@ bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::mi
 {
     Q_UNUSED(time)
 
+#ifndef KWIN_6_2_OR_GREATER
     if (KWin::waylandServer()->isScreenLocked())
         return false;
+#endif
 
     m_touchpadGestureFingerCount = fingerCount;
     if (m_touchpadGestureFingerCount < 3)
@@ -26,7 +28,12 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 3)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 3)
         return false;
 
     return m_touchpadGestureRecognizer.swipeGestureUpdate(delta);
@@ -36,7 +43,12 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 3)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 3)
         return false;
 
     return m_touchpadGestureRecognizer.swipeGestureEnd();
@@ -46,7 +58,12 @@ bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds ti
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 3)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 3)
         return false;
 
     return m_touchpadGestureRecognizer.swipeGestureCancelled();
@@ -56,8 +73,10 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
 {
     Q_UNUSED(time)
 
+#ifndef KWIN_6_2_OR_GREATER
     if (KWin::waylandServer()->isScreenLocked())
         return false;
+#endif
 
     m_touchpadGestureFingerCount = fingerCount;
     if (m_touchpadGestureFingerCount < 2)
@@ -70,7 +89,12 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 2)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
         return false;
 
     return m_touchpadGestureRecognizer.pinchGestureUpdate(scale, angleDelta, delta);
@@ -80,7 +104,12 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 2)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
         return false;
 
     return m_touchpadGestureRecognizer.pinchGestureEnd();
@@ -90,7 +119,12 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 {
     Q_UNUSED(time)
 
-    if (KWin::waylandServer()->isScreenLocked() || m_touchpadGestureFingerCount < 2)
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
         return false;
 
     return m_touchpadGestureRecognizer.pinchGestureCancelled();
