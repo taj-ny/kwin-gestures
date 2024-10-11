@@ -25,46 +25,13 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
-    Gui
-    Core
-    DBus
-    UiTools
     Widgets
-    OpenGL
-    Network
-    Xml
 )
 
-find_package(KGlobalAccelD REQUIRED)
-
-include_directories(${Qt6Widgets_INCLUDE_DIRS} ${Qt6Network_INCLUDE_DIRS} ${Qt6OpenGL_INCLUDE_DIRS} ${Qt6Xml_INCLUDE_DIRS})
+include_directories(${Qt6Widgets_INCLUDE_DIRS})
 add_definitions(${Qt6Widgets_DEFINITIONS})
 
-find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
-    Config
-    ConfigWidgets
-    CoreAddons
-    Crash
-    GlobalAccel
-    I18n
-    KIO
-    Service
-    #Init
-    Notifications
-    Service
-    WidgetsAddons
-    WindowSystem
-    GuiAddons
-    KCMUtils
-)
-
-find_package(epoxy REQUIRED)
-
-find_package(X11 REQUIRED)
-find_package(XCB REQUIRED COMPONENTS XCB)
-
 find_package(KWin REQUIRED COMPONENTS
-        kwin
     kwineffects
 )
 
@@ -72,9 +39,9 @@ if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.2.0)
     add_compile_definitions(KWIN_6_2_OR_GREATER)
 endif()
 
-find_package(KDecoration2 REQUIRED)
+#find_package(KDecoration2 REQUIRED)
 
-find_package(KWinDBusInterface CONFIG REQUIRED)
+#find_package(KWinDBusInterface CONFIG REQUIRED)
 
 add_subdirectory(src)
 
