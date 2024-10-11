@@ -175,7 +175,7 @@ bool GestureRecognizer::swipeGestureEnd(bool resetHasActiveTriggeredGesture)
     return hadActiveGestures;
 }
 
-bool GestureRecognizer::pinchGestureBegin(int fingerCount)
+bool GestureRecognizer::pinchGestureBegin(uint fingerCount)
 {
     m_currentFingerCount = fingerCount;
     if (!m_activePinchGestures.isEmpty())
@@ -206,6 +206,9 @@ bool GestureRecognizer::pinchGestureBegin(int fingerCount)
 
 bool GestureRecognizer::pinchGestureUpdate(qreal scale, qreal angleDelta, const QPointF &delta)
 {
+    Q_UNUSED(angleDelta)
+    Q_UNUSED(delta)
+
     m_currentScale = scale;
 
     // Determine the direction of the swipe
@@ -220,7 +223,7 @@ bool GestureRecognizer::pinchGestureUpdate(qreal scale, qreal angleDelta, const 
 
         for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();)
         {
-            const auto gesture = *it;
+            const auto &gesture = *it;
             if (gesture->direction != direction)
             {
                 gesture->cancelled();
@@ -244,7 +247,7 @@ bool GestureRecognizer::pinchGestureUpdate(qreal scale, qreal angleDelta, const 
 bool GestureRecognizer::pinchGestureCancelled()
 {
     bool hadActiveGestures = !m_activePinchGestures.isEmpty();
-    for (const auto gesture : std::as_const(m_activePinchGestures))
+    for (const auto &gesture : std::as_const(m_activePinchGestures))
         gesture->cancelled();
 
     m_activePinchGestures.clear();
@@ -257,7 +260,7 @@ bool GestureRecognizer::pinchGestureCancelled()
 bool GestureRecognizer::pinchGestureEnd()
 {
     bool hadActiveGestures = !m_activePinchGestures.isEmpty();
-    for (const auto gesture : std::as_const(m_activePinchGestures))
+    for (const auto &gesture : std::as_const(m_activePinchGestures))
     {
         if (gesture->thresholdReached(m_currentScale))
             gesture->triggered();

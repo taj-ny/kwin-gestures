@@ -21,7 +21,7 @@ GesturesEffect::~GesturesEffect()
 
 void GesturesEffect::reconfigure(ReconfigureFlags flags)
 {
+    Q_UNUSED(flags)
+
     Config::instance().read();
 }
-
-#include "moc_gestureseffect.cpp"

@@ -20,7 +20,7 @@ public:
     bool swipeGestureEnd(bool resetHasActiveTriggeredGesture = true);
     bool swipeGestureCancelled();
 
-    bool pinchGestureBegin(int fingerCount);
+    bool pinchGestureBegin(uint fingerCount);
     bool pinchGestureUpdate(qreal scale, qreal angleDelta, const QPointF &delta);
     bool pinchGestureEnd();
     bool pinchGestureCancelled();
