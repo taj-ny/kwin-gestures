@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gesture.h"
+#include "gestures/gesture.h"
 
 class Config
 {

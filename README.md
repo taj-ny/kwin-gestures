@@ -35,10 +35,13 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
         - **[$name]** (string) - Unique name for the action.
           - **Type** (enum)
             - ``Command`` - Run a command. See **[Command]** for configuration.
+            - ``KeySequence`` - Simulate keyboard input.
             - ``GlobalShortcut`` - Invoke a global shortcut. See **[GlobalShortcut]** for configuration.
           - **When** (enum) - TODO<br>&nbsp;
           - **[Command]** - Configuration for the GlobalShortcut action.
             - **Command** (string) - The command to run.
+          - **[KeySequence]** - Configuration for the KeySequence action.
+            - **Sequence** (string) - The key sequence to run. Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``. For the full list of keys see [src/gestures/actions/keysequence.cpp](src/gestures/actions/keysequence.cpp). 
           - **[GlobalShortcut]** - Configuration for the GlobalShortcut action.
             - **Component** (string) - TODO
             - **Shortcut** (string) - TODO
@@ -111,4 +114,38 @@ Type=Command
 
 [Gestures][Touchpad][Konsole][Actions][0][Command]
 Command=dolphin
+
+
+[Gestures][Touchpad][Firefox Back]
+Type=Swipe
+Fingers=3
+TriggerAfterReachingThreshold=true
+WindowRegex=firefox
+
+[Gestures][Touchpad][Firefox Back][Swipe]
+Direction=Left
+ThresholdX=10
+
+[Gestures][Touchpad][Firefox Back][Actions][0]
+Type=KeySequence
+
+[Gestures][Touchpad][Firefox Back][Actions][0][KeySequence]
+Sequence=press LEFTCTRL,press LEFTBRACE,release LEFTCTRL,release LEFTBRACE
+
+
+[Gestures][Touchpad][Firefox Forward]
+Type=Swipe
+Fingers=3
+TriggerAfterReachingThreshold=true
+WindowRegex=firefox
+
+[Gestures][Touchpad][Firefox Forward][Swipe]
+Direction=Right
+ThresholdX=10
+
+[Gestures][Touchpad][Firefox Forward][Actions][0]
+Type=KeySequence
+
+[Gestures][Touchpad][Firefox Forward][Actions][0][KeySequence]
+Sequence=press LEFTCTRL,press RIGHTBRACE,release LEFTCTRL,release RIGHTBRACE
 ```

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "config/gesture.h"
+#include "gestures/pinchgesture.h"
+#include "gestures/swipegesture.h"
 #include <QObject>
 #include <QPointF>
 

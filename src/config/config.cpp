@@ -1,7 +1,12 @@
 #include "config.h"
-
+#include "effect/globals.h"
+#include "gestures/actions/command.h"
+#include "gestures/actions/globalshortcut.h"
+#include "gestures/actions/keysequence.h"
+#include "gestures/pinchgesture.h"
+#include "gestures/swipegesture.h"
 #include <KConfig>
-
+#include <KConfigGroup>
 
 void Config::read()
 {
@@ -93,6 +98,12 @@ void Config::read()
                     const auto component = globalShortcutActionGroup.readEntry("Component", "");
                     const auto shortcut = globalShortcutActionGroup.readEntry("Shortcut", "");
                     action = std::make_unique<GlobalShortcutGestureAction>(component, shortcut);
+                }
+                else if (actionType == "KeySequence")
+                {
+                    const auto keySequenceActionGroup = actionGroup.group("KeySequence");
+                    const auto script = keySequenceActionGroup.readEntry("Sequence", "");
+                    action = std::make_unique<KeySequenceGestureAction>(script);
                 }
 
                 if (action)

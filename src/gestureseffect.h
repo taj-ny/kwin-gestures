@@ -2,6 +2,7 @@
 
 #include "effect/effect.h"
 #include "inputfilter.h"
+#include "virtualkeyboard.h"
 
 class GesturesEffect : public KWin::Effect
 {
