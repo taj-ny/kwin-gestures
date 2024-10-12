@@ -197,22 +197,6 @@ Component=yakuake
 Shortcut=toggle-window-state
 
 
-[Gestures][Touchpad][Konsole]
-Type=Swipe
-Fingers=3
-TriggerWhenThresholdReached=true
-
-[Gestures][Touchpad][Konsole][Swipe]
-Direction=Up
-ThresholdY=10
-
-[Gestures][Touchpad][Konsole][Actions][0]
-Type=Command
-
-[Gestures][Touchpad][Konsole][Actions][0][Command]
-Command=dolphin
-
-
 [Gestures][Touchpad][Firefox Back]
 Type=Swipe
 Fingers=3
