@@ -139,7 +139,7 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
             - **Component** (string) - Run ``qdbus org.kde.kglobalaccel`` for a list of available components. Components start with the ``/component/`` prefix. Don't add the prefix here.
             - **Shortcut** (string) - See the ``~/.config/kglobalshortcutsrc`` file for a list of available shortcuts. The group name (or similar) is the component and the key (everything before *=*) is the shortcut.
           - **[KeySequence]** - Configuration for the KeySequence action.
-            - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now).<br>Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``. For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.cpp).
+            - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now).<br>Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``. For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.h).
 
 ### Example
 ```
