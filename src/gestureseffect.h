@@ -8,10 +8,10 @@ class GesturesEffect : public KWin::Effect
 {
 public:
     GesturesEffect();
-    ~GesturesEffect();
+    ~GesturesEffect() override;
 
     static bool supported() { return true; };
-    static bool enabledByDefault() { return true; };
+    static bool enabledByDefault() { return false; };
 
     void reconfigure(ReconfigureFlags flags) override;
 
