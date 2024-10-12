@@ -100,7 +100,7 @@ Remove the *build* directory when rebuilding the effect.
 
 1. Install the plugin.
 2. Open the Desktop Effects page in System Settings.
-3. Enable the *Gestures* effect.
+3. Enable the *Gestures* effect in the *Tools* category.
 
 # Configuration
 There is currently no configuration UI and it may be a while before it's added. For now, you need to manually modify the ``~/.config/kwingesturesrc`` file. The format may change at any time until 1.0.0 is released.

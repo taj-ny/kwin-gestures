@@ -8,9 +8,9 @@
                 "Name": "taj_ny"
             }
         ],
-        "Category": "Appearance",
-        "Description": "TODO",
-        "EnabledByDefault": true,
+        "Category": "Tools",
+        "Description": "Custom touchpad gestures. See taj-ny/kwin-gestures on GitHub for configuration.",
+        "EnabledByDefault": false,
         "License": "GPL",
         "Name": "Gestures"
     }
