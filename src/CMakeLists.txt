@@ -6,10 +6,10 @@ set(kwin_gestures_SOURCES
     config/config.cpp
     gesturerecognizer.cpp
     gestures/gesture.cpp
+    gestures/holdgesture.cpp
     gestures/pinchgesture.cpp
     gestures/swipegesture.cpp
-    gestures/actions/action.cpp
-    gestures/actions/command.cpp
+        gestures/actions/command.cpp
     gestures/actions/globalshortcut.cpp
     gestures/actions/keysequence.cpp
 )

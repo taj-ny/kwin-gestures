@@ -12,6 +12,10 @@ public:
     GestureInputEventFilter();
 #endif
 
+    bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
+    bool holdGestureEnd(std::chrono::microseconds time) override;
+    bool holdGestureCancelled(std::chrono::microseconds time) override;
+
     bool swipeGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     bool swipeGestureUpdate(const QPointF &delta, std::chrono::microseconds time) override;
     bool swipeGestureEnd(std::chrono::microseconds time) override;

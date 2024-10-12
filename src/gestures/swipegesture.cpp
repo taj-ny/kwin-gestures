@@ -1,20 +1,22 @@
 #include "swipegesture.h"
 
-SwipeGesture::SwipeGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::SwipeDirection direction, QPointF threshold)
-    : Gesture(device, triggerAfterReachingThreshold, minimumFingers, maximumFingers, windowRegex), direction(direction), threshold(threshold)
+SwipeGesture::SwipeGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::SwipeDirection direction, QPointF threshold)
+    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, std::move(windowRegex)),
+      m_direction(direction),
+      m_threshold(threshold)
 {
 }
 
 bool SwipeGesture::thresholdReached(const QPointF &delta) const
 {
-    switch (direction)
+    switch (m_direction)
     {
         case KWin::SwipeDirection::Up:
         case KWin::SwipeDirection::Down:
-            return std::abs(delta.y()) >= std::abs(threshold.y());
+            return std::abs(delta.y()) >= std::abs(m_threshold.y());
         case KWin::SwipeDirection::Left:
         case KWin::SwipeDirection::Right:
-            return std::abs(delta.x()) >= std::abs(threshold.x());
+            return std::abs(delta.x()) >= std::abs(m_threshold.x());
         default:
             Q_UNREACHABLE();
     }

@@ -1,3 +1,11 @@
+/*
+    KWin - the KDE window manager
+
+    SPDX-FileCopyrightText: 2013, 2016 Martin Gräßlin <mgraesslin@kde.org>
+
+    SPDX-License-Identifier: GPL-2.0-or-later
+*/
+
 #include "input_event.h"
 #include "input_event_spy.h"
 #include "keyboard_input.h"
@@ -27,6 +35,7 @@ void VirtualKeyboard::release(quint32 key)
 
 void VirtualKeyboard::sendKey(quint32 key, KWin::InputRedirection::KeyboardKeyState state)
 {
+    // https://invent.kde.org/plasma/kwin/-/blob/Plasma/6.2/src/keyboard_input.cpp
     const auto xkb = KWin::input()->keyboard()->xkb();
     xkb->updateKey(key, state);
 

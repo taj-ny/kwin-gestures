@@ -7,10 +7,12 @@
 class PinchGesture : public Gesture
 {
 public:
-    PinchGesture(InputDevice device, bool triggerAfterReachingThreshold, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::PinchDirection direction, qreal threshold);
+    PinchGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::PinchDirection direction, qreal threshold);
 
-    KWin::PinchDirection direction;
-    qreal threshold;
+    KWin::PinchDirection direction() const { return m_direction; }
 
     bool thresholdReached(const qreal &scale) const;
+private:
+    const KWin::PinchDirection m_direction;
+    const qreal m_threshold;
 };

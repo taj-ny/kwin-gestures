@@ -511,15 +511,15 @@ static const std::map<QString, quint32> KEY_MAP =
     { "KBD_LCD_MENU3", KEY_KBD_LCD_MENU3 },
     { "KBD_LCD_MENU4", KEY_KBD_LCD_MENU4 },
     { "KBD_LCD_MENU5", KEY_KBD_LCD_MENU5 },
-    { "MAX", KEY_MAX },
+    { "MAX", KEY_MAX }
 };
 
 class KeySequenceGestureAction : public GestureAction
 {
 public:
-    KeySequenceGestureAction(QString script);
-
-    QString script;
+    explicit KeySequenceGestureAction(QString sequence);
 
     void execute() override;
+private:
+    const QString m_sequence;
 };

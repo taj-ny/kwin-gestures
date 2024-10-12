@@ -8,6 +8,51 @@ GestureInputEventFilter::GestureInputEventFilter()
 }
 #endif
 
+bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
+{
+    m_touchpadGestureFingerCount = fingerCount;
+
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
+        return false;
+
+    return m_touchpadGestureRecognizer.holdGestureBegin(fingerCount, time);
+}
+
+bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
+{
+    Q_UNUSED(time)
+
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
+        return false;
+
+    return m_touchpadGestureRecognizer.holdGestureEnd(time);
+}
+
+bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds time)
+{
+    Q_UNUSED(time)
+
+#ifndef KWIN_6_2_OR_GREATER
+    if (KWin::waylandServer()->isScreenLocked())
+        return false;
+#endif
+
+    if (m_touchpadGestureFingerCount < 2)
+        return false;
+
+    return m_touchpadGestureRecognizer.holdGestureCancelled();
+}
+
 bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
     Q_UNUSED(time)

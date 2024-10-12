@@ -1,15 +1,15 @@
 #include "keysequence.h"
 #include "virtualkeyboard.h"
 
-KeySequenceGestureAction::KeySequenceGestureAction(QString script)
-    : script(std::move(script))
+KeySequenceGestureAction::KeySequenceGestureAction(QString sequence)
+    : m_sequence(std::move(sequence))
 {
 }
 
 void KeySequenceGestureAction::execute()
 {
     VirtualKeyboard virtualKeyboard;
-    for (const auto &command : script.split(","))
+    for (const auto &command : m_sequence.split(","))
     {
         const auto action = command.split(" ")[0];
         const auto key = command.split(" ")[1];

@@ -1,5 +1,5 @@
 /*
-    Most of this code was taken from https://invent.kde.org/plasma/kwin/-/blob/v6.1.5/src/gestures.h?ref_type=tags
+    Most of this code was taken from https://invent.kde.org/plasma/kwin/-/blob/v6.2.0/src/gestures.cpp
 
     KWin - the KDE window manager
     This file is part of the KDE project.
@@ -14,6 +14,55 @@
 #include "gesturerecognizer.h"
 #include "window.h"
 
+bool GestureRecognizer::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
+{
+    m_holdGestureStart = std::chrono::duration_cast<std::chrono::milliseconds>(time);
+    for (std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
+    {
+        std::shared_ptr<HoldGesture> holdGesture = std::dynamic_pointer_cast<HoldGesture>(gesture);
+        if (!holdGesture || !gesture->meetsConditions(fingerCount))
+            continue;
+
+        m_activeHoldGestures << holdGesture;
+        connect(holdGesture.get(), &HoldGesture::triggeredByTimer, this, [this, holdGesture]()
+        {
+            m_activeHoldGestures.removeIf([=](const std::shared_ptr<HoldGesture> &activeHoldGesture) {
+                return activeHoldGesture.get() == holdGesture.get();
+            });
+            holdGestureEnd(std::chrono::microseconds(0));
+        });
+        gesture->started();
+    }
+
+    return false;
+}
+
+bool GestureRecognizer::holdGestureCancelled()
+{
+    const bool hadActiveGestures = !m_activeHoldGestures.isEmpty();
+    for (const auto &gesture : m_activeHoldGestures)
+        gesture->cancelled();
+
+    m_activeHoldGestures.clear();
+    return hadActiveGestures;
+}
+
+bool GestureRecognizer::holdGestureEnd(std::chrono::microseconds time)
+{
+    const bool hadActiveGestures = !m_activeHoldGestures.isEmpty();
+    const std::chrono::milliseconds timeDifference = std::chrono::duration_cast<std::chrono::milliseconds>(time) - m_holdGestureStart;
+    for (const auto &gesture : m_activeHoldGestures)
+    {
+        if (gesture->thresholdReached(timeDifference))
+            gesture->triggered();
+        else
+            gesture->cancelled();
+    }
+
+    m_activeHoldGestures.clear();
+    return hadActiveGestures;
+}
+
 bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
 {
     m_currentFingerCount = fingerCount;
@@ -24,19 +73,10 @@ bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
     for (std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
     {
         const std::shared_ptr<SwipeGesture> swipeGesture = std::dynamic_pointer_cast<SwipeGesture>(gesture);
-        if (!swipeGesture)
+        if (!swipeGesture || !gesture->meetsConditions(fingerCount))
             continue;
 
-        if (swipeGesture->minimumFingers > fingerCount || swipeGesture->maximumFingers < fingerCount)
-            continue;
-
-        const auto activeWindow = KWin::effects->activeWindow();
-        if (activeWindow && !gesture->windowRegex.pattern().isEmpty()
-            && !(gesture->windowRegex.match(activeWindow->window()->resourceClass()).hasMatch()
-                || gesture->windowRegex.match(activeWindow->window()->resourceName()).hasMatch()))
-            continue;
-
-        switch (swipeGesture->direction)
+        switch (swipeGesture->direction())
         {
             case KWin::SwipeDirection::Up:
             case KWin::SwipeDirection::Down:
@@ -117,13 +157,13 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta)
         {
             const auto gesture = *it;
 
-            if (gesture->direction != direction)
+            if (gesture->direction() != direction)
             {
                 gesture->cancelled();
                 it = m_activeSwipeGestures.erase(it);
                 continue;
             }
-            else if (i == 1 && gesture->triggerAfterReachingThreshold && gesture->thresholdReached(m_currentDelta))
+            else if (i == 1 && gesture->triggerWhenThresholdReached() && gesture->thresholdReached(m_currentDelta))
             {
                 gesture->triggered();
                 m_activeSwipeGestures.erase(it);
@@ -184,16 +224,7 @@ bool GestureRecognizer::pinchGestureBegin(uint fingerCount)
     for (const std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
     {
         const std::shared_ptr<PinchGesture> pinchGesture = std::dynamic_pointer_cast<PinchGesture>(gesture);
-        if (!pinchGesture)
-            continue;
-
-        if (gesture->minimumFingers > fingerCount || gesture->maximumFingers < fingerCount)
-            continue;
-
-        const auto activeWindow = KWin::effects->activeWindow();
-        if (activeWindow && !gesture->windowRegex.pattern().isEmpty()
-            && !(gesture->windowRegex.match(activeWindow->window()->resourceClass()).hasMatch()
-                 || gesture->windowRegex.match(activeWindow->window()->resourceName()).hasMatch()))
+        if (!pinchGesture || !gesture->meetsConditions(fingerCount))
             continue;
 
         // direction doesn't matter yet
@@ -224,13 +255,13 @@ bool GestureRecognizer::pinchGestureUpdate(qreal scale, qreal angleDelta, const 
         for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();)
         {
             const auto &gesture = *it;
-            if (gesture->direction != direction)
+            if (gesture->direction() != direction)
             {
                 gesture->cancelled();
                 it = m_activePinchGestures.erase(it);
                 continue;
             }
-            else if (gesture->triggerAfterReachingThreshold && gesture->thresholdReached(m_currentScale))
+            else if (gesture->triggerWhenThresholdReached() && gesture->thresholdReached(m_currentScale))
             {
                 gesture->triggered();
                 m_activePinchGestures.erase(it);

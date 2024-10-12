@@ -8,8 +8,8 @@ class GlobalShortcutGestureAction : public GestureAction
 public:
     GlobalShortcutGestureAction(QString component, QString shortcut);
 
-    QString component;
-    QString shortcut;
-
     void execute() override;
+private:
+    const QString m_component;
+    const QString m_shortcut;
 };
