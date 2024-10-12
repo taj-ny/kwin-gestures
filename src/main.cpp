@@ -10,3 +10,5 @@ KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(GesturesEffect,
                                       return GesturesEffect::enabledByDefault();)
 
 } // namespace KWin
+
+#include "main.moc"
