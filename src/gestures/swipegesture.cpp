@@ -1,7 +1,7 @@
 #include "swipegesture.h"
 
-SwipeGesture::SwipeGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, KWin::SwipeDirection direction, QPointF threshold)
-    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, std::move(windowRegex)),
+SwipeGesture::SwipeGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, KWin::SwipeDirection direction, QPointF threshold)
+    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers),
       m_direction(direction),
       m_threshold(threshold)
 {

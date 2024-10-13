@@ -1,7 +1,11 @@
 # KWin Gestures
-Custom touchpad gestures for Plasma 6.
+Custom touchpad gestures for KDE Plasma 6.
 
 Tested on 6.1.5 and 6.2. X11 is not supported.
+
+# Features
+- Override built-in gestures
+- Application-specific gestures
 
 # Installation
 <details>
@@ -110,72 +114,64 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
 ### Configuration file structure
 
 - **[Gestures]**
-  - **[$device]** (enum) - Which device to add this gesture for (``Touchpad``).<br>
-    - **[$name]** (string) - Unique name for the gesture.
+  - **[$Device]** (enum) - Which device to add this gesture for (``Touchpad``).<br>
+    - **[$Gesture]** (string) - Unique name for the gesture.
       - **Type** (enum) - ``Hold``, ``Pinch``, ``Swipe``
-      - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets ``MinimumFingers`` and ``MaximumFingers``.<br>Minimum value is 2 for hold and pinch gestures, 3 for swipe.<br>Maximum value is 4. 
-      - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
-      - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.
-      - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: false
-      - **WindowRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the gesture will be skipped. This allows you to create gestures only for specific applications.<br>Default: none<br>&nbsp;
+      - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets **MinimumFingers** and **MaximumFingers**.<br>Minimum value: **2** for hold and pinch gestures, **3** for swipe.<br>Default: **none** 
+      - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
+      - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
+      - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: **false**
+      - **TriggerOneActionOnly** (bool) - Whether to trigger only the first action that satisfies a condition.<br>Default: **false**
+      - **BlockBuiltInGesture** (bool) - Whether to block the built-in gesture if this one isn't triggered due to unsatisfied conditions.<br>Default: **true**<br>&nbsp;
       - **[Hold]** - Configuration for hold gestures.
-        - **Threshold** (int) - In milliseconds.<br>Default: 0
+        - **Threshold** (int) - In milliseconds.<br>Default: **0**
       - **[Pinch]** - Configuration for pinch gestures.
         - **Direction** (enum) - ``Contracting``, ``Expanding``
-        - **Threshold** (float) - Should be >= 1.0 for expanding gestures and =< 1.0 for contracting gestures.<br>Default: 1.0
+        - **Threshold** (float) - Should be >= 1.0 for expanding gestures and =< 1.0 for contracting gestures.<br>Default: **1.0**
       - **[Swipe]** - Configuration for swipe gestures.
         - **Direction** (enum) - ``Left``, ``Right``, ``Up``, ``Down``
-        - **ThresholdX** (int) - Threshold for the X axis in pixels.<br>Only used if **Direction** is ``Left`` or ``Right``.<br>Default: 0
-        - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>Default: 0<br>&nbsp;
+        - **ThresholdX** (int) - Threshold for the X axis in pixels.<br>Only used if **Direction** is ``Left`` or ``Right``.<br>Default: **0**
+        - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>Default: **0**<br>&nbsp;
+      - **[Conditions]**
+        - **[$Condition]** (string) - Unique name for this condition.
+          - **Negate** (bool) - If true, this condition will be satisfied only when none of the specified properties are.<br>Default: **false**
+          - **WindowClassRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the condition will not be satisfied.<br>Default: **none**
+          - **WindowState** (enum) - ``Fullscreen``, ``Maximized``. Values can be combined using the | separator, For example, ``Fullscreen|Maximized`` will match either fullscreen or maximized windows.<br>Default: **none**<br>&nbsp;
       - **[Actions]** - What do to when the gesture is triggered. Actions are executed in order as they appear in the configuration file.
-        - **[$name]** (string) - Unique name for the action.
+        - **[$Action]** (string) - Unique name for the action.
           - **Type** (enum)
             - ``Command`` - Run a command.
             - ``GlobalShortcut`` - Invoke a global shortcut.
             - ``KeySequence`` - Send keystrokes.<br>&nbsp;
           - **[Command]** - Configuration for the GlobalShortcut action.
-            - **Command** (string) - The command to run.
+            - **Command** (string) - The command to run.<br>Default: **none**
           - **[GlobalShortcut]** - Configuration for the GlobalShortcut action.
-            - **Component** (string) - Run ``qdbus org.kde.kglobalaccel`` for a list of available components. Components start with the ``/component/`` prefix. Don't add the prefix here.
-            - **Shortcut** (string) - See the ``~/.config/kglobalshortcutsrc`` file for a list of available shortcuts. The group name (or similar) is the component and the key (everything before *=*) is the shortcut.
+            - **Component** (string) - Run ``qdbus org.kde.kglobalaccel | grep /component`` for the list of components. Don't put the ``/component/`` prefix here.<br>Default: **none**
+            - **Shortcut** (string) - Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br>Default: **none**
           - **[KeySequence]** - Configuration for the KeySequence action.
-            - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now).<br>Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``. For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.h).
+            - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now). For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.h).<br>Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``.<br>Default: **none**<br>&nbsp;
+          - **[Conditions]** - Same as **[Gestures][\$Device][$Gesture][Conditions]**, but only applied to this action.
 
 ### Example
 ```
-[Gestures][Touchpad][Lock Screen]
+[Gestures][Touchpad][0]
 Type=Pinch
 Fingers=2
 TriggerWhenThresholdReached=true
+
+[Gestures][Touchpad][0][Conditions][0]
 WindowRegex=plasmashell
 
-[Gestures][Touchpad][Lock Screen][Pinch]
+[Gestures][Touchpad][0][Pinch]
 Direction=Contracting
 Threshold=0.9
 
-[Gestures][Touchpad][Lock Screen][Actions][0]
+[Gestures][Touchpad][0][Actions][Close Window]
 Type=GlobalShortcut
 
-[Gestures][Touchpad][Lock Screen][Actions][0][GlobalShortcut]
+[Gestures][Touchpad][0][Actions][Close Window][GlobalShortcut]
 Component=ksmserver
-Shortcut=Lock Session
-
-
-[Gestures][Touchpad][Close Window]
-Type=Pinch
-Fingers=2
-TriggerWhenThresholdReached=true
-
-[Gestures][Touchpad][Close Window][Pinch]
-Direction=Contracting
-Threshold=0.9
-
-[Gestures][Touchpad][Close Window][Actions][0]
-Type=GlobalShortcut
-
-[Gestures][Touchpad][Close Window][Actions][0][GlobalShortcut]
-Component=kwin
-Shortcut=Window Close
+Shortcut=LockSession
 
 
 [Gestures][Touchpad][Yakuake]
@@ -245,5 +241,10 @@ Component=org_kde_krunner_desktop
 Shortcut=_launch
 ```
 
+# Gesture recognition issues
+Before reporting any issues related to gesture recognition, run ``libinput debug-events`` as root and ensure the gesture is recognized properly. If it's not, there's nothing I can do.
+
+Depending on the touchpad, 3 or 4-finger pinch gestures may sometimes be incorrectly interpreted as swipe gestures due to the touchpad only being able to track 2 fingers. As a workaround, move only 2 fingers in opposite directions. See https://wayland.freedesktop.org/libinput/doc/1.25.0/gestures.html#gestures-on-two-finger-touchpads for more information.
+
 # Credits
-- [KWin](https://invent.kde.org/plasma/kwin)
+- [KWin](https://invent.kde.org/plasma/kwin) - Gesture recognition, sending keystrokes

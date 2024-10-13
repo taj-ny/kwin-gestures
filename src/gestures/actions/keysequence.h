@@ -519,7 +519,7 @@ class KeySequenceGestureAction : public GestureAction
 public:
     explicit KeySequenceGestureAction(QString sequence);
 
-    void execute() override;
+    void execute() const override;
 private:
     const QString m_sequence;
 };

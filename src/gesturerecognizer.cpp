@@ -20,7 +20,7 @@ bool GestureRecognizer::holdGestureBegin(int fingerCount, std::chrono::microseco
     for (std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
     {
         std::shared_ptr<HoldGesture> holdGesture = std::dynamic_pointer_cast<HoldGesture>(gesture);
-        if (!holdGesture || !gesture->meetsConditions(fingerCount))
+        if (!holdGesture || !gesture->satisfiesConditions(fingerCount))
             continue;
 
         m_activeHoldGestures << holdGesture;
@@ -73,7 +73,7 @@ bool GestureRecognizer::swipeGestureBegin(uint fingerCount)
     for (std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
     {
         const std::shared_ptr<SwipeGesture> swipeGesture = std::dynamic_pointer_cast<SwipeGesture>(gesture);
-        if (!swipeGesture || !gesture->meetsConditions(fingerCount))
+        if (!swipeGesture || !gesture->satisfiesConditions(fingerCount))
             continue;
 
         switch (swipeGesture->direction())
@@ -168,7 +168,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta)
                 gesture->triggered();
                 m_activeSwipeGestures.erase(it);
                 m_hasActiveTriggeredSwipeGesture = true;
-                swipeGestureEnd(false);
+                swipeGestureEnd(true, false);
                 return true;
             }
 
@@ -194,13 +194,13 @@ bool GestureRecognizer::swipeGestureCancelled()
     return hadActiveGestures;
 }
 
-bool GestureRecognizer::swipeGestureEnd(bool resetHasActiveTriggeredGesture)
+bool GestureRecognizer::swipeGestureEnd(bool dontTriggerGestures, bool resetHasActiveTriggeredGesture)
 {
     bool hadActiveGestures = !m_activeSwipeGestures.isEmpty();
     const QPointF delta = m_currentDelta;
     for (const auto &gesture : std::as_const(m_activeSwipeGestures))
     {
-        if (gesture->thresholdReached(delta))
+        if (!dontTriggerGestures && gesture->thresholdReached(delta))
             gesture->triggered();
         else
             gesture->cancelled();
@@ -224,7 +224,7 @@ bool GestureRecognizer::pinchGestureBegin(uint fingerCount)
     for (const std::shared_ptr<Gesture> &gesture : Config::instance().gestures)
     {
         const std::shared_ptr<PinchGesture> pinchGesture = std::dynamic_pointer_cast<PinchGesture>(gesture);
-        if (!pinchGesture || !gesture->meetsConditions(fingerCount))
+        if (!pinchGesture || !gesture->satisfiesConditions(fingerCount))
             continue;
 
         // direction doesn't matter yet

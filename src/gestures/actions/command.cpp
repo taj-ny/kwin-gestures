@@ -7,7 +7,7 @@ CommandGestureAction::CommandGestureAction(QString command)
 {
 }
 
-void CommandGestureAction::execute()
+void CommandGestureAction::execute() const
 {
     std::ignore = std::system((m_command + " &").toStdString().c_str());
 }

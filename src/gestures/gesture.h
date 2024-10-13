@@ -1,6 +1,7 @@
 #pragma once
 
 #include "actions/action.h"
+#include "condition.h"
 #include <QRegularExpression>
 #include <vector>
 
@@ -17,24 +18,24 @@ public:
 
     bool triggerWhenThresholdReached() const { return m_triggerWhenThresholdReached; };
 
-    virtual void cancelled();
-    virtual void started();
+    virtual void cancelled() { };
+    virtual void started() { };
     virtual void triggered();
 
-    bool meetsConditions(uint fingerCount) const;
+    bool satisfiesConditions(uint fingerCount) const;
 
-    void addTriggerAction(std::unique_ptr<GestureAction> action);
+    void addTriggerAction(const std::shared_ptr<const GestureAction> &action);
+    void addCondition(const Condition &condition);
 protected:
-    Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex);
+    Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers);
 
     const bool m_triggerWhenThresholdReached;
 private:
     const InputDeviceType m_device;
     const uint m_minimumFingers;
     const uint m_maximumFingers;
-    const QRegularExpression m_windowRegex;
 
-    std::vector<std::unique_ptr<GestureAction>> m_cancelledActions;
-    std::vector<std::unique_ptr<GestureAction>> m_startedActions;
-    std::vector<std::unique_ptr<GestureAction>> m_triggerActions;
+    std::vector<Condition> m_conditions;
+
+    std::vector<std::shared_ptr<const GestureAction>> m_triggerActions;
 };

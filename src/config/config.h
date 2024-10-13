@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gestures/gesture.h"
+#include <KConfigGroup>
 
 class Config
 {
@@ -19,4 +20,6 @@ public:
 
 private:
     Config() = default;
+
+    std::vector<Condition> readConditions(const KConfigGroup &group) const;
 };

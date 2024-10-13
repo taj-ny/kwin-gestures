@@ -2,47 +2,50 @@
 #include "gesture.h"
 #include "window.h"
 
-Gesture::Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex)
+Gesture::Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers)
     : m_device(device),
       m_triggerWhenThresholdReached(triggerWhenThresholdReached),
       m_minimumFingers(minimumFingers),
-      m_maximumFingers(maximumFingers),
-      m_windowRegex(std::move(windowRegex))
+      m_maximumFingers(maximumFingers)
 {
-}
-
-void Gesture::cancelled()
-{
-    for (const auto &action : m_cancelledActions)
-        action->execute();
-}
-
-void Gesture::started()
-{
-    for (const auto &action : m_startedActions)
-        action->execute();
 }
 
 void Gesture::triggered()
 {
     for (const auto &action : m_triggerActions)
+    {
+        if (!action->satisfiesConditions())
+            continue;
+
         action->execute();
+    }
 }
 
-bool Gesture::meetsConditions(uint fingerCount) const
+bool Gesture::satisfiesConditions(uint fingerCount) const
 {
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount)
         return false;
 
-    const auto activeWindow = KWin::effects->activeWindow();
-    if (m_windowRegex.pattern().isEmpty())
-        return true;
+    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const Condition &condition)
+    {
+        return condition.isSatisfied();
+    }) != m_conditions.end();
+    if (!m_conditions.empty() && !satisfiesConditions)
+        return false;
 
-    return !activeWindow || (m_windowRegex.match(activeWindow->window()->resourceClass()).hasMatch()
-                             || m_windowRegex.match(activeWindow->window()->resourceName()).hasMatch());
+    const bool actionSatisfiesConditions = std::find_if(m_triggerActions.begin(), m_triggerActions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction)
+    {
+        return triggerAction->satisfiesConditions();
+    }) != m_triggerActions.end();
+    return m_triggerActions.empty() || actionSatisfiesConditions;
 }
 
-void Gesture::addTriggerAction(std::unique_ptr<GestureAction> action)
+void Gesture::addTriggerAction(const std::shared_ptr<const GestureAction> &action)
 {
-    m_triggerActions.push_back(std::move(action));
+    m_triggerActions.push_back(action);
+}
+
+void Gesture::addCondition(const Condition &condition)
+{
+    m_conditions.push_back(condition);
 }

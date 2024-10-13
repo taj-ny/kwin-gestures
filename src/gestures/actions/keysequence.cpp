@@ -1,12 +1,13 @@
 #include "keysequence.h"
 #include "virtualkeyboard.h"
+#include "xkb.h"
 
 KeySequenceGestureAction::KeySequenceGestureAction(QString sequence)
     : m_sequence(std::move(sequence))
 {
 }
 
-void KeySequenceGestureAction::execute()
+void KeySequenceGestureAction::execute() const
 {
     VirtualKeyboard virtualKeyboard;
     for (const auto &command : m_sequence.split(","))
