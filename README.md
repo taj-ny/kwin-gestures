@@ -129,8 +129,7 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
         - **Threshold** (float) - Should be >= 1.0 for expanding gestures and =< 1.0 for contracting gestures.<br>Default: **1.0**
       - **[Swipe]** - Configuration for swipe gestures.
         - **Direction** (enum) - ``Left``, ``Right``, ``Up``, ``Down``
-        - **ThresholdX** (int) - Threshold for the X axis in pixels.<br>Only used if **Direction** is ``Left`` or ``Right``.<br>Default: **0**
-        - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>Default: **0**<br>&nbsp;
+        - **Threshold** (int) - Threshold in pixels for the X axis if **Direction** is ``Left`` or ``Right``, and Y axis if **Direction** is ``Up`` or ``Down``.<br>Default: **0**<br>&nbsp;
       - **[Conditions]** - At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.
         - **[$ConditionId]** (int) - Unique ID for this condition.
           - **Negate** (bool) - If true, this condition will be satisfied only when none of its specified properties are.<br>Default: **false**
@@ -160,7 +159,7 @@ TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][0][Swipe]
 Direction=Left
-ThresholdX=10
+Threshold=10
 
 [Gestures][Touchpad][0][Actions][0] # Firefox back
 Type=KeySequence
@@ -179,7 +178,7 @@ TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][1][Swipe]
 Direction=Right
-ThresholdX=10
+Threshold=10
 
 [Gestures][Touchpad][1][Actions][0] # Firefox forward
 Type=KeySequence
@@ -198,7 +197,7 @@ TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][2][Swipe]
 Direction=Down
-ThresholdY=10
+Threshold=10
 
 [Gestures][Touchpad][2][Actions][0] # Firefox refresh
 Type=KeySequence
@@ -217,7 +216,7 @@ TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][3][Swipe]
 Direction=Down
-ThresholdY=10
+Threshold=10
 
 [Gestures][Touchpad][3][Actions][0] # Minimize window if not fullscreen and not maximized
 Type=GlobalShortcut
@@ -248,7 +247,7 @@ TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][4][Swipe]
 Direction=Up
-ThresholdY=10
+Threshold=10
 
 [Gestures][Touchpad][4][Actions][0] # Maximize window if not maximized
 Type=GlobalShortcut

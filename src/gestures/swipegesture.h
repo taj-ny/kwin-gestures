@@ -6,12 +6,12 @@
 class SwipeGesture : public Gesture
 {
 public:
-    SwipeGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, KWin::SwipeDirection direction, QPointF threshold);
+    SwipeGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, KWin::SwipeDirection direction, qreal threshold);
 
     KWin::SwipeDirection direction() const { return m_direction; }
 
     bool thresholdReached(const QPointF &delta) const;
 private:
     const KWin::SwipeDirection m_direction;
-    const QPointF m_threshold;
+    const qreal m_threshold;
 };

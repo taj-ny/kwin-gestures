@@ -72,9 +72,7 @@ void Config::read()
                 else if (directionString == "Down")
                     direction = KWin::SwipeDirection::Down;
 
-                const qreal thresholdX = swipeGesture.readEntry("ThresholdX", 0.0);
-                const qreal thresholdY = swipeGesture.readEntry("ThresholdY", 0.0);
-                const QPointF threshold(thresholdX, thresholdY);
+                const qreal threshold = swipeGesture.readEntry("Threshold", 0.0);
 
                 gesture = std::make_shared<SwipeGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, direction, threshold);
             }
