@@ -1,7 +1,7 @@
 #include "pinchgesture.h"
 
-PinchGesture::PinchGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, KWin::PinchDirection direction, qreal threshold)
-    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers),
+PinchGesture::PinchGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, KWin::PinchDirection direction, qreal threshold)
+    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly),
       m_direction(direction), m_threshold(threshold)
 {
 }

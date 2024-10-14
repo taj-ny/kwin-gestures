@@ -19,9 +19,9 @@ void Config::read()
         const auto deviceGroup = gesturesGroup.group(deviceGroupName);
         InputDeviceType device = InputDeviceType::Touchpad;
 
-        for (const auto &gestureGroupName : deviceGroup.groupList())
+        for (const auto &gestureId : stringIntListToSortedIntVector(deviceGroup.groupList()))
         {
-            const auto gestureGroup = deviceGroup.group(gestureGroupName);
+            const auto gestureGroup = deviceGroup.group(QString::number(gestureId));
 
             const auto gestureType = gestureGroup.readEntry("Type", "");
             const int fingers = gestureGroup.readEntry("Fingers", -1);
@@ -37,6 +37,7 @@ void Config::read()
                 minimumFingers = maximumFingers = fingers;
             }
             const bool triggerWhenThresholdReached = gestureGroup.readEntry("TriggerWhenThresholdReached", false);
+            const bool triggerOneActionOnly = gestureGroup.readEntry("TriggerOneActionOnly", false);
 
             std::shared_ptr<Gesture> gesture;
             if (gestureType == "Hold")
@@ -45,7 +46,7 @@ void Config::read()
 
                 const auto threshold = holdGestureGroup.readEntry("Threshold", 0);
 
-                gesture = std::make_shared<HoldGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, threshold);
+                gesture = std::make_shared<HoldGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold);
             }
             else if (gestureType == "Pinch")
             {
@@ -56,7 +57,7 @@ void Config::read()
                    : KWin::PinchDirection::Expanding;
                 const qreal threshold = pinchGestureGroup.readEntry("Threshold", 1.0);
 
-                gesture = std::make_shared<PinchGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, direction, threshold);
+                gesture = std::make_shared<PinchGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, direction, threshold);
             }
             else if (gestureType == "Swipe")
             {
@@ -75,16 +76,16 @@ void Config::read()
                 const qreal thresholdY = swipeGesture.readEntry("ThresholdY", 0.0);
                 const QPointF threshold(thresholdX, thresholdY);
 
-                gesture = std::make_shared<SwipeGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, direction, threshold);
+                gesture = std::make_shared<SwipeGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, direction, threshold);
             }
 
             if (!gesture)
                 continue;
 
             const auto actionsGroup = gestureGroup.group("Actions");
-            for (const auto &actionGroupName : actionsGroup.groupList())
+            for (const auto &actionId : stringIntListToSortedIntVector(actionsGroup.groupList()))
             {
-                const auto actionGroup = actionsGroup.group(actionGroupName);
+                const auto actionGroup = actionsGroup.group(QString::number(actionId));
                 const auto actionType = actionGroup.readEntry("Type");
 
                 std::shared_ptr<GestureAction> action;
@@ -127,7 +128,7 @@ void Config::read()
     }
 }
 
-std::vector<Condition> Config::readConditions(const KConfigGroup &group) const
+std::vector<Condition> Config::readConditions(const KConfigGroup &group)
 {
     std::vector<Condition> conditions;
     for (const auto &conditionGroupName : group.groupList())
@@ -137,7 +138,7 @@ std::vector<Condition> Config::readConditions(const KConfigGroup &group) const
         const bool negate = conditionGroup.readEntry("Negate", false);
 
         std::optional<QRegularExpression> windowClassRegex;
-        const auto windowClassRegexStr = conditionGroup.readEntry("WindowRegex", "");
+        const auto windowClassRegexStr = conditionGroup.readEntry("WindowClassRegex", "");
         if (windowClassRegexStr != "")
             windowClassRegex = QRegularExpression(windowClassRegexStr);
 
@@ -158,4 +159,13 @@ std::vector<Condition> Config::readConditions(const KConfigGroup &group) const
     }
 
     return conditions;
+}
+
+std::vector<int> Config::stringIntListToSortedIntVector(const QList<QString> &list)
+{
+    std::vector<int> ints;
+    for (const auto &x : list)
+        ints.push_back(x.toInt());
+    std::sort(ints.begin(), ints.end());
+    return ints;
 }

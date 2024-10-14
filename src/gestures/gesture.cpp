@@ -2,11 +2,12 @@
 #include "gesture.h"
 #include "window.h"
 
-Gesture::Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers)
+Gesture::Gesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly)
     : m_device(device),
       m_triggerWhenThresholdReached(triggerWhenThresholdReached),
       m_minimumFingers(minimumFingers),
-      m_maximumFingers(maximumFingers)
+      m_maximumFingers(maximumFingers),
+      m_triggerOneActionOnly(triggerOneActionOnly)
 {
 }
 
@@ -18,6 +19,8 @@ void Gesture::triggered()
             continue;
 
         action->execute();
+        if (m_triggerOneActionOnly)
+            break;
     }
 }
 

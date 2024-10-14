@@ -21,5 +21,6 @@ public:
 private:
     Config() = default;
 
-    std::vector<Condition> readConditions(const KConfigGroup &group) const;
+    static std::vector<Condition> readConditions(const KConfigGroup &group);
+    static std::vector<int> stringIntListToSortedIntVector(const QList<QString> &list);
 };

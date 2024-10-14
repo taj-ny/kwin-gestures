@@ -115,14 +115,13 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
 
 - **[Gestures]**
   - **[$Device]** (enum) - Which device to add this gesture for (``Touchpad``).<br>
-    - **[$Gesture]** (string) - Unique name for the gesture.
+    - **[$GestureId]** (int) - Unique ID for the gesture.
       - **Type** (enum) - ``Hold``, ``Pinch``, ``Swipe``
       - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets **MinimumFingers** and **MaximumFingers**.<br>Minimum value: **2** for hold and pinch gestures, **3** for swipe.<br>Default: **none** 
       - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
       - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
       - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: **false**
-      - **TriggerOneActionOnly** (bool) - Whether to trigger only the first action that satisfies a condition.<br>Default: **false**
-      - **BlockBuiltInGesture** (bool) - Whether to block the built-in gesture if this one isn't triggered due to unsatisfied conditions.<br>Default: **true**<br>&nbsp;
+      - **TriggerOneActionOnly** (bool) - Whether to trigger only the first action that satisfies a condition.<br>Default: **false**<br>&nbsp;
       - **[Hold]** - Configuration for hold gestures.
         - **Threshold** (int) - In milliseconds.<br>Default: **0**
       - **[Pinch]** - Configuration for pinch gestures.
@@ -132,13 +131,13 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
         - **Direction** (enum) - ``Left``, ``Right``, ``Up``, ``Down``
         - **ThresholdX** (int) - Threshold for the X axis in pixels.<br>Only used if **Direction** is ``Left`` or ``Right``.<br>Default: **0**
         - **ThresholdY** (int) - Threshold for the Y axis in pixels.<br>Only used if **Direction** is ``Up`` or ``Down``.<br>Default: **0**<br>&nbsp;
-      - **[Conditions]**
-        - **[$Condition]** (string) - Unique name for this condition.
-          - **Negate** (bool) - If true, this condition will be satisfied only when none of the specified properties are.<br>Default: **false**
+      - **[Conditions]** - At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.
+        - **[$ConditionId]** (int) - Unique ID for this condition.
+          - **Negate** (bool) - If true, this condition will be satisfied only when none of its specified properties are.<br>Default: **false**
           - **WindowClassRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the condition will not be satisfied.<br>Default: **none**
           - **WindowState** (enum) - ``Fullscreen``, ``Maximized``. Values can be combined using the | separator, For example, ``Fullscreen|Maximized`` will match either fullscreen or maximized windows.<br>Default: **none**<br>&nbsp;
       - **[Actions]** - What do to when the gesture is triggered. Actions are executed in order as they appear in the configuration file.
-        - **[$Action]** (string) - Unique name for the action.
+        - **[$ActionId]** (int) - Unique ID for this action.
           - **Type** (enum)
             - ``Command`` - Run a command.
             - ``GlobalShortcut`` - Invoke a global shortcut.
@@ -150,93 +149,156 @@ Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_ge
             - **Shortcut** (string) - Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br>Default: **none**
           - **[KeySequence]** - Configuration for the KeySequence action.
             - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now). For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.h).<br>Example: ``press LEFTCTRL,press T,release LEFTCTRL,release T``.<br>Default: **none**<br>&nbsp;
-          - **[Conditions]** - Same as **[Gestures][\$Device][$Gesture][Conditions]**, but only applied to this action.
+          - **[Conditions]** - Same as **[Gestures][\$Device][$GestureId][Conditions]**, but only applied to this action.
 
 ### Example
 ```
-[Gestures][Touchpad][0]
-Type=Pinch
-Fingers=2
+[Gestures][Touchpad][0] # Swipe 3 left
+Type=Swipe
+Fingers=3
 TriggerWhenThresholdReached=true
 
-[Gestures][Touchpad][0][Conditions][0]
-WindowRegex=plasmashell
+[Gestures][Touchpad][0][Swipe]
+Direction=Left
+ThresholdX=10
 
-[Gestures][Touchpad][0][Pinch]
-Direction=Contracting
-Threshold=0.9
+[Gestures][Touchpad][0][Actions][0] # Firefox back
+Type=KeySequence
 
-[Gestures][Touchpad][0][Actions][Close Window]
-Type=GlobalShortcut
+[Gestures][Touchpad][0][Actions][0][Conditions][0]
+WindowClassRegex=firefox
 
-[Gestures][Touchpad][0][Actions][Close Window][GlobalShortcut]
-Component=ksmserver
-Shortcut=LockSession
+[Gestures][Touchpad][0][Actions][0][KeySequence]
+Sequence=press LEFTCTRL,press LEFTBRACE,release LEFTCTRL,release LEFTBRACE
 
 
-[Gestures][Touchpad][Yakuake]
+[Gestures][Touchpad][1] # Swipe 3 right
+Type=Swipe
+Fingers=3
+TriggerWhenThresholdReached=true
+
+[Gestures][Touchpad][1][Swipe]
+Direction=Right
+ThresholdX=10
+
+[Gestures][Touchpad][1][Actions][0] # Firefox forward
+Type=KeySequence
+
+[Gestures][Touchpad][1][Actions][0][Conditions][0]
+WindowClassRegex=firefox
+
+[Gestures][Touchpad][1][Actions][0][KeySequence]
+Sequence=press LEFTCTRL,press RIGHTBRACE,release LEFTCTRL,release RIGHTBRACE
+
+
+[Gestures][Touchpad][2] # Swipe 3 down
+Type=Swipe
+Fingers=3
+TriggerWhenThresholdReached=true
+
+[Gestures][Touchpad][2][Swipe]
+Direction=Down
+ThresholdY=10
+
+[Gestures][Touchpad][2][Actions][0] # Firefox refresh
+Type=KeySequence
+
+[Gestures][Touchpad][2][Actions][0][Conditions][0]
+WindowClassRegex=firefox
+
+[Gestures][Touchpad][2][Actions][0][KeySequence]
+Sequence=press LEFTCTRL,press F5,release LEFTCTRL,release F5
+
+
+[Gestures][Touchpad][3] # Swipe 4 down
 Type=Swipe
 Fingers=4
 TriggerWhenThresholdReached=true
 
-[Gestures][Touchpad][Yakuake][Swipe]
+[Gestures][Touchpad][3][Swipe]
 Direction=Down
 ThresholdY=10
 
-[Gestures][Touchpad][Yakuake][Actions][0]
+[Gestures][Touchpad][3][Actions][0] # Minimize window if not fullscreen and not maximized
 Type=GlobalShortcut
 
-[Gestures][Touchpad][Yakuake][Actions][0][GlobalShortcut]
-Component=yakuake
-Shortcut=toggle-window-state
+[Gestures][Touchpad][3][Actions][0][Conditions][0]
+Negate=true
+WindowState=Fullscreen|Maximized
+
+[Gestures][Touchpad][3][Actions][0][GlobalShortcut]
+Component=kwin
+Shortcut=Window Minimize
+
+[Gestures][Touchpad][3][Actions][1] # Unmaximize window if maximized
+Type=GlobalShortcut
+
+[Gestures][Touchpad][3][Actions][1][Conditions][0]
+WindowState=Maximized
+
+[Gestures][Touchpad][3][Actions][1][GlobalShortcut]
+Component=kwin
+Shortcut=Window Maximize
 
 
-[Gestures][Touchpad][Firefox Back]
+[Gestures][Touchpad][4] # Swipe 4 up
 Type=Swipe
-Fingers=3
+Fingers=4
 TriggerWhenThresholdReached=true
-WindowRegex=firefox
 
-[Gestures][Touchpad][Firefox Back][Swipe]
-Direction=Left
-ThresholdX=10
+[Gestures][Touchpad][4][Swipe]
+Direction=Up
+ThresholdY=10
 
-[Gestures][Touchpad][Firefox Back][Actions][0]
-Type=KeySequence
+[Gestures][Touchpad][4][Actions][0] # Maximize window if not maximized
+Type=GlobalShortcut
 
-[Gestures][Touchpad][Firefox Back][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,press LEFTBRACE,release LEFTCTRL,release LEFTBRACE
+[Gestures][Touchpad][4][Actions][0][Conditions][0]
+Negate=true
+WindowState=Maximized
 
-
-[Gestures][Touchpad][Firefox Forward]
-Type=Swipe
-Fingers=3
-TriggerWhenThresholdReached=true
-WindowRegex=firefox
-
-[Gestures][Touchpad][Firefox Forward][Swipe]
-Direction=Right
-ThresholdX=10
-
-[Gestures][Touchpad][Firefox Forward][Actions][0]
-Type=KeySequence
-
-[Gestures][Touchpad][Firefox Forward][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,press RIGHTBRACE,release LEFTCTRL,release RIGHTBRACE
+[Gestures][Touchpad][4][Actions][0][GlobalShortcut]
+Component=kwin
+Shortcut=Window Maximize
 
 
-[Gestures][Touchpad][Krunner]
-Type=Hold
+[Gestures][Touchpad][5] # Pinch 2 in
+Type=Pinch
 Fingers=2
 TriggerWhenThresholdReached=true
+TriggerOneActionOnly=true
 
-[Gestures][Touchpad][Krunner][Hold]
-Threshold=100
+[Gestures][Touchpad][5][Pinch]
+Direction=Contracting
+Threshold=0.9
 
-[Gestures][Touchpad][Krunner][Actions][0]
+[Gestures][Touchpad][5][Actions][0] # Lock session if no active window
 Type=GlobalShortcut
 
-[Gestures][Touchpad][Krunner][Actions][0][GlobalShortcut]
+[Gestures][Touchpad][5][Actions][0][Conditions][0]
+WindowClassRegex=plasmashell
+
+[Gestures][Touchpad][5][Actions][0][GlobalShortcut]
+Component=ksmserver
+Shortcut=Lock Session
+
+[Gestures][Touchpad][5][Actions][1] # Close window, because of TriggerOneActionOnly=true, this will only trigger when the previous condition isn't satisfied
+Type=GlobalShortcut
+
+[Gestures][Touchpad][5][Actions][1][GlobalShortcut]
+Component=kwin
+Shortcut=Window Close
+
+
+[Gestures][Touchpad][6] # Hold 3
+Type=Hold
+Fingers=3
+TriggerWhenThresholdReached=true
+
+[Gestures][Touchpad][6][Actions][0] # Launch krunner
+Type=GlobalShortcut
+
+[Gestures][Touchpad][6][Actions][0][GlobalShortcut]
 Component=org_kde_krunner_desktop
 Shortcut=_launch
 ```
