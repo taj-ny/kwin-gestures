@@ -7,7 +7,7 @@ class HoldGesture : public Gesture
 {
     Q_OBJECT
 public:
-    HoldGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, uint threshold);
+    HoldGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, uint threshold, bool triggerOneActionOnly);
 
     void cancelled() override;
     void started() override;

@@ -24,7 +24,7 @@ public:
 
     bool swipeGestureBegin(uint fingerCount);
     bool swipeGestureUpdate(const QPointF &delta);
-    bool swipeGestureEnd(bool resetHasActiveTriggeredGesture = true);
+    bool swipeGestureEnd(bool dontTriggerGestures = false, bool resetHasActiveTriggeredGesture = true);
     bool swipeGestureCancelled();
 
     bool pinchGestureBegin(uint fingerCount);

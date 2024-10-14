@@ -1,7 +1,7 @@
 #include "holdgesture.h"
 
-HoldGesture::HoldGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, QRegularExpression windowRegex, uint threshold)
-    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, std::move(windowRegex)),
+HoldGesture::HoldGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, uint threshold, bool triggerOneActionOnly)
+    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly),
       m_threshold(threshold)
 {
     connect(&m_timer, &QTimer::timeout, this, [this]() {

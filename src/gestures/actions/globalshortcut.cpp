@@ -6,7 +6,7 @@ GlobalShortcutGestureAction::GlobalShortcutGestureAction(QString component, QStr
 {
 }
 
-void GlobalShortcutGestureAction::execute()
+void GlobalShortcutGestureAction::execute() const
 {
     QDBusInterface interface("org.kde.kglobalaccel", "/component/" + m_component, "org.kde.kglobalaccel.Component");
     interface.call("invokeShortcut", m_shortcut);

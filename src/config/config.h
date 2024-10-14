@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gestures/gesture.h"
+#include <KConfigGroup>
 
 class Config
 {
@@ -19,4 +20,7 @@ public:
 
 private:
     Config() = default;
+
+    static std::vector<Condition> readConditions(const KConfigGroup &group);
+    static std::vector<int> stringIntListToSortedIntVector(const QList<QString> &list);
 };
