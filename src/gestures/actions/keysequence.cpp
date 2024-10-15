@@ -2,14 +2,16 @@
 #include "virtualkeyboard.h"
 #include "xkb.h"
 
-KeySequenceGestureAction::KeySequenceGestureAction(QString sequence)
-    : m_sequence(std::move(sequence))
+KeySequenceGestureAction::KeySequenceGestureAction(qreal repeatInterval, QString sequence)
+    : GestureAction(repeatInterval),
+      m_sequence(std::move(sequence))
 {
 }
 
-void KeySequenceGestureAction::execute() const
+void KeySequenceGestureAction::execute()
 {
-    VirtualKeyboard virtualKeyboard;
+    GestureAction::execute();
+    VirtualInputDevice virtualKeyboard;
     for (const auto &command : m_sequence.split(","))
     {
         const auto action = command.split(" ")[0];
@@ -19,8 +21,8 @@ void KeySequenceGestureAction::execute() const
             continue;
 
         if (action == "press")
-            virtualKeyboard.press(KEY_MAP.at(key));
+            virtualKeyboard.keyboardPressKey(KEY_MAP.at(key));
         else if (action == "release")
-            virtualKeyboard.release(KEY_MAP.at(key));
+            virtualKeyboard.keyboardReleaseKey(KEY_MAP.at(key));
     }
 }
