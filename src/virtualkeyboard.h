@@ -1,13 +1,19 @@
 #include "core/inputdevice.h"
 
-class VirtualKeyboard : public KWin::InputDevice
+/*
+ * A virtual input device used for sending keystrokes.
+ */
+class VirtualInputDevice : public KWin::InputDevice
 {
 public:
-    VirtualKeyboard();
-    ~VirtualKeyboard();
+    /// Adds the virtual input device.
+    VirtualInputDevice();
 
-    void press(quint32 key);
-    void release(quint32 key);
+    /// Removes the virtual input device.
+    ~VirtualInputDevice() override;
+
+    void keyboardPressKey(const quint32 &key);
+    void keyboardReleaseKey(const quint32 &key);
 
     QString sysName() const override;
     QString name() const override;
@@ -23,8 +29,6 @@ public:
     bool isTabletPad() const override;
     bool isTabletModeSwitch() const override;
     bool isLidSwitch() const override;
-
 private:
-    void sendKey(quint32 key, KWin::InputRedirection::KeyboardKeyState state);
-
+    void sendKey(const quint32 &key, const KWin::InputRedirection::KeyboardKeyState &state);
 };

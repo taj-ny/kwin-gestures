@@ -6,9 +6,9 @@
 class CommandGestureAction : public GestureAction
 {
 public:
-    explicit CommandGestureAction(QString command);
+    CommandGestureAction(qreal repeatInterval, QString command);
 
-    void execute() const override;
+    void execute() override;
 private:
     const QString m_command;
 };

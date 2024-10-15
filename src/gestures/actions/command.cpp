@@ -2,12 +2,14 @@
 
 #include <utility>
 
-CommandGestureAction::CommandGestureAction(QString command)
-    : m_command(std::move(command))
+CommandGestureAction::CommandGestureAction(qreal repeatInterval, QString command)
+    : GestureAction(repeatInterval),
+      m_command(std::move(command))
 {
 }
 
-void CommandGestureAction::execute() const
+void CommandGestureAction::execute()
 {
+    GestureAction::execute();
     std::ignore = std::system((m_command + " &").toStdString().c_str());
 }

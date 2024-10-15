@@ -517,9 +517,9 @@ static const std::map<QString, quint32> KEY_MAP =
 class KeySequenceGestureAction : public GestureAction
 {
 public:
-    explicit KeySequenceGestureAction(QString sequence);
+    KeySequenceGestureAction(qreal repeatInterval, QString sequence);
 
-    void execute() const override;
+    void execute() override;
 private:
     const QString m_sequence;
 };

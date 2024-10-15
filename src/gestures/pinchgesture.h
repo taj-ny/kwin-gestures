@@ -4,15 +4,21 @@
 #include "gesture.h"
 #include <QRegularExpression>
 
+enum PinchDirection
+{
+    Any,
+    Contracting,
+    Expanding
+};
+
 class PinchGesture : public Gesture
 {
 public:
-    PinchGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, KWin::PinchDirection direction, qreal threshold);
+    PinchGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold, PinchDirection direction);
 
-    KWin::PinchDirection direction() const { return m_direction; }
+    PinchDirection direction() const { return m_direction; }
 
-    bool thresholdReached(const qreal &scale) const;
+    bool thresholdReached(const qreal &scale) const override;
 private:
-    const KWin::PinchDirection m_direction;
-    const qreal m_threshold;
+    const PinchDirection m_direction;
 };

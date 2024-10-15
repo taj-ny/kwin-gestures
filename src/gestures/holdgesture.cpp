@@ -1,37 +1,6 @@
 #include "holdgesture.h"
 
-HoldGesture::HoldGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, uint threshold, bool triggerOneActionOnly)
-    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly),
-      m_threshold(threshold)
+HoldGesture::HoldGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold)
+    : Gesture(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold)
 {
-    connect(&m_timer, &QTimer::timeout, this, [this]() {
-        triggered();
-        Q_EMIT triggeredByTimer();
-    });
-    m_timer.setSingleShot(true);
-}
-
-void HoldGesture::cancelled()
-{
-    m_timer.stop();
-    Gesture::cancelled();
-}
-
-void HoldGesture::started()
-{
-    if (m_triggerWhenThresholdReached)
-        m_timer.start(m_threshold);
-
-    Gesture::started();
-}
-
-void HoldGesture::triggered()
-{
-    m_timer.stop();
-    Gesture::triggered();
-}
-
-bool HoldGesture::thresholdReached(const std::chrono::milliseconds &time) const
-{
-    return time >= std::chrono::milliseconds(m_threshold);
 }

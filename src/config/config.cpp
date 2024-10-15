@@ -1,5 +1,4 @@
 #include "config.h"
-#include "effect/globals.h"
 #include "gestures/actions/command.h"
 #include "gestures/actions/globalshortcut.h"
 #include "gestures/actions/keysequence.h"
@@ -8,16 +7,15 @@
 #include "gestures/swipegesture.h"
 #include <KConfig>
 
-void Config::read()
+void Config::read(GestureInputEventFilter *filter)
 {
-    gestures.clear();
+    filter->unregisterGestures();
 
     const KConfig config("kwingesturesrc", KConfig::SimpleConfig);
     const auto gesturesGroup = config.group("Gestures");
     for (const auto &deviceGroupName : gesturesGroup.groupList())
     {
         const auto deviceGroup = gesturesGroup.group(deviceGroupName);
-        InputDeviceType device = InputDeviceType::Touchpad;
 
         for (const auto &gestureId : stringIntListToSortedIntVector(deviceGroup.groupList()))
         {
@@ -46,35 +44,48 @@ void Config::read()
 
                 const auto threshold = holdGestureGroup.readEntry("Threshold", 0);
 
-                gesture = std::make_shared<HoldGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold);
+                const auto holdGesture = std::make_shared<HoldGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold);
+                filter->registerTouchpadGesture(holdGesture);
+                gesture = holdGesture;
             }
             else if (gestureType == "Pinch")
             {
                 const auto pinchGestureGroup = gestureGroup.group("Pinch");
 
-                const auto direction = pinchGestureGroup.readEntry("Direction", "Contracting") == "Contracting"
-                   ? KWin::PinchDirection::Contracting
-                   : KWin::PinchDirection::Expanding;
+                const auto directionStr = pinchGestureGroup.readEntry("Direction", "");
+                PinchDirection direction = PinchDirection::Any;
+                if (directionStr == "Contracting")
+                    direction = PinchDirection::Contracting;
+                else if (directionStr == "Expanding")
+                    direction = PinchDirection::Expanding;
                 const qreal threshold = pinchGestureGroup.readEntry("Threshold", 1.0);
 
-                gesture = std::make_shared<PinchGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, direction, threshold);
+                const auto pinchGesture = std::make_shared<PinchGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold, direction);
+                filter->registerTouchpadGesture(pinchGesture);
+                gesture = pinchGesture;
             }
             else if (gestureType == "Swipe")
             {
-                const auto swipeGesture = gestureGroup.group("Swipe");
+                const auto swipeGestureGroup = gestureGroup.group("Swipe");
 
-                const auto directionString = swipeGesture.readEntry("Direction", "Left");
-                auto direction = KWin::SwipeDirection::Left;
+                const auto directionString = swipeGestureGroup.readEntry("Direction", "Left");
+                auto direction = SwipeDirection::Left;
                 if (directionString == "Right")
-                    direction = KWin::SwipeDirection::Right;
+                    direction = SwipeDirection::Right;
                 else if (directionString == "Up")
-                    direction = KWin::SwipeDirection::Up;
+                    direction = SwipeDirection::Up;
                 else if (directionString == "Down")
-                    direction = KWin::SwipeDirection::Down;
+                    direction = SwipeDirection::Down;
+                else if (directionString == "LeftRight")
+                    direction = SwipeDirection::LeftRight;
+                else if (directionString == "UpDown")
+                    direction = SwipeDirection::UpDown;
 
-                const qreal threshold = swipeGesture.readEntry("Threshold", 0.0);
+                const qreal threshold = swipeGestureGroup.readEntry("Threshold", 0.0);
 
-                gesture = std::make_shared<SwipeGesture>(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, direction, threshold);
+                const auto swipeGesture = std::make_shared<SwipeGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold, direction);
+                filter->registerTouchpadGesture(swipeGesture);
+                gesture = swipeGesture;
             }
 
             if (!gesture)
@@ -84,27 +95,29 @@ void Config::read()
             for (const auto &actionId : stringIntListToSortedIntVector(actionsGroup.groupList()))
             {
                 const auto actionGroup = actionsGroup.group(QString::number(actionId));
-                const auto actionType = actionGroup.readEntry("Type");
+                const auto actionType = actionGroup.readEntry("Type", "");
+                const auto repeat = actionGroup.readEntry("Repeat", false);
+                const auto repeatInterval = actionGroup.readEntry("RepeatInterval", 0.0);
 
                 std::shared_ptr<GestureAction> action;
                 if (actionType == "Command")
                 {
                     const auto commandActionGroup = actionGroup.group("Command");
                     const auto command = commandActionGroup.readEntry("Command", "");
-                    action = std::make_shared<CommandGestureAction>(command);
+                    action = std::make_shared<CommandGestureAction>(repeatInterval, command);
                 }
                 else if (actionType == "GlobalShortcut")
                 {
                     const auto globalShortcutActionGroup = actionGroup.group("GlobalShortcut");
                     const auto component = globalShortcutActionGroup.readEntry("Component", "");
                     const auto shortcut = globalShortcutActionGroup.readEntry("Shortcut", "");
-                    action = std::make_shared<GlobalShortcutGestureAction>(component, shortcut);
+                    action = std::make_shared<GlobalShortcutGestureAction>(repeatInterval, component, shortcut);
                 }
                 else if (actionType == "KeySequence")
                 {
                     const auto keySequenceActionGroup = actionGroup.group("KeySequence");
                     const auto script = keySequenceActionGroup.readEntry("Sequence", "");
-                    action = std::make_shared<KeySequenceGestureAction>(script);
+                    action = std::make_shared<KeySequenceGestureAction>(repeatInterval, script);
                 }
 
                 if (!action)
@@ -114,14 +127,12 @@ void Config::read()
                 for (const auto &condition : conditions)
                     action->addCondition(condition);
 
-                gesture->addTriggerAction(action);
+                gesture->addAction(action);
             }
 
             const auto &conditions = readConditions(gestureGroup.group("Conditions"));
             for (const auto &condition : conditions)
                 gesture->addCondition(condition);
-
-            gestures.push_back(gesture);
         }
     }
 }

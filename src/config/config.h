@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gestures/gesture.h"
+#include "inputfilter.h"
 #include <KConfigGroup>
 
 class Config
@@ -14,9 +15,7 @@ public:
 
     ~Config() = default;
 
-    std::vector<std::shared_ptr<Gesture>> gestures;
-
-    void read();
+    void read(GestureInputEventFilter *filter);
 
 private:
     Config() = default;

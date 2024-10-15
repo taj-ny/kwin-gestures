@@ -13,27 +13,27 @@
 #include "wayland/keyboard.h"
 #include "xkb.h"
 
-VirtualKeyboard::VirtualKeyboard()
+VirtualInputDevice::VirtualInputDevice()
 {
     KWin::input()->addInputDevice(this);
 }
 
-VirtualKeyboard::~VirtualKeyboard()
+VirtualInputDevice::~VirtualInputDevice()
 {
     KWin::input()->removeInputDevice(this);
 }
 
-void VirtualKeyboard::press(quint32 key)
+void VirtualInputDevice::keyboardPressKey(const quint32 &key)
 {
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyPressed);
 }
 
-void VirtualKeyboard::release(quint32 key)
+void VirtualInputDevice::keyboardReleaseKey(const quint32 &key)
 {
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyReleased);
 }
 
-void VirtualKeyboard::sendKey(quint32 key, KWin::InputRedirection::KeyboardKeyState state)
+void VirtualInputDevice::sendKey(const quint32 &key, const KWin::InputRedirection::KeyboardKeyState &state)
 {
     // https://invent.kde.org/plasma/kwin/-/blob/Plasma/6.2/src/keyboard_input.cpp
     const auto xkb = KWin::input()->keyboard()->xkb();
@@ -60,72 +60,72 @@ void VirtualKeyboard::sendKey(quint32 key, KWin::InputRedirection::KeyboardKeySt
     xkb->forwardModifiers();
 }
 
-QString VirtualKeyboard::sysName() const
+QString VirtualInputDevice::sysName() const
 {
     return "KWin Gestures Virtual Keyboard";
 }
 
-QString VirtualKeyboard::name() const
+QString VirtualInputDevice::name() const
 {
     return sysName();
 }
 
-bool VirtualKeyboard::isEnabled() const
+bool VirtualInputDevice::isEnabled() const
 {
     return true;
 }
 
-void VirtualKeyboard::setEnabled(bool enabled)
+void VirtualInputDevice::setEnabled(bool enabled)
 {
     Q_UNUSED(enabled)
 }
 
-KWin::LEDs VirtualKeyboard::leds() const
+KWin::LEDs VirtualInputDevice::leds() const
 {
     return KWin::LEDs::fromInt(0);
 }
 
-void VirtualKeyboard::setLeds(KWin::LEDs leds)
+void VirtualInputDevice::setLeds(KWin::LEDs leds)
 {
     Q_UNUSED(leds)
 }
 
-bool VirtualKeyboard::isKeyboard() const
+bool VirtualInputDevice::isKeyboard() const
 {
     return true;
 }
 
-bool VirtualKeyboard::isPointer() const
+bool VirtualInputDevice::isPointer() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isTouchpad() const
+bool VirtualInputDevice::isTouchpad() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isTouch() const
+bool VirtualInputDevice::isTouch() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isTabletTool() const
+bool VirtualInputDevice::isTabletTool() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isTabletPad() const
+bool VirtualInputDevice::isTabletPad() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isTabletModeSwitch() const
+bool VirtualInputDevice::isTabletModeSwitch() const
 {
     return false;
 }
 
-bool VirtualKeyboard::isLidSwitch() const
+bool VirtualInputDevice::isLidSwitch() const
 {
     return false;
 }

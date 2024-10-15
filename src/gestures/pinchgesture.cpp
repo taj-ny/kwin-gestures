@@ -1,14 +1,20 @@
 #include "pinchgesture.h"
 
-PinchGesture::PinchGesture(InputDeviceType device, bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, KWin::PinchDirection direction, qreal threshold)
-    : Gesture(device, triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly),
-      m_direction(direction), m_threshold(threshold)
+PinchGesture::PinchGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold, PinchDirection direction)
+    : Gesture(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold),
+      m_direction(direction)
 {
 }
 
 bool PinchGesture::thresholdReached(const qreal &scale) const
 {
-    return m_direction == KWin::PinchDirection::Expanding
-       ? scale >= m_threshold
-       : scale <= m_threshold;
+    switch (m_direction)
+    {
+        case PinchDirection::Contracting:
+            return scale <= m_threshold;
+        case PinchDirection::Expanding:
+            return scale >= m_threshold;
+        default:
+            return scale >= m_threshold || scale <= m_threshold;
+    }
 }
