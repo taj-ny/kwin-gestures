@@ -13,6 +13,7 @@ enum When
 class GestureAction
 {
 public:
+    GestureAction(qreal repeatInterval);
     virtual ~GestureAction() = default;
 
     virtual void execute();
@@ -47,8 +48,6 @@ public:
      * were specified.
      */
     bool satisfiesConditions() const;
-protected:
-    GestureAction(qreal repeatInterval);
 private:
     qreal m_repeatInterval;
     std::vector<Condition> m_conditions;
@@ -56,4 +55,6 @@ private:
     qreal m_accumulatedDelta = 0;
     bool m_triggered = false;
     When m_when = When::Updated;
+
+    friend class TestGestureRecognizerHold;
 };

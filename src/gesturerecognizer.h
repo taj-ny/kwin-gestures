@@ -33,6 +33,11 @@ public:
     void unregisterGestures();
 
     void holdGestureBegin(const uint8_t &fingerCount);
+    /**
+     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted.
+     * If true, GestureInputEventFilter will send the swipeGestureCancelled event to all filters.
+     * Passed by reference.
+     */
     void holdGestureUpdate(const qreal &delta, bool &endedPrematurely);
     /**
      * @return @c true if GlobalShortcutFilter shouldn't process this gesture event, @c false otherwise.
@@ -80,4 +85,6 @@ private:
 
     QList<std::shared_ptr<Gesture>> m_activeHoldGestures;
     uint m_currentFingerCount = 0;
+
+    friend class TestGestureRecognizerHold;
 };

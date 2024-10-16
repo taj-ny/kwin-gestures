@@ -1,8 +1,8 @@
-set(testExample_SRCS test_example.cpp)
-add_executable(testExample ${testExample_SRCS})
-target_link_libraries(testExample
+set(testGestureRecognizerHold_SRCS test_gesturerecognizer_hold.cpp)
+add_executable(testGestureRecognizerHold ${testGestureRecognizerHold_SRCS})
+target_link_libraries(testGestureRecognizerHold
     kwin_gestures
     Qt::Test
 )
-add_test(NAME "test" COMMAND testExample)
-ecm_mark_as_test(testExample)
+add_test(NAME "gesturerecognizer_hold" COMMAND testGestureRecognizerHold)
+ecm_mark_as_test(testGestureRecognizerHold)

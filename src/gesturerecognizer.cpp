@@ -31,18 +31,16 @@ void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematu
 {
     for (const auto &holdGesture : m_activeHoldGestures)
     {
-        if (!holdGesture->update(delta))
-            continue;
-
-        endedPrematurely = true;
-        return;
+        Q_EMIT holdGesture->updated(delta, endedPrematurely);
+        if (endedPrematurely)
+            return;
     }
 }
 
 void GestureRecognizer::holdGestureCancelled()
 {
     for (const auto &gesture : m_activeHoldGestures)
-        gesture->cancelled();
+        Q_EMIT gesture->cancelled();
     m_activeHoldGestures.clear();
 }
 
@@ -50,7 +48,7 @@ bool GestureRecognizer::holdGestureEnd()
 {
     const bool hadActiveGestures = !m_activeHoldGestures.isEmpty();
     for (const auto &gesture : m_activeHoldGestures)
-        gesture->ended();
+        Q_EMIT gesture->ended();
     m_activeHoldGestures.clear();
     return hadActiveGestures;
 }
@@ -124,11 +122,12 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             it = m_activeSwipeGestures.erase(it);
             continue;
         }
-        else if (gesture->update(swipeAxis == Axis::Vertical ? delta.y() : delta.x()))
-        {
-            endedPrematurely = true;
-            return true;
-        }
+        // TODO
+//        else if (gesture->update(swipeAxis == Axis::Vertical ? delta.y() : delta.x()))
+//        {
+//            endedPrematurely = true;
+//            return true;
+//        }
 
         it++;
     }
@@ -204,11 +203,12 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
                 it = m_activePinchGestures.erase(it);
                 continue;
             }
-            else if (gesture->update(pinchDelta))
-            {
-                endedPrematurely = true;
-                return true;
-            }
+            // TODO
+//            else if (gesture->update(pinchDelta))
+//            {
+//                endedPrematurely = true;
+//                return true;
+//            }
 
             it++;
         }

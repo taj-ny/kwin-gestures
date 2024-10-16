@@ -9,9 +9,13 @@ Gesture::Gesture(bool triggerWhenThresholdReached, uint minimumFingers, uint max
       m_triggerOneActionOnly(triggerOneActionOnly),
       m_threshold(threshold)
 {
+    connect(this, &Gesture::cancelled, this, &Gesture::onCancelled);
+    connect(this, &Gesture::ended, this, &Gesture::onEnded);
+    connect(this, &Gesture::started, this, &Gesture::onStarted);
+    connect(this, &Gesture::updated, this, &Gesture::onUpdated);
 }
 
-void Gesture::cancelled()
+void Gesture::onCancelled()
 {
     if (!m_hasStarted)
         return;
@@ -23,7 +27,7 @@ void Gesture::cancelled()
     m_hasStarted = false;
 }
 
-void Gesture::ended()
+void Gesture::onEnded()
 {
     if (!m_hasStarted)
         return;
@@ -35,7 +39,7 @@ void Gesture::ended()
     m_hasStarted = false;
 }
 
-void Gesture::start()
+void Gesture::onStarted()
 {
     m_hasStarted = true;
 
@@ -43,14 +47,14 @@ void Gesture::start()
         action->started();
 }
 
-bool Gesture::update(const qreal &delta)
+void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
 {
     m_accumulatedDelta += delta;
 
     if (!m_hasStarted && !thresholdReached(m_accumulatedDelta))
-        return false;
+        return;
     else if (!m_hasStarted)
-        start();
+        Q_EMIT started();
 
     for (const auto &action : m_actions)
     {
@@ -61,15 +65,14 @@ bool Gesture::update(const qreal &delta)
             action->execute();
             if (m_triggerOneActionOnly)
             {
-                ended();
-                return true;
+                Q_EMIT ended();
+                endedPrematurely = true;
+                return;
             }
         }
 
         action->update(delta);
     }
-
-    return false;
 }
 
 bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const

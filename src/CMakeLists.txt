@@ -16,7 +16,12 @@ set(kwin_gestures_SOURCES
     gestures/actions/keysequence.cpp
 )
 
-add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})
+# TODO
+if (BUILD_TESTS)
+    add_library(kwin_gestures STATIC ${kwin_gestures_SOURCES})
+else()
+    add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})
+endif()
 target_link_libraries(kwin_gestures
     KWin::kwin
 )
