@@ -12,6 +12,9 @@ void GestureRecognizer::unregisterGestures()
 
 void GestureRecognizer::holdGestureBegin(const uint8_t &fingerCount)
 {
+    if (!m_activeHoldGestures.empty())
+        return;
+
     for (std::shared_ptr<Gesture> gesture : m_gestures)
     {
         std::shared_ptr<HoldGesture> holdGesture = std::dynamic_pointer_cast<HoldGesture>(gesture);

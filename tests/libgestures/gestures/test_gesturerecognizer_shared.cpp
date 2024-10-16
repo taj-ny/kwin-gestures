@@ -20,6 +20,22 @@ template void TestGestureRecognizerShared::gestureUpdate_activeGesture_gestureUp
     const QPointF &delta
 );
 
+void TestGestureRecognizerShared::gestureBegin_calledTwice_hasOneActiveGesture
+(
+    std::shared_ptr<GestureRecognizer> gestureRecognizer,
+    std::shared_ptr<Gesture> gesture,
+    std::function<void()> gestureBegin,
+    std::function<QList<std::shared_ptr<Gesture>>(void)> activeGestures
+)
+{
+    gestureRecognizer->registerGesture(gesture);
+
+    gestureBegin();
+    gestureBegin();
+
+    QCOMPARE(activeGestures().size(), 1);
+}
+
 void TestGestureRecognizerShared::gestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures
 (
     std::shared_ptr<GestureRecognizer> gestureRecognizer,

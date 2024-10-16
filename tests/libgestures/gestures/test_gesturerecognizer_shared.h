@@ -5,6 +5,13 @@
 class TestGestureRecognizerShared
 {
 public:
+    static void gestureBegin_calledTwice_hasOneActiveGesture
+    (
+        std::shared_ptr<GestureRecognizer> gestureRecognizer,
+        std::shared_ptr<Gesture> gesture,
+        std::function<void()> gestureBegin,
+        std::function<QList<std::shared_ptr<Gesture>>(void)> activeGestures
+    );
     static void gestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures
     (
         std::shared_ptr<GestureRecognizer> gestureRecognizer,

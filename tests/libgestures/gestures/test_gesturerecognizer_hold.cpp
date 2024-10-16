@@ -14,6 +14,23 @@ void TestGestureRecognizerHold::init()
     m_hold2_2actions_trigger1only->addAction(std::make_shared<GestureAction>(0));
 }
 
+void TestGestureRecognizerHold::holdGestureBegin_calledTwice_hasOneActiveGesture()
+{
+    TestGestureRecognizerShared::gestureBegin_calledTwice_hasOneActiveGesture
+    (
+        m_gestureRecognizer,
+        m_hold2,
+        [this]()
+        {
+            m_gestureRecognizer->holdGestureBegin(2);
+        },
+        [this]()
+        {
+            return m_gestureRecognizer->m_activeHoldGestures;
+        }
+    );
+}
+
 void TestGestureRecognizerHold::holdGestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures()
 {
     TestGestureRecognizerShared::gestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures

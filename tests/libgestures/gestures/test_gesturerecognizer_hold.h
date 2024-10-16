@@ -7,6 +7,7 @@ class TestGestureRecognizerHold : public QObject
 private slots:
     void init();
 
+    void holdGestureBegin_calledTwice_hasOneActiveGesture();
     void holdGestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures();
     void holdGestureBegin_twoGesturesWithSatisfiedConditions_hasTwoActiveGestures();
 
