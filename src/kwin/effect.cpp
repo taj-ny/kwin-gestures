@@ -3,9 +3,6 @@
 #include "input.h"
 
 Effect::Effect()
-    : m_inputEventFilter(std::make_shared<GestureInputEventFilter>()),
-      m_virtualInputDevice(std::make_shared<KWinVirtualInputDevice>()),
-      m_windowDataProvider(std::make_shared<KWinWindowDataProvider>())
 {
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());

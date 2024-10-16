@@ -10,5 +10,4 @@ KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED
     return Effect::enabledByDefault();
 )
 
-
 #include "main.moc"
