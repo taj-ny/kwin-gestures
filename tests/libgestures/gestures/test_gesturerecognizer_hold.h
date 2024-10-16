@@ -7,10 +7,10 @@ class TestGestureRecognizerHold : public QObject
 private slots:
     void init();
 
-    void holdGestureBegin_holdGestureConditionsNotSatisfied_hasNoActiveHoldGestures();
-    void holdGestureBegin_twoHoldGesturesWithSatisfiedConditions_hasTwoActiveHoldGestures();
+    void holdGestureBegin_gestureConditionsNotSatisfied_hasNoActiveGestures();
+    void holdGestureBegin_twoGesturesWithSatisfiedConditions_hasTwoActiveGestures();
 
-    void holdGestureUpdate_activeGesture_gestureUpdateSignalEmittedExactlyOneTimeAndGestureNotEndedPrematurely();
+    void holdGestureUpdate_activeGesture_gestureUpdateSignalEmittedExactlyOneTimeAndDeltaMatchesAndGestureNotEndedPrematurely();
     void holdGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdated();
 
     void holdGestureCancelled_twoActiveGestures_gestureCancelledSignalEmittedForAllGesturesAndActiveHoldGesturesCleared();
@@ -18,7 +18,7 @@ private slots:
     void holdGestureEnd_noActiveGestures_returnsFalse();
     void holdGestureEnd_activeGesture_gestureEndedSignalEmittedAndActiveHoldGesturesClearedAndReturnsTrue();
 private:
-    std::unique_ptr<GestureRecognizer> m_gestureRecognizer;
+    std::shared_ptr<GestureRecognizer> m_gestureRecognizer;
 
     std::shared_ptr<HoldGesture> m_hold2;
     std::shared_ptr<HoldGesture> m_hold2To3;

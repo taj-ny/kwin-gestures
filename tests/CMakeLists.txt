@@ -1,1 +1,1 @@
-add_subdirectory(libgesture)
+add_subdirectory(libgestures)
