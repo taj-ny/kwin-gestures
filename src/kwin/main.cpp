@@ -1,14 +1,14 @@
-#include "gestureseffect.h"
+#include "effect/effect.h"
+#include "effect.h"
 
-namespace KWin
-{
+KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED
+(
+    Effect,
+    "metadata.json",
+    return Effect::supported();
+    ,
+    return Effect::enabledByDefault();
+)
 
-KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(GesturesEffect,
-                                      "metadata.json",
-                                      return GesturesEffect::supported();
-                                      ,
-                                      return GesturesEffect::enabledByDefault();)
-
-} // namespace KWin
 
 #include "main.moc"

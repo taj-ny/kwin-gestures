@@ -2,7 +2,7 @@ set(kwin_gestures_SOURCES
     config/config.cpp
     impl/kwinvirtualinputdevice.cpp
     impl/kwinwindowdataprovider.cpp
-    gestureseffect.cpp
+    effect.cpp
     inputfilter.cpp
     main.cpp
 )

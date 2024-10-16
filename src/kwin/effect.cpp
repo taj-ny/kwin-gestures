@@ -1,8 +1,8 @@
 #include "config/config.h"
-#include "gestureseffect.h"
+#include "effect.h"
 #include "input.h"
 
-GesturesEffect::GesturesEffect()
+Effect::Effect()
     : m_inputEventFilter(std::make_shared<GestureInputEventFilter>()),
       m_virtualInputDevice(std::make_shared<KWinVirtualInputDevice>()),
       m_windowDataProvider(std::make_shared<KWinWindowDataProvider>())
@@ -16,12 +16,12 @@ GesturesEffect::GesturesEffect()
     reconfigure(ReconfigureAll);
 }
 
-GesturesEffect::~GesturesEffect()
+Effect::~Effect()
 {
     KWin::input()->uninstallInputEventFilter(m_inputEventFilter.get());
 }
 
-void GesturesEffect::reconfigure(ReconfigureFlags flags)
+void Effect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags)
 

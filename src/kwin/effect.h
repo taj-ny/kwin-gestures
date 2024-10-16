@@ -5,11 +5,11 @@
 #include "impl/kwinwindowdataprovider.h"
 #include "inputfilter.h"
 
-class GesturesEffect : public KWin::Effect
+class Effect : public KWin::Effect
 {
 public:
-    GesturesEffect();
-    ~GesturesEffect() override;
+    Effect();
+    ~Effect() override;
 
     static bool supported() { return true; };
     static bool enabledByDefault() { return false; };
