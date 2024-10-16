@@ -1,9 +1,9 @@
 name: Test
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     container:
       image: archlinux:base-devel
@@ -26,4 +26,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build
 
       - name: Run tests
-        run: ctest --test-dir ${{github.workspace}}/build
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure --verbose
