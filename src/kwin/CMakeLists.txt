@@ -1,6 +1,5 @@
 set(kwin_gestures_SOURCES
     config/config.cpp
-    impl/kdeglobalshortcutinvoker.cpp
     impl/kwinvirtualinputdevice.cpp
     impl/kwinwindowdataprovider.cpp
     gestureseffect.cpp

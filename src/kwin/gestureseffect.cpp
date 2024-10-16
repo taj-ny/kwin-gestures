@@ -4,7 +4,6 @@
 
 GesturesEffect::GesturesEffect()
     : m_inputEventFilter(std::make_shared<GestureInputEventFilter>()),
-      m_globalShortcutInvoker(std::make_shared<KDEGlobalShortcutInvoker>()),
       m_virtualInputDevice(std::make_shared<KWinVirtualInputDevice>()),
       m_windowDataProvider(std::make_shared<KWinWindowDataProvider>())
 {
@@ -26,5 +25,5 @@ void GesturesEffect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags)
 
-    Config::instance().read(m_inputEventFilter, m_globalShortcutInvoker, m_virtualInputDevice, m_windowDataProvider);
+    Config::instance().read(m_inputEventFilter, m_virtualInputDevice, m_windowDataProvider);
 }

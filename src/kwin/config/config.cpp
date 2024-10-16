@@ -1,5 +1,5 @@
 #include "actions/command.h"
-#include "actions/globalshortcut.h"
+#include "actions/kdeglobalshortcut.h"
 #include "actions/keysequence.h"
 #include "config.h"
 #include "gestures/holdgesture.h"
@@ -7,7 +7,7 @@
 #include "gestures/swipegesture.h"
 #include <KConfig>
 
-void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<GlobalShortcutInvoker> globalShortcutInvoker, std::shared_ptr<VirtualInputDevice> virtualInputDevice, std::shared_ptr<WindowDataProvider> windowDataProvider)
+void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<VirtualInputDevice> virtualInputDevice, std::shared_ptr<WindowDataProvider> windowDataProvider)
 {
     filter->unregisterGestures();
 
@@ -111,7 +111,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                     const auto globalShortcutActionGroup = actionGroup.group("GlobalShortcut");
                     const auto component = globalShortcutActionGroup.readEntry("Component", "");
                     const auto shortcut = globalShortcutActionGroup.readEntry("Shortcut", "");
-                    action = std::make_shared<GlobalShortcutGestureAction>(repeatInterval, globalShortcutInvoker, component, shortcut);
+                    action = std::make_shared<KDEGlobalShortcutGestureAction>(repeatInterval, component, shortcut);
                 }
                 else if (actionType == "KeySequence")
                 {

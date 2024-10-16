@@ -1,7 +1,7 @@
 set(libgestures_SRCS
     actions/action.cpp
     actions/command.cpp
-    actions/globalshortcut.cpp
+    actions/kdeglobalshortcut.cpp
     actions/keysequence.cpp
     gestures/gesture.cpp
     gestures/gesturerecognizer.cpp
@@ -9,7 +9,6 @@ set(libgestures_SRCS
     gestures/pinchgesture.cpp
     gestures/swipegesture.cpp
     condition.cpp
-    globalshortcutinvoker.h
     virtualinputdevice.h
     windowdataprovider.cpp
 )
@@ -17,4 +16,5 @@ set(libgestures_SRCS
 add_library(libgestures STATIC ${libgestures_SRCS})
 target_link_libraries(libgestures PRIVATE
     Qt6::Core
+    Qt6::DBus
 )

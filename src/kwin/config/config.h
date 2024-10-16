@@ -2,7 +2,6 @@
 
 #include "condition.h"
 #include "gestures.h"
-#include "globalshortcutinvoker.h"
 #include "inputfilter.h"
 #include <KConfigGroup>
 #include "virtualinputdevice.h"
@@ -19,7 +18,7 @@ public:
 
     ~Config() = default;
 
-    void read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<GlobalShortcutInvoker> globalShortcutInvoker, std::shared_ptr<VirtualInputDevice> virtualInputDevice, std::shared_ptr<WindowDataProvider> windowDataProvider);
+    void read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<VirtualInputDevice> virtualInputDevice, std::shared_ptr<WindowDataProvider> windowDataProvider);
 
 private:
     Config() = default;
