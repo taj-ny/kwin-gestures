@@ -28,8 +28,8 @@ public:
     KWinVirtualInputDevice();
     ~KWinVirtualInputDevice() override;
 
-    virtual void keyboardPress(const uint32_t &key) const;
-    virtual void keyboardRelease(const uint32_t &key) const;
+    void keyboardPress(const uint32_t &key) const override;
+    void keyboardRelease(const uint32_t &key) const override;
 private:
     void sendKey(const uint32_t &key, const KWin::InputRedirection::KeyboardKeyState &state) const;
 

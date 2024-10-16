@@ -96,7 +96,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 const auto actionGroup = actionsGroup.group(QString::number(actionId));
                 const auto actionType = actionGroup.readEntry("Type", "");
-                const auto repeat = actionGroup.readEntry("Repeat", false);
                 const auto repeatInterval = actionGroup.readEntry("RepeatInterval", 0.0);
 
                 std::shared_ptr<GestureAction> action;
