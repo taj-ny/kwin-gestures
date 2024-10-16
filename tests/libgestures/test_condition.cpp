@@ -1,162 +1,112 @@
-#include "condition.h"
 #include "test_condition.h"
 
-TestCondition::TestCondition()
-    : m_noActiveWindow(std::make_shared<MockWindowDataProvider>(std::nullopt)),
-      m_normalWindow(std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "firefox", "firefox", WindowState::Unimportant))),
-      m_maximizedWindow(std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "firefox", "firefox", WindowState::Maximized))),
-      m_fullscreenWindow(std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "firefox", "firefox", WindowState::Maximized)))
+void TestCondition::init()
 {
+    m_condition = std::make_shared<Condition>(m_normalWindowProvider);
 }
 
 void TestCondition::isSatisfied_noActiveWindow_returnsFalse()
 {
-    const auto condition = std::make_shared<Condition>(m_noActiveWindow, false, std::nullopt, std::nullopt);
-
-    QVERIFY(!condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndNoActiveWindow_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_noActiveWindow, true, std::nullopt, std::nullopt);
-
-    QVERIFY(!condition->isSatisfied());
+    QVERIFY(!Condition(m_noActiveWindowProvider).isSatisfied());
 }
 
 void TestCondition::isSatisfied_noSubConditions_returnsTrue()
 {
-    const auto condition = std::make_shared<Condition>(m_normalWindow, false, std::nullopt, std::nullopt);
-
-    QVERIFY(condition->isSatisfied());
+    QVERIFY(Condition(m_normalWindowProvider).isSatisfied());
 }
 
-void TestCondition::isSatisfied_negatedAndNoSubConditions_returnsFalse()
+void TestCondition::isSatisfied_negatedAndNoSubConditions_returnsTrue()
 {
-    const auto condition = std::make_shared<Condition>(m_normalWindow, true, std::nullopt, std::nullopt);
+    m_condition->setNegate(true);
 
-    QVERIFY(!condition->isSatisfied());
+    QVERIFY(m_condition->isSatisfied());
 }
 
-void TestCondition::isSatisfied_windowClassRegexMatchesResourceClass_returnsTrue()
+void TestCondition::isWindowClassRegexSubConditionSatisfied_subConditionNotSet_returnsTrue()
 {
-    const auto window = std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "firefox", "", WindowState::Unimportant));
-    const auto condition = std::make_shared<Condition>(window, false, QRegularExpression("firefox"), std::nullopt);
-
-    QVERIFY(condition->isSatisfied());
+    QVERIFY(m_condition->isWindowClassRegexSubConditionSatisfied(m_normalWindow));
 }
 
-void TestCondition::isSatisfied_windowClassRegexMatchesResourceName_returnsTrue()
+void TestCondition::isWindowClassRegexSubConditionSatisfied_negatedAndSubConditionNotSet_returnsTrue()
 {
-    const auto window = std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "", "firefox", WindowState::Unimportant));
-    const auto condition = std::make_shared<Condition>(window, false, QRegularExpression("firefox"), std::nullopt);
+    m_condition->setNegate(true);
 
-    QVERIFY(condition->isSatisfied());
+    QVERIFY(m_condition->isWindowClassRegexSubConditionSatisfied(m_normalWindow));
 }
 
-void TestCondition::isSatisfied_windowClassRegexDoesntMatch_returnsFalse()
+void TestCondition::isWindowClassRegexSubConditionSatisfied_data()
 {
-    const auto condition = std::make_shared<Condition>(m_normalWindow, false, QRegularExpression("firefoxx"), std::nullopt);
+    QTest::addColumn<bool>("negate");
+    QTest::addColumn<QString>("regex");
+    QTest::addColumn<QString>("resourceClass");
+    QTest::addColumn<QString>("resourceName");
+    QTest::addColumn<bool>("result");
 
-    QVERIFY(!condition->isSatisfied());
+    QTest::newRow("resource class only") << false << s_windowClass << s_windowClass << "" << true;
+    QTest::newRow("resource name only") << false << s_windowClass << "" << s_windowClass << true;
+    QTest::newRow("no match") << false << s_windowClass << "" << "" << false;
+    QTest::newRow("negated match") << true << s_windowClass << s_windowClass << s_windowClass << false;
+    QTest::newRow("negated no match") << true << s_windowClass << "" << "" << true;
 }
 
-void TestCondition::isSatisfied_negatedAndWindowClassRegexMatches_returnsFalse()
+void TestCondition::isWindowClassRegexSubConditionSatisfied()
 {
-    const auto window = std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>("Firefox", "firefox", "", WindowState::Unimportant));
-    const auto condition = std::make_shared<Condition>(window, true, QRegularExpression("firefox"), std::nullopt);
+    QFETCH(bool, negate);
+    QFETCH(QString, regex);
+    QFETCH(QString, resourceClass);
+    QFETCH(QString, resourceName);
+    QFETCH(bool, result);
+    const WindowData windowData(s_windowCaption, resourceClass, resourceName, WindowState::Unimportant);
 
-    QVERIFY(!condition->isSatisfied());
+    m_condition->setNegate(negate);
+    m_condition->setWindowClassRegex(QRegularExpression(regex));
+
+    QCOMPARE(m_condition->isWindowClassRegexSubConditionSatisfied(windowData), result);
 }
 
-void TestCondition::isSatisfied_negatedAndWindowClassRegexDoesntMatch_returnsTrue()
+void TestCondition::isWindowStateSubConditionSatisfied_subConditionNotSet_returnsTrue()
 {
-    const auto condition = std::make_shared<Condition>(m_normalWindow, true, QRegularExpression("firefoxx"), std::nullopt);
-
-    QVERIFY(condition->isSatisfied());
+    QVERIFY(m_condition->isWindowStateSubConditionSatisfied(m_normalWindow));
 }
 
-void TestCondition::isSatisfied_windowStateDoesntMatch_returnsFalse()
+void TestCondition::isWindowStateSubConditionSatisfied_negatedAndSubConditionNotSet_returnsTrue()
 {
-    const auto condition = std::make_shared<Condition>(m_normalWindow, false, std::nullopt, WindowState::Maximized);
+    m_condition->setNegate(true);
 
-    QVERIFY(!condition->isSatisfied());
+    QVERIFY(m_condition->isWindowStateSubConditionSatisfied(m_normalWindow));
 }
 
-void TestCondition::isSatisfied_windowStateMatches_returnsTrue()
+void TestCondition::isWindowStateSubConditionSatisfied_data()
 {
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, false, std::nullopt, WindowState::Maximized);
+    QTest::addColumn<bool>("negate");
+    QTest::addColumn<int>("conditionWindowState");
+    QTest::addColumn<int>("windowState");
+    QTest::addColumn<bool>("result");
 
-    QVERIFY(condition->isSatisfied());
+    QTest::newRow("matches one") << false << static_cast<int>(WindowState::Maximized)
+        << static_cast<int>(WindowState::Maximized) << true;
+    QTest::newRow("matches all") << false << static_cast<int>(WindowState::Maximized | WindowState::Fullscreen)
+        << static_cast<int>(WindowState::Maximized | WindowState::Fullscreen) << true;
+    QTest::newRow("no match") << false << static_cast<int>(WindowState::Maximized) << static_cast<int>(WindowState::Fullscreen) << false;
+    QTest::newRow("negated matches one") << true << static_cast<int>(WindowState::Maximized)
+        << static_cast<int>(WindowState::Maximized) << false;
+    QTest::newRow("negated matches all") << true << static_cast<int>(WindowState::Maximized | WindowState::Fullscreen)
+        << static_cast<int>(WindowState::Maximized | WindowState::Fullscreen) << false;
+    QTest::newRow("negated no match") << true << static_cast<int>(WindowState::Maximized) << static_cast<int>(WindowState::Fullscreen) << true;
 }
 
-void TestCondition::isSatisfied_windowStateMatchesEither_returnsTrue()
+void TestCondition::isWindowStateSubConditionSatisfied()
 {
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, false, std::nullopt, WindowState::Fullscreen | WindowState::Maximized);
+    QFETCH(bool, negate);
+    QFETCH(int, conditionWindowState);
+    QFETCH(int, windowState);
+    QFETCH(bool, result);
+    const WindowData windowData(s_windowCaption, s_windowClass, s_windowClass, static_cast<WindowState>(windowState));
 
-    QVERIFY(condition->isSatisfied());
-}
+    m_condition->setNegate(negate);
+    m_condition->setWindowState(static_cast<WindowState>(conditionWindowState));
 
-void TestCondition::isSatisfied_negatedAndWindowStateDoesntMatch_returnsTrue()
-{
-    const auto condition = std::make_shared<Condition>(m_normalWindow, true, std::nullopt, WindowState::Maximized);
-
-    QVERIFY(condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndWindowStateMatches_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, true, std::nullopt, WindowState::Maximized);
-
-    QVERIFY(!condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndWindowStateMatchesEither_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, true, std::nullopt, WindowState::Fullscreen | WindowState::Maximized);
-
-    QVERIFY(!condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_windowClassMatchesAndStateDoesnt_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_normalWindow, false, QRegularExpression("firefox"), WindowState::Maximized);
-
-    QVERIFY(!condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_windowClassDoesntMatchAndStateDoes_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, false, QRegularExpression("firefoxx"), WindowState::Maximized);
-
-    QVERIFY(!condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_windowClassMatchesAndStateMatches_returnsTrue()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, false, QRegularExpression("firefox"), WindowState::Maximized);
-
-    QVERIFY(condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndWindowClassMatchesAndStateDoesnt_returnsTrue()
-{
-    const auto condition = std::make_shared<Condition>(m_normalWindow, true, QRegularExpression("firefox"), WindowState::Maximized);
-
-    QVERIFY(condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndWindowClassDoesntMatchAndStateDoes_returnsTrue()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, true, QRegularExpression("firefoxx"), WindowState::Maximized);
-
-    QVERIFY(condition->isSatisfied());
-}
-
-void TestCondition::isSatisfied_negatedAndWindowClassMatchesAndStateMatches_returnsFalse()
-{
-    const auto condition = std::make_shared<Condition>(m_maximizedWindow, true, QRegularExpression("firefox"), WindowState::Maximized);
-
-    QVERIFY(!condition->isSatisfied());
+    QCOMPARE(m_condition->isWindowStateSubConditionSatisfied(windowData), result);
 }
 
 QTEST_MAIN(TestCondition)

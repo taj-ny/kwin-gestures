@@ -3,16 +3,24 @@
 #include <QRegularExpression>
 #include "windowdataprovider.h"
 
-
 class Condition
 {
 public:
-    Condition(std::shared_ptr<WindowDataProvider> windowDataProvider, bool negate, std::optional<QRegularExpression> windowClassRegex, std::optional<WindowState> windowState);
+    explicit Condition(std::shared_ptr<WindowDataProvider> windowDataProvider);
 
     bool isSatisfied() const;
+
+    void setNegate(const bool &negate);
+    void setWindowClassRegex(const QRegularExpression &windowClassRegex);
+    void setWindowState(const WindowState &windowState);
 private:
+    bool isWindowClassRegexSubConditionSatisfied(const WindowData &data) const;
+    bool isWindowStateSubConditionSatisfied(const WindowData &data) const;
+
     const std::shared_ptr<WindowDataProvider> m_windowDataProvider;
-    const bool m_negate;
-    const std::optional<QRegularExpression> m_windowClassRegex;
-    const std::optional<WindowState> m_windowState;
+    bool m_negate = false;
+    std::optional<QRegularExpression> m_windowClassRegex = std::nullopt;
+    std::optional<WindowState> m_windowState = std::nullopt;
+
+    friend class TestCondition;
 };

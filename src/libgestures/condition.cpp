@@ -1,10 +1,7 @@
 #include "condition.h"
 
-Condition::Condition(std::shared_ptr<WindowDataProvider> windowDataProvider, bool negate, std::optional<QRegularExpression> windowClassRegex, std::optional<WindowState> windowState)
-    : m_windowDataProvider(windowDataProvider),
-      m_negate(negate),
-      m_windowClassRegex(std::move(windowClassRegex)),
-      m_windowState(windowState)
+Condition::Condition(std::shared_ptr<WindowDataProvider> windowDataProvider)
+    : m_windowDataProvider(windowDataProvider)
 {
 }
 
@@ -14,19 +11,44 @@ bool Condition::isSatisfied() const
     if (!windowData)
         return false;
 
-    if ((m_windowClassRegex && !m_windowClassRegex.value().pattern().isEmpty())
-        && !(m_windowClassRegex.value().match(windowData->resourceClass()).hasMatch()
-            || m_windowClassRegex.value().match(windowData->resourceName()).hasMatch()))
-        return m_negate;
+    return isWindowClassRegexSubConditionSatisfied(windowData.value())
+        && isWindowStateSubConditionSatisfied(windowData.value());
+}
 
-    if (m_windowState) {
-        bool satisfiesFullscreen = (m_windowState.value() & WindowState::Fullscreen) && (windowData->state() & WindowState::Fullscreen);
-        bool satisfiesMaximized = (m_windowState.value() & WindowState::Maximized) && (windowData->state() & WindowState::Maximized);
+void Condition::setNegate(const bool &negate)
+{
+    m_negate = negate;
+}
 
-        return m_negate
-            ? (!satisfiesFullscreen && !satisfiesMaximized)
-            : (satisfiesFullscreen || satisfiesMaximized);
-    }
+void Condition::setWindowClassRegex(const QRegularExpression &windowClassRegex)
+{
+    m_windowClassRegex = windowClassRegex;
+}
 
-    return !m_negate;
+void Condition::setWindowState(const WindowState &windowState)
+{
+    m_windowState = windowState;
+}
+
+bool Condition::isWindowClassRegexSubConditionSatisfied(const WindowData &data) const
+{
+    if (!m_windowClassRegex || m_windowClassRegex->pattern().isEmpty())
+        return true;
+
+    if (m_windowClassRegex.value().match(data.resourceClass()).hasMatch()
+        || m_windowClassRegex.value().match(data.resourceName()).hasMatch())
+        return !m_negate;
+
+    return m_negate;
+}
+
+bool Condition::isWindowStateSubConditionSatisfied(const WindowData &data) const
+{
+    if (!m_windowState)
+        return true;
+
+    const bool satisfied =
+        ((m_windowState.value() & WindowState::Fullscreen) && (data.state() & WindowState::Fullscreen))
+        || ((m_windowState.value() & WindowState::Maximized) && (data.state() & WindowState::Maximized));
+    return m_negate == !satisfied;
 }

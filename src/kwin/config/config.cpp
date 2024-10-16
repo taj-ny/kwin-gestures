@@ -144,12 +144,12 @@ std::vector<Condition> Config::readConditions(const KConfigGroup &group, std::sh
     {
         const auto conditionGroup = group.group(conditionGroupName);
 
-        const bool negate = conditionGroup.readEntry("Negate", false);
+        Condition condition(windowDataProvider);
+        condition.setNegate(conditionGroup.readEntry("Negate", false));
 
-        std::optional<QRegularExpression> windowClassRegex;
-        const auto windowClassRegexStr = conditionGroup.readEntry("WindowClassRegex", "");
-        if (windowClassRegexStr != "")
-            windowClassRegex = QRegularExpression(windowClassRegexStr);
+        const auto windowClassRegex = conditionGroup.readEntry("WindowClassRegex", "");
+        if (windowClassRegex != "")
+            condition.setWindowClassRegex(QRegularExpression(windowClassRegex));
 
         auto windowState = WindowState::Unimportant;
         std::optional<WindowState> windowStateOpt;
@@ -162,9 +162,9 @@ std::vector<Condition> Config::readConditions(const KConfigGroup &group, std::sh
                 windowState = windowState | WindowState::Maximized;
         }
         if (windowState)
-            windowStateOpt = windowState;
+            condition.setWindowState(windowState);
 
-        conditions.emplace_back(windowDataProvider, negate, windowClassRegex, windowStateOpt);
+        conditions.push_back(condition);
     }
 
     return conditions;
