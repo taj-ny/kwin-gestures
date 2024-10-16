@@ -31,6 +31,21 @@ find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
 include_directories(${Qt6Widgets_INCLUDE_DIRS})
 add_definitions(${Qt6Widgets_DEFINITIONS})
 
+find_package(Qt6Test ${QT_MIN_VERSION} CONFIG QUIET)
+set_package_properties(Qt6Test PROPERTIES
+    PURPOSE "Required for tests"
+    TYPE OPTIONAL
+)
+add_feature_info("Qt6Test" Qt6Test_FOUND "Required for building tests")
+if (NOT Qt6Test_FOUND)
+    set(BUILD_TESTS OFF CACHE BOOL "Build the testing tree.")
+endif()
+if (BUILD_TESTS)
+    include(ECMAddTests)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 find_package(KWin REQUIRED COMPONENTS
     kwineffects
 )
