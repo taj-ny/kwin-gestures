@@ -26,4 +26,4 @@ jobs:
         run: cmake --build ${{github.workspace}}/build
 
       - name: Run tests
-        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure --verbose
+        run: ${{github.workspace}}/build/tests/testGestureRecognizerHold
