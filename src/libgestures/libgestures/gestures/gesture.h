@@ -14,29 +14,34 @@ public:
     Gesture();
 
     /**
-     * @returns Whether the amount of fingers fits within the range specified by the user and all (or none if none
-     * specified) custom conditions are satisfied.
+     * @returns Whether the amount of fingers fits within the specified range, all (if any) conditions are
+     * satisfied, and there is at least one action (if any) that satisfies conditions.
      */
-    bool satisfiesConditions(const uint8_t &fingerCount) const;
+    [[nodiscard]] bool satisfiesConditions(const uint8_t &fingerCount) const;
 
     /**
-     * @returns Whether the threshold has been reached.
+     * @returns Whether the specified threshold has been reached.
      */
-    virtual bool thresholdReached(const qreal &accumulatedDelta) const;
+    [[nodiscard]] virtual bool thresholdReached(const qreal &accumulatedDelta) const;
 
-    void addAction(std::shared_ptr<GestureAction> action);
+    void addAction(const std::shared_ptr<GestureAction> &action);
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
-     * @param triggerWhenThresholdReached Whether gesture actions should be immediately triggered when the specified
+     * @param triggerWhenThresholdReached Whether gesture actions should be immediately triggered once the specified
      * threshold is reached.
      */
     void setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached);
     void setThreshold(const qreal &threshold);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
+
+    /**
+     * @param triggerOneActionOnly Whether only one action should be executed during a gesture. This can cause a
+     * gesture to end prematurely.
+     */
     void setTriggerOneActionOnly(const bool &triggerOneActionOnly);
 signals:
-    /*
+    /**
      * Emitted when the gesture has been cancelled.
      */
     void cancelled();
@@ -55,7 +60,8 @@ signals:
     /**
      * Emitted when the gesture has been updated.
      *
-     * @param endedPrematurely Whether the gesture recognizer should end the gesture.
+     * @param endedPrematurely Whether the gesture recognizer should end the gesture. Used when only one action can be
+     * triggered.
      */
     void updated(const qreal &delta, bool &endedPrematurely);
 protected:

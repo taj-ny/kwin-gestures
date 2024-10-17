@@ -95,7 +95,7 @@ bool Gesture::thresholdReached(const qreal &accumulatedDelta) const
     return accumulatedDelta >= m_threshold;
 }
 
-void Gesture::addAction(std::shared_ptr<GestureAction> action)
+void Gesture::addAction(const std::shared_ptr<GestureAction> &action)
 {
     m_actions.push_back(action);
 }

@@ -5,6 +5,9 @@
 namespace libgestures
 {
 
+/**
+ * Provides access to input.
+ */
 class Input
 {
 public:

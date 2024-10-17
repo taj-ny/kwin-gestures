@@ -43,7 +43,7 @@ public:
     virtual ~WindowInfoProvider() = default;
 
     /**
-     * @return @c std::nullopt if no window is currently active, the window information otherwise.
+     * @return The window information, or @c std::nullopt if no window is currently active.
      */
     [[nodiscard]] virtual std::optional<const WindowInfo> activeWindow() const { return std::nullopt; };
 };

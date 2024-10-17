@@ -518,6 +518,9 @@ static const std::map<QString, uint32_t> s_keyMap =
     { "MAX", KEY_MAX }
 };
 
+/**
+ * @remark Requires Input::keyboardPress and Input::keyboardRelease to be implemented.
+ */
 class KeySequenceGestureAction : public GestureAction
 {
 public:

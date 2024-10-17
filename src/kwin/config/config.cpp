@@ -128,7 +128,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                     continue;
 
                 const auto conditions = readConditions(actionGroup.group("Conditions"), windowInfoProvider);
-                for (auto condition : conditions)
+                for (const auto &condition : conditions)
                     action->addCondition(condition);
 
                 gesture->addAction(action);

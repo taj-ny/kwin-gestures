@@ -4,12 +4,11 @@
 #include "libgestures/gestures/gesturerecognizer.h"
 #include <QTimer>
 
-// CLion doesn't support @copydoc
 /**
  * Installed before GlobalShortcutFilter. Prevents it from receiving input events for which a custom gesture added by
- * the user has been recognized.
+ * the user has been recognized and handled.
  *
- * @remark If KWin version <=6.1.90, this filter is installed as the first filter. For this reason, all methods that
+ * @remark If KWin version <=6.1.90, this filter is installed as the first one. For this reason, all methods that
  * process events must not do that if the session is locked. On later versions, it's installed right before
  * GlobalShortcutFilter
  *

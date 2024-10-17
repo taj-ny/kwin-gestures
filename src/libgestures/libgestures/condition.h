@@ -24,8 +24,12 @@ public:
 
     /**
      * @param windowClassRegex The pattern must not be empty, otherwise the subcondition will always be satisfied.
+     * @remark Requires libgestures::WindowInfoProvider to be implemented.
      */
     void setWindowClassRegex(const QRegularExpression &windowClassRegex);
+    /**
+     * @remark Requires libgestures::WindowInfoProvider to be implemented.
+     */
     void setWindowState(const WindowState &windowState);
 private:
     [[nodiscard]] bool isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const;
