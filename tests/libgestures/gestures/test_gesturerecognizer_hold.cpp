@@ -2,6 +2,9 @@
 #include "test_gesturerecognizer_hold.h"
 #include <QSignalSpy>
 
+namespace libgestures
+{
+
 void TestGestureRecognizerHold::init()
 {
     m_gestureRecognizer = std::make_shared<GestureRecognizer>();
@@ -148,5 +151,7 @@ void TestGestureRecognizerHold::holdGestureEnd_activeGesture_gestureEndedSignalE
     );
 }
 
-QTEST_MAIN(TestGestureRecognizerHold)
+} // namespace libgestures
+
+QTEST_MAIN(libgestures::TestGestureRecognizerHold)
 #include "test_gesturerecognizer_hold.moc"

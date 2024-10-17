@@ -1,8 +1,8 @@
 #pragma once
 
 #include "effect/effect.h"
-#include "impl/kwinvirtualinputdevice.h"
-#include "impl/kwinwindowdataprovider.h"
+#include "impl/kwininput.h"
+#include "impl/kwinwindowinfoprovider.h"
 #include "inputfilter.h"
 
 class Effect : public KWin::Effect
@@ -17,6 +17,6 @@ public:
     void reconfigure(ReconfigureFlags flags) override;
 private:
     std::shared_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_shared<GestureInputEventFilter>();
-    std::shared_ptr<VirtualInputDevice> m_virtualInputDevice = std::make_shared<KWinVirtualInputDevice>();
-    std::shared_ptr<WindowDataProvider> m_windowDataProvider = std::make_shared<KWinWindowDataProvider>();
+    std::shared_ptr<libgestures::Input> m_input = std::make_shared<KWinInput>();
+    std::shared_ptr<libgestures::WindowInfoProvider> m_windowInfoProvider = std::make_shared<KWinWindowInfoProvider>();
 };

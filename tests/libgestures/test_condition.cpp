@@ -1,5 +1,8 @@
 #include "test_condition.h"
 
+namespace libgestures
+{
+
 void TestCondition::init()
 {
     m_condition = std::make_shared<Condition>(m_normalWindowProvider);
@@ -56,7 +59,7 @@ void TestCondition::isWindowClassRegexSubConditionSatisfied()
     QFETCH(QString, resourceClass);
     QFETCH(QString, resourceName);
     QFETCH(bool, result);
-    const WindowData windowData(s_windowCaption, resourceClass, resourceName, WindowState::Unimportant);
+    const WindowInfo windowData(s_windowCaption, resourceClass, resourceName, WindowState::Unimportant);
 
     m_condition->setNegate(negate);
     m_condition->setWindowClassRegex(QRegularExpression(regex));
@@ -101,7 +104,7 @@ void TestCondition::isWindowStateSubConditionSatisfied()
     QFETCH(int, conditionWindowState);
     QFETCH(int, windowState);
     QFETCH(bool, result);
-    const WindowData windowData(s_windowCaption, s_windowClass, s_windowClass, static_cast<WindowState>(windowState));
+    const WindowInfo windowData(s_windowCaption, s_windowClass, s_windowClass, static_cast<WindowState>(windowState));
 
     m_condition->setNegate(negate);
     m_condition->setWindowState(static_cast<WindowState>(conditionWindowState));
@@ -109,5 +112,7 @@ void TestCondition::isWindowStateSubConditionSatisfied()
     QCOMPARE(m_condition->isWindowStateSubConditionSatisfied(windowData), result);
 }
 
-QTEST_MAIN(TestCondition)
+} // namespace libgestures
+
+QTEST_MAIN(libgestures::TestCondition)
 #include "test_condition.moc"

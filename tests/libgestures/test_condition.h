@@ -1,8 +1,11 @@
 #pragma once
 
-#include "condition.h"
-#include "mockwindowdataprovider.h"
+#include "libgestures/condition.h"
+#include "mockwindowinfoprovider.h"
 #include <QTest>
+
+namespace libgestures
+{
 
 static const QString s_windowCaption = "Firefox";
 static const QString s_windowClass = "firefox";
@@ -27,10 +30,11 @@ private slots:
     void isWindowStateSubConditionSatisfied_data();
     void isWindowStateSubConditionSatisfied();
 private:
-    const std::shared_ptr<MockWindowDataProvider> m_noActiveWindowProvider = std::make_shared<MockWindowDataProvider>(std::nullopt);
-    const std::shared_ptr<MockWindowDataProvider> m_normalWindowProvider = std::make_shared<MockWindowDataProvider>(std::make_optional<WindowData>(s_windowCaption, s_windowClass, s_windowClass, WindowState::Unimportant));
-    const WindowData m_normalWindow = m_normalWindowProvider->getDataForActiveWindow().value();
+    const std::shared_ptr<MockWindowInfoProvider> m_noActiveWindowProvider = std::make_shared<MockWindowInfoProvider>(std::nullopt);
+    const std::shared_ptr<MockWindowInfoProvider> m_normalWindowProvider = std::make_shared<MockWindowInfoProvider>(std::make_optional<WindowInfo>(s_windowCaption, s_windowClass, s_windowClass, WindowState::Unimportant));
+    const WindowInfo m_normalWindow = m_normalWindowProvider->activeWindow().value();
 
     std::shared_ptr<Condition> m_condition = std::make_shared<Condition>(m_normalWindowProvider);
 };
 
+} //namespace libgestures

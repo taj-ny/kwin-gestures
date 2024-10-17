@@ -1,6 +1,9 @@
 #pragma once
 
-#include "gestures/gesturerecognizer.h"
+#include "libgestures/gestures/gesturerecognizer.h"
+
+namespace libgestures
+{
 
 class TestGestureRecognizerShared
 {
@@ -64,3 +67,5 @@ public:
         std::function<QList<std::shared_ptr<Gesture>>(void)> activeGestures
     );
 };
+
+} // namespace libgestures

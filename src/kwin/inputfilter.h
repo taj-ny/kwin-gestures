@@ -1,7 +1,7 @@
 #pragma once
 
-#include "gestures/gesturerecognizer.h"
 #include "input.h"
+#include "libgestures/gestures/gesturerecognizer.h"
 #include <QTimer>
 
 // CLion doesn't support @copydoc
@@ -22,9 +22,9 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
-    void registerTouchpadGesture(std::shared_ptr<HoldGesture> gesture);
-    void registerTouchpadGesture(std::shared_ptr<PinchGesture> gesture);
-    void registerTouchpadGesture(std::shared_ptr<SwipeGesture> gesture);
+    void registerTouchpadGesture(std::shared_ptr<libgestures::HoldGesture> gesture);
+    void registerTouchpadGesture(std::shared_ptr<libgestures::PinchGesture> gesture);
+    void registerTouchpadGesture(std::shared_ptr<libgestures::SwipeGesture> gesture);
 
     /**
      * Unregisters gestures for all devices.
@@ -46,7 +46,7 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 private:
-    GestureRecognizer m_touchpadGestureRecognizer;
+    libgestures::GestureRecognizer m_touchpadGestureRecognizer;
     /**
      * Amount of fingers currently on the touchpad.
      */

@@ -1,6 +1,5 @@
 #include "config/config.h"
 #include "effect.h"
-#include "input.h"
 
 Effect::Effect()
 {
@@ -22,5 +21,5 @@ void Effect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags)
 
-    Config::instance().read(m_inputEventFilter, m_virtualInputDevice, m_windowDataProvider);
+    Config::instance().read(m_inputEventFilter, m_input, m_windowInfoProvider);
 }

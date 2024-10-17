@@ -13,17 +13,17 @@ GestureInputEventFilter::GestureInputEventFilter()
     });
 }
 
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<HoldGesture> gesture)
+void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::HoldGesture> gesture)
 {
     m_touchpadGestureRecognizer.registerGesture(gesture);
 }
 
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<PinchGesture> gesture)
+void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::PinchGesture> gesture)
 {
     m_touchpadGestureRecognizer.registerGesture(gesture);
 }
 
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<SwipeGesture> gesture)
+void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::SwipeGesture> gesture)
 {
     m_touchpadGestureRecognizer.registerGesture(gesture);
 }

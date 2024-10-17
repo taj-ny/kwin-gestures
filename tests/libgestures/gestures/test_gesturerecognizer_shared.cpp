@@ -3,6 +3,9 @@
 #include <QSignalSpy>
 #include <QTest>
 
+namespace libgestures
+{
+
 template void TestGestureRecognizerShared::gestureUpdate_activeGesture_gestureUpdateSignalEmittedExactlyOneTimeAndDeltaMatchesAndGestureNotEndedPrematurely<qreal>
 (
     std::shared_ptr<GestureRecognizer> gestureRecognizer,
@@ -155,3 +158,5 @@ void TestGestureRecognizerShared::gestureEnd_activeGesture_gestureEndedSignalEmi
     QVERIFY(activeGestures().empty());
     QVERIFY(returnValue);
 }
+
+} // namespace libgestures

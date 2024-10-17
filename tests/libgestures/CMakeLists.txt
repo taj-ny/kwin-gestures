@@ -2,7 +2,7 @@ add_subdirectory(gestures)
 
 set(testCondition_SRCS
     test_condition.cpp
-    mockwindowdataprovider.cpp
+    mockwindowinfoprovider.cpp
 )
 qt_add_executable(testCondition ${testCondition_SRCS})
 add_test(NAME "condition" COMMAND testCondition)

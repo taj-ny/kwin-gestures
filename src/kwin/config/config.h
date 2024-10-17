@@ -1,11 +1,9 @@
 #pragma once
 
-#include "condition.h"
-#include "gestures.h"
 #include "inputfilter.h"
 #include <KConfigGroup>
-#include "virtualinputdevice.h"
-#include "windowdataprovider.h"
+#include "libgestures/condition.h"
+#include "libgestures/input.h"
 
 class Config
 {
@@ -18,11 +16,11 @@ public:
 
     ~Config() = default;
 
-    void read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<VirtualInputDevice> virtualInputDevice, std::shared_ptr<WindowDataProvider> windowDataProvider);
+    void read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_ptr<libgestures::Input> input, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider);
 
 private:
     Config() = default;
 
-    static std::vector<Condition> readConditions(const KConfigGroup &group, std::shared_ptr<WindowDataProvider> windowDataProvider);
+    static std::vector<libgestures::Condition> readConditions(const KConfigGroup &group, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider);
     static std::vector<int> stringIntListToSortedIntVector(const QList<QString> &list);
 };

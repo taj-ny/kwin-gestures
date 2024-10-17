@@ -1,5 +1,8 @@
-#include "gestures/gesturerecognizer.h"
+#include "libgestures/gestures/gesturerecognizer.h"
 #include <QTest>
+
+namespace libgestures
+{
 
 class TestGestureRecognizerHold : public QObject
 {
@@ -26,3 +29,5 @@ private:
     std::shared_ptr<HoldGesture> m_hold3To4;
     std::shared_ptr<HoldGesture> m_hold2_2actions_trigger1only;
 };
+
+} // namespace libgestures
