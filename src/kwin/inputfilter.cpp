@@ -104,7 +104,7 @@ bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds tim
 #endif
 
     if (m_touchpadGestureFingerCount >= 2)
-        m_touchpadGestureRecognizer.holdGestureCancelled();
+        m_touchpadGestureRecognizer.holdGestureCancel();
 
     return false;
 }
@@ -184,7 +184,7 @@ bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds ti
 #endif
 
     if (m_touchpadGestureFingerCount >= 3)
-        m_touchpadGestureRecognizer.swipeGestureCancelled();
+        m_touchpadGestureRecognizer.swipeGestureCancel();
 
     return false;
 }
@@ -264,7 +264,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 #endif
 
     if (m_touchpadGestureFingerCount >= 2)
-        m_touchpadGestureRecognizer.pinchGestureCancelled();
+        m_touchpadGestureRecognizer.pinchGestureCancel();
 
     return false;
 }

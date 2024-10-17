@@ -33,4 +33,4 @@ private:
     std::shared_ptr<GestureAction> m_action;
 };
 
-} //namespace libgestures
+} // namespace libgestures

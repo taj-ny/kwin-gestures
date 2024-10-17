@@ -1,7 +1,5 @@
 #include "command.h"
 
-#include <utility>
-
 namespace libgestures
 {
 

@@ -72,7 +72,7 @@ private:
     bool m_triggered = false;
     When m_when = When::Updated;
 
-    friend class TestGestureRecognizerHold;
+    friend class TestGestureRecognizer;
 };
 
 } // namespace libgestures

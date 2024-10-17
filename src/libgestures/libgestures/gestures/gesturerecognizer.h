@@ -49,7 +49,7 @@ public:
      * @return Whether there were any active hold gestures before the end.
      */
     bool holdGestureEnd();
-    void holdGestureCancelled();
+    void holdGestureCancel();
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
@@ -67,7 +67,7 @@ public:
      * @return Whether there were any active swipe gestures before the end.
      */
     bool swipeGestureEnd();
-    void swipeGestureCancelled();
+    void swipeGestureCancel();
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
@@ -87,21 +87,30 @@ public:
      * @return Whether there were any active pinch gestures before the end.
      */
     bool pinchGestureEnd();
-    void pinchGestureCancelled();
+    void pinchGestureCancel();
 private:
+    template <class TGesture>
+    void gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
+    template <class TGesture>
+    bool gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures);
+    template <class TGesture>
+    void gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures);
+
+    void resetMembers();
+
     std::vector<std::shared_ptr<Gesture>> m_gestures;
 
-    QList<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
+    std::vector<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;
 
-    QList<std::shared_ptr<PinchGesture>> m_activePinchGestures;
+    std::vector<std::shared_ptr<PinchGesture>> m_activePinchGestures;
     qreal m_previousPinchScale = 1;
 
-    QList<std::shared_ptr<Gesture>> m_activeHoldGestures;
+    std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
     uint m_currentFingerCount = 0;
 
-    friend class TestGestureRecognizerHold;
+    friend class TestGestureRecognizer;
 };
 
 } // namespace libgestures

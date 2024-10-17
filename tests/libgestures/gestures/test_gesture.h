@@ -14,4 +14,4 @@ private slots:
     void thresholdReached();
 };
 
-} //namespace libgestures
+} // namespace libgestures

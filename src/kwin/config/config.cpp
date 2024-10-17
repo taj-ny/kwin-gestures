@@ -99,7 +99,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 const auto actionGroup = actionsGroup.group(QString::number(actionId));
                 const auto actionType = actionGroup.readEntry("Type", "");
-                const auto repeatInterval = actionGroup.readEntry("RepeatInterval", 0.0);
 
                 std::shared_ptr<libgestures::GestureAction> action;
                 if (actionType == "Command")
@@ -107,6 +106,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                     const auto commandActionGroup = actionGroup.group("Command");
                     auto commandAction = std::make_shared<libgestures::CommandGestureAction>();
                     commandAction->setCommand(commandActionGroup.readEntry("Command", ""));
+                    action = commandAction;
                 }
                 else if (actionType == "GlobalShortcut")
                 {
@@ -126,6 +126,8 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
 
                 if (!action)
                     continue;
+
+                action->setRepeatInterval(actionGroup.readEntry("RepeatInterval", 0.0));
 
                 const auto conditions = readConditions(actionGroup.group("Conditions"), windowInfoProvider);
                 for (const auto &condition : conditions)
