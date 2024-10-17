@@ -1,2 +1,2 @@
 # libgestures
-libgestures is a library for recognizing and handling gestures.
+C++ static library for gesture recognition and handling.
