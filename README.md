@@ -54,7 +54,7 @@ Tested on 6.1.5 and 6.2. X11 is not supported.
   <br>
 
   ```
-  sudo pacman -S base-devel git extra-cmake-modules qt6-tools
+  sudo pacman -S base-devel git extra-cmake-modules qt6-tools --needed
   ```
 </details>
 
