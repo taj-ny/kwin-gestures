@@ -1,3 +1,4 @@
+add_subdirectory(actions)
 add_subdirectory(gestures)
 
 set(testCondition_SRCS

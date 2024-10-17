@@ -17,7 +17,7 @@ void Gesture::onCancelled()
         return;
 
     for (auto &action : m_actions)
-        action->cancelled();
+        Q_EMIT action->gestureCancelled();
 
     m_accumulatedDelta = 0;
     m_hasStarted = false;
@@ -29,7 +29,7 @@ void Gesture::onEnded()
         return;
 
     for (const auto &action : m_actions)
-        action->ended();
+        Q_EMIT action->gestureEnded();
 
     m_accumulatedDelta = 0;
     m_hasStarted = false;
@@ -40,7 +40,7 @@ void Gesture::onStarted()
     m_hasStarted = true;
 
     for (const auto &action : m_actions)
-        action->started();
+        Q_EMIT action->gestureStarted();
 }
 
 void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
@@ -67,7 +67,7 @@ void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
             }
         }
 
-        action->update(delta);
+        Q_EMIT action->gestureUpdated(delta);
     }
 }
 
@@ -76,9 +76,9 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount)
         return false;
 
-    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const Condition &condition)
+    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition)
     {
-        return condition.isSatisfied();
+        return condition->isSatisfied();
     }) != m_conditions.end();
     if (!m_conditions.empty() && !satisfiesConditions)
         return false;
@@ -100,7 +100,7 @@ void Gesture::addAction(std::shared_ptr<GestureAction> action)
     m_actions.push_back(action);
 }
 
-void Gesture::addCondition(const Condition &condition)
+void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
 }

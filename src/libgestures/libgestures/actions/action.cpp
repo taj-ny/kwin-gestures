@@ -3,27 +3,31 @@
 namespace libgestures
 {
 
-GestureAction::GestureAction(qreal repeatInterval)
-    : m_repeatInterval(repeatInterval)
+GestureAction::GestureAction()
 {
+    connect(this, &GestureAction::gestureCancelled, this, &GestureAction::onGestureCancelled);
+    connect(this, &GestureAction::gestureEnded, this, &GestureAction::onGestureEnded);
+    connect(this, &GestureAction::gestureStarted, this, &GestureAction::onGestureStarted);
+    connect(this, &GestureAction::gestureUpdated, this, &GestureAction::onGestureUpdated);
 }
 
-void GestureAction::addCondition(const Condition &condition)
+void GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
 }
 
 bool GestureAction::satisfiesConditions() const
 {
-    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const Condition &condition)
+    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition)
     {
-        return condition.isSatisfied();
+        return condition->isSatisfied();
     }) != m_conditions.end();
 }
 
 void GestureAction::execute()
 {
     m_triggered = true;
+    Q_EMIT executed();
 }
 
 bool GestureAction::canExecute() const
@@ -31,7 +35,7 @@ bool GestureAction::canExecute() const
     return m_repeatInterval != 0 || !m_triggered;
 }
 
-void GestureAction::cancelled()
+void GestureAction::onGestureCancelled()
 {
     if (m_when == When::Cancelled && canExecute() && satisfiesConditions())
         execute();
@@ -40,7 +44,7 @@ void GestureAction::cancelled()
     m_triggered = false;
 }
 
-void GestureAction::ended()
+void GestureAction::onGestureEnded()
 {
     if (m_when == When::Ended && canExecute() && satisfiesConditions())
         execute();
@@ -49,7 +53,7 @@ void GestureAction::ended()
     m_triggered = false;
 }
 
-void GestureAction::started()
+void GestureAction::onGestureStarted()
 {
     if (m_when == When::Started && canExecute() && satisfiesConditions())
         execute();
@@ -58,7 +62,7 @@ void GestureAction::started()
     m_accumulatedDelta = 0;
 }
 
-void GestureAction::update(const qreal &delta)
+void GestureAction::onGestureUpdated(const qreal &delta)
 {
     if (m_repeatInterval == 0 || m_when != When::Updated)
         return;
@@ -76,6 +80,11 @@ void GestureAction::update(const qreal &delta)
         execute();
         m_accumulatedDelta -= m_repeatInterval;
     }
+}
+
+void GestureAction::setRepeatInterval(const qreal &interval)
+{
+    m_repeatInterval = interval;
 }
 
 } // namespace libgestures

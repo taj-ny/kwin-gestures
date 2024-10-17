@@ -102,8 +102,8 @@ void TestGestureRecognizerShared::gestureUpdate_twoActiveGesturesAndOneEndsPrema
     std::function<void(bool&)> gestureUpdate
 )
 {
-    QSignalSpy spy1(gesture1.get(), &Gesture::updated);
-    QSignalSpy spy2(gesture2.get(), &Gesture::updated);
+    const QSignalSpy spy1(gesture1.get(), &Gesture::updated);
+    const QSignalSpy spy2(gesture2.get(), &Gesture::updated);
     gestureRecognizer->registerGesture(gesture1);
     gestureRecognizer->registerGesture(gesture2);
 
@@ -126,8 +126,8 @@ void TestGestureRecognizerShared::gestureCancelled_twoActiveGestures_gestureCanc
     std::function<QList<std::shared_ptr<Gesture>>(void)> activeGestures
 )
 {
-    QSignalSpy spy1(gesture1.get(), &Gesture::cancelled);
-    QSignalSpy spy2(gesture2.get(), &Gesture::cancelled);
+    const QSignalSpy spy1(gesture1.get(), &Gesture::cancelled);
+    const QSignalSpy spy2(gesture2.get(), &Gesture::cancelled);
     gestureRecognizer->registerGesture(gesture1);
     gestureRecognizer->registerGesture(gesture2);
 
@@ -148,7 +148,7 @@ void TestGestureRecognizerShared::gestureEnd_activeGesture_gestureEndedSignalEmi
     std::function<QList<std::shared_ptr<Gesture>>(void)> activeGestures
 )
 {
-    QSignalSpy spy(gesture.get(), &Gesture::ended);
+    const QSignalSpy spy(gesture.get(), &Gesture::ended);
     gestureRecognizer->registerGesture(gesture);
 
     gestureBegin();

@@ -9,11 +9,11 @@ namespace libgestures
 class CommandGestureAction : public GestureAction
 {
 public:
-    CommandGestureAction(qreal repeatInterval, QString command);
-
     void execute() override;
+
+    void setCommand(const QString &command);
 private:
-    const QString m_command;
+    QString m_command;
 };
 
 } // namespace libgesture

@@ -3,10 +3,8 @@
 namespace libgestures
 {
 
-KeySequenceGestureAction::KeySequenceGestureAction(qreal repeatInterval, std::shared_ptr<Input> virtualInputDevice, QString sequence)
-    : GestureAction(repeatInterval),
-      m_virtualInputDevice(virtualInputDevice),
-      m_sequence(std::move(sequence))
+KeySequenceGestureAction::KeySequenceGestureAction(std::shared_ptr<Input> input)
+    : m_input(input)
 {
 }
 
@@ -22,10 +20,15 @@ void KeySequenceGestureAction::execute()
             continue;
 
         if (action == "press")
-            m_virtualInputDevice->keyboardPress(s_keyMap.at(key));
+            m_input->keyboardPress(s_keyMap.at(key));
         else if (action == "release")
-            m_virtualInputDevice->keyboardRelease(s_keyMap.at(key));
+            m_input->keyboardRelease(s_keyMap.at(key));
     }
+}
+
+void KeySequenceGestureAction::setSequence(const QString &sequence)
+{
+    m_sequence = sequence;
 }
 
 } // namespace libgestures

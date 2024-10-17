@@ -521,12 +521,14 @@ static const std::map<QString, uint32_t> s_keyMap =
 class KeySequenceGestureAction : public GestureAction
 {
 public:
-    KeySequenceGestureAction(qreal repeatInterval, std::shared_ptr<Input> virtualInputDevice, QString sequence);
+    explicit KeySequenceGestureAction(std::shared_ptr<Input> input);
 
     void execute() override;
+
+    void setSequence(const QString &sequence);
 private:
-    std::shared_ptr<Input> m_virtualInputDevice;
-    const QString m_sequence;
+    const std::shared_ptr<Input> m_input;
+    QString m_sequence;
 };
 
 } // namespace libgestures

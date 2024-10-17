@@ -105,53 +105,55 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 if (actionType == "Command")
                 {
                     const auto commandActionGroup = actionGroup.group("Command");
-                    const auto command = commandActionGroup.readEntry("Command", "");
-                    action = std::make_shared<libgestures::CommandGestureAction>(repeatInterval, command);
+                    auto commandAction = std::make_shared<libgestures::CommandGestureAction>();
+                    commandAction->setCommand(commandActionGroup.readEntry("Command", ""));
                 }
                 else if (actionType == "GlobalShortcut")
                 {
                     const auto globalShortcutActionGroup = actionGroup.group("GlobalShortcut");
-                    const auto component = globalShortcutActionGroup.readEntry("Component", "");
-                    const auto shortcut = globalShortcutActionGroup.readEntry("Shortcut", "");
-                    action = std::make_shared<libgestures::KDEGlobalShortcutGestureAction>(repeatInterval, component, shortcut);
+                    auto kgeGlobalShortcutAction = std::make_shared<libgestures::KDEGlobalShortcutGestureAction>();
+                    kgeGlobalShortcutAction->setComponent(globalShortcutActionGroup.readEntry("Component", ""));
+                    kgeGlobalShortcutAction->setShortcut(globalShortcutActionGroup.readEntry("Shortcut", ""));
+                    action = kgeGlobalShortcutAction;
                 }
                 else if (actionType == "KeySequence")
                 {
                     const auto keySequenceActionGroup = actionGroup.group("KeySequence");
-                    const auto script = keySequenceActionGroup.readEntry("Sequence", "");
-                    action = std::make_shared<libgestures::KeySequenceGestureAction>(repeatInterval, input, script);
+                    auto keySequenceAction = std::make_shared<libgestures::KeySequenceGestureAction>(input);
+                    keySequenceAction->setSequence(keySequenceActionGroup.readEntry("Sequence", ""));
+                    action = keySequenceAction;
                 }
 
                 if (!action)
                     continue;
 
-                const auto &conditions = readConditions(actionGroup.group("Conditions"), windowInfoProvider);
-                for (const auto &condition : conditions)
+                const auto conditions = readConditions(actionGroup.group("Conditions"), windowInfoProvider);
+                for (auto condition : conditions)
                     action->addCondition(condition);
 
                 gesture->addAction(action);
             }
 
-            const auto &conditions = readConditions(gestureGroup.group("Conditions"), windowInfoProvider);
+            const auto conditions = readConditions(gestureGroup.group("Conditions"), windowInfoProvider);
             for (const auto &condition : conditions)
                 gesture->addCondition(condition);
         }
     }
 }
 
-std::vector<libgestures::Condition> Config::readConditions(const KConfigGroup &group, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider)
+std::vector<std::shared_ptr<libgestures::Condition>> Config::readConditions(const KConfigGroup &group, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider)
 {
-    std::vector<libgestures::Condition> conditions;
+    std::vector<std::shared_ptr<libgestures::Condition>> conditions;
     for (const auto &conditionGroupName : group.groupList())
     {
         const auto conditionGroup = group.group(conditionGroupName);
 
-        libgestures::Condition condition(windowInfoProvider);
-        condition.setNegate(conditionGroup.readEntry("Negate", false));
+        auto condition = std::make_shared<libgestures::Condition>(windowInfoProvider);
+        condition->setNegate(conditionGroup.readEntry("Negate", false));
 
         const auto windowClassRegex = conditionGroup.readEntry("WindowClassRegex", "");
         if (windowClassRegex != "")
-            condition.setWindowClassRegex(QRegularExpression(windowClassRegex));
+            condition->setWindowClassRegex(QRegularExpression(windowClassRegex));
 
         auto windowState = libgestures::WindowState::Unimportant;
         std::optional<libgestures::WindowState> windowStateOpt;
@@ -164,7 +166,7 @@ std::vector<libgestures::Condition> Config::readConditions(const KConfigGroup &g
                 windowState = windowState | libgestures::WindowState::Maximized;
         }
         if (windowState)
-            condition.setWindowState(windowState);
+            condition->setWindowState(windowState);
 
         conditions.push_back(condition);
     }

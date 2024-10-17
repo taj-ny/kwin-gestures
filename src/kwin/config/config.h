@@ -21,6 +21,6 @@ public:
 private:
     Config() = default;
 
-    static std::vector<libgestures::Condition> readConditions(const KConfigGroup &group, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider);
+    static std::vector<std::shared_ptr<libgestures::Condition>> readConditions(const KConfigGroup &group, std::shared_ptr<libgestures::WindowInfoProvider> windowInfoProvider);
     static std::vector<int> stringIntListToSortedIntVector(const QList<QString> &list);
 };

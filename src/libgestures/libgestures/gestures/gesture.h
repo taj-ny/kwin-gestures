@@ -25,8 +25,12 @@ public:
     virtual bool thresholdReached(const qreal &accumulatedDelta) const;
 
     void addAction(std::shared_ptr<GestureAction> action);
-    void addCondition(const Condition &condition);
+    void addCondition(const std::shared_ptr<const Condition> &condition);
 
+    /**
+     * @param triggerWhenThresholdReached Whether gesture actions should be immediately triggered when the specified
+     * threshold is reached.
+     */
     void setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached);
     void setThreshold(const qreal &threshold);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
@@ -67,7 +71,7 @@ private:
     uint8_t m_maximumFingers = 0;
     bool m_triggerOneActionOnly = false;
 
-    std::vector<Condition> m_conditions;
+    std::vector<std::shared_ptr<const Condition>> m_conditions;
 
     std::vector<std::shared_ptr<GestureAction>> m_actions;
 

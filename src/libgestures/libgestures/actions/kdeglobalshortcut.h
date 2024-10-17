@@ -9,12 +9,13 @@ namespace libgestures
 class KDEGlobalShortcutGestureAction : public GestureAction
 {
 public:
-    KDEGlobalShortcutGestureAction(qreal repeatInterval, QString component, QString shortcut);
-
     void execute() override;
+
+    void setComponent(const QString &component);
+    void setShortcut(const QString &shortcut);
 private:
-    const QString m_component;
-    const QString m_shortcut;
+    QString m_component;
+    QString m_shortcut;
 };
 
 } // namespace libgestuers
