@@ -25,11 +25,10 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
+    Core
+    DBus
     Widgets
 )
-
-include_directories(${Qt6Widgets_INCLUDE_DIRS})
-add_definitions(${Qt6Widgets_DEFINITIONS})
 
 find_package(KWin REQUIRED COMPONENTS
     kwineffects
@@ -37,6 +36,20 @@ find_package(KWin REQUIRED COMPONENTS
 
 if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
     add_compile_definitions(KWIN_6_2_OR_GREATER)
+endif()
+
+find_package(Qt6Test ${QT_MIN_VERSION} REQUIRED)
+set_package_properties(Qt6Test PROPERTIES
+    PURPOSE "Required for tests"
+    TYPE OPTIONAL
+)
+add_feature_info("Qt6Test" Qt6Test_FOUND "Required for building tests")
+if (NOT Qt6Test_FOUND)
+    set(BUILD_TESTS OFF CACHE BOOL "Build the testing tree.")
+endif()
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 add_subdirectory(src)
