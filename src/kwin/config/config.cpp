@@ -3,7 +3,6 @@
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/kdeglobalshortcut.h"
 #include "libgestures/actions/keysequence.h"
-#include "libgestures/gestures/holdgesture.h"
 #include "libgestures/gestures/pinchgesture.h"
 #include "libgestures/gestures/swipegesture.h"
 
@@ -23,8 +22,8 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
 
             const auto gestureType = gestureGroup.readEntry("Type", "");
             const int fingers = gestureGroup.readEntry("Fingers", -1);
-            uint minimumFingers;
-            uint maximumFingers;
+            uint8_t minimumFingers;
+            uint8_t maximumFingers;
             if (fingers == -1)
             {
                 minimumFingers = gestureGroup.readEntry("MinimumFingers", 2);
@@ -42,9 +41,8 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 const auto holdGestureGroup = gestureGroup.group("Hold");
 
-                const auto threshold = holdGestureGroup.readEntry("Threshold", 0);
-
-                const auto holdGesture = std::make_shared<libgestures::HoldGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold);
+                const auto holdGesture = std::make_shared<libgestures::HoldGesture>();
+                holdGesture->setThreshold(holdGestureGroup.readEntry("Threshold", 0));
                 filter->registerTouchpadGesture(holdGesture);
                 gesture = holdGesture;
             }
@@ -52,15 +50,16 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 const auto pinchGestureGroup = gestureGroup.group("Pinch");
 
+                const auto pinchGesture = std::make_shared<libgestures::PinchGesture>();
                 const auto directionStr = pinchGestureGroup.readEntry("Direction", "");
                 libgestures::PinchDirection direction = libgestures::PinchDirection::Any;
                 if (directionStr == "Contracting")
                     direction = libgestures::PinchDirection::Contracting;
                 else if (directionStr == "Expanding")
                     direction = libgestures::PinchDirection::Expanding;
-                const qreal threshold = pinchGestureGroup.readEntry("Threshold", 1.0);
+                pinchGesture->setDirection(direction);
+                pinchGesture->setThreshold(pinchGestureGroup.readEntry("Threshold", 1.0));
 
-                const auto pinchGesture = std::make_shared<libgestures::PinchGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold, direction);
                 filter->registerTouchpadGesture(pinchGesture);
                 gesture = pinchGesture;
             }
@@ -68,6 +67,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 const auto swipeGestureGroup = gestureGroup.group("Swipe");
 
+                const auto swipeGesture = std::make_shared<libgestures::SwipeGesture>();
                 const auto directionString = swipeGestureGroup.readEntry("Direction", "Left");
                 auto direction = libgestures::SwipeDirection::Left;
                 if (directionString == "Right")
@@ -80,13 +80,16 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                     direction = libgestures::SwipeDirection::LeftRight;
                 else if (directionString == "UpDown")
                     direction = libgestures::SwipeDirection::UpDown;
+                swipeGesture->setDirection(direction);
+                swipeGesture->setThreshold(swipeGestureGroup.readEntry("Threshold", 0.0));
 
-                const qreal threshold = swipeGestureGroup.readEntry("Threshold", 0.0);
-
-                const auto swipeGesture = std::make_shared<libgestures::SwipeGesture>(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold, direction);
                 filter->registerTouchpadGesture(swipeGesture);
                 gesture = swipeGesture;
             }
+
+            gesture->setFingers(minimumFingers, maximumFingers);
+            gesture->setTriggerWhenThresholdReached(triggerWhenThresholdReached);
+            gesture->setTriggerOneActionOnly(triggerOneActionOnly);
 
             if (!gesture)
                 continue;

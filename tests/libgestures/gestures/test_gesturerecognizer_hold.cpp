@@ -8,11 +8,17 @@ namespace libgestures
 void TestGestureRecognizerHold::init()
 {
     m_gestureRecognizer = std::make_shared<GestureRecognizer>();
-    m_hold2 = std::make_shared<HoldGesture>(false, 2, 2, false, 0);
-    m_hold2To3 = std::make_shared<HoldGesture>(false, 2, 3, false, 0);
-    m_hold3To4 = std::make_shared<HoldGesture>(false, 3, 4, false, 0);
-
-    m_hold2_2actions_trigger1only = std::make_shared<HoldGesture>(true, 2, 2, true, 1);
+    m_hold2 = std::make_shared<HoldGesture>();
+    m_hold2->setFingers(2, 2);
+    m_hold2To3 = std::make_shared<HoldGesture>();
+    m_hold2To3->setFingers(2, 3);
+    m_hold3To4 = std::make_shared<HoldGesture>();
+    m_hold3To4->setFingers(3, 4);
+    m_hold2_2actions_trigger1only = std::make_shared<HoldGesture>();
+    m_hold2_2actions_trigger1only->setTriggerWhenThresholdReached(true);
+    m_hold2_2actions_trigger1only->setFingers(2, 2);
+    m_hold2_2actions_trigger1only->setTriggerOneActionOnly(true);
+    m_hold2_2actions_trigger1only->setThreshold(1);
     m_hold2_2actions_trigger1only->addAction(std::make_shared<GestureAction>(0));
     m_hold2_2actions_trigger1only->addAction(std::make_shared<GestureAction>(0));
 }

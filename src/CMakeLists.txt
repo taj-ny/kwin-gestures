@@ -7,7 +7,7 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/keysequence.cpp
     libgestures/libgestures/gestures/gesture.cpp
     libgestures/libgestures/gestures/gesturerecognizer.cpp
-    libgestures/libgestures/gestures/holdgesture.cpp
+    libgestures/libgestures/gestures/holdgesture.h
     libgestures/libgestures/gestures/pinchgesture.cpp
     libgestures/libgestures/gestures/swipegesture.cpp
     libgestures/libgestures/condition.cpp

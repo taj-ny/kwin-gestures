@@ -3,12 +3,7 @@
 namespace libgestures
 {
 
-Gesture::Gesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold)
-    : m_triggerWhenThresholdReached(triggerWhenThresholdReached),
-      m_minimumFingers(minimumFingers),
-      m_maximumFingers(maximumFingers),
-      m_triggerOneActionOnly(triggerOneActionOnly),
-      m_threshold(threshold)
+Gesture::Gesture()
 {
     connect(this, &Gesture::cancelled, this, &Gesture::onCancelled);
     connect(this, &Gesture::ended, this, &Gesture::onEnded);
@@ -108,6 +103,27 @@ void Gesture::addAction(std::shared_ptr<GestureAction> action)
 void Gesture::addCondition(const Condition &condition)
 {
     m_conditions.push_back(condition);
+}
+
+void Gesture::setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached)
+{
+    m_triggerWhenThresholdReached = triggerWhenThresholdReached;
+}
+
+void Gesture::setThreshold(const qreal &threshold)
+{
+    m_threshold = threshold;
+}
+
+void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
+{
+    m_minimumFingers = minimum;
+    m_maximumFingers = maximum;
+}
+
+void Gesture::setTriggerOneActionOnly(const bool &triggerOneActionOnly)
+{
+    m_triggerOneActionOnly = triggerOneActionOnly;
 }
 
 } // namespace libgestures

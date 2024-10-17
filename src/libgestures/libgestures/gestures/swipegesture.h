@@ -18,13 +18,13 @@ enum SwipeDirection
 class SwipeGesture : public Gesture
 {
 public:
-    SwipeGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold, SwipeDirection direction);
-
     SwipeDirection direction() const { return m_direction; }
 
     bool thresholdReached(const qreal &delta) const override;
+
+    void setDirection(const SwipeDirection &direction);
 private:
-    const SwipeDirection m_direction;
+    SwipeDirection m_direction = SwipeDirection::Left;
 };
 
 } // namespace libgestures

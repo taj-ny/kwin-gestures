@@ -3,12 +3,6 @@
 namespace libgestures
 {
 
-PinchGesture::PinchGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold, PinchDirection direction)
-    : Gesture(triggerWhenThresholdReached, minimumFingers, maximumFingers, triggerOneActionOnly, threshold),
-      m_direction(direction)
-{
-}
-
 bool PinchGesture::thresholdReached(const qreal &scale) const
 {
     switch (m_direction)
@@ -20,6 +14,11 @@ bool PinchGesture::thresholdReached(const qreal &scale) const
         default:
             return scale >= m_threshold || scale <= m_threshold;
     }
+}
+
+void PinchGesture::setDirection(const PinchDirection &direction)
+{
+    m_direction = direction;
 }
 
 } // namespace libgestures

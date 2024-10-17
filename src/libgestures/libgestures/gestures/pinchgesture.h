@@ -16,13 +16,13 @@ enum PinchDirection
 class PinchGesture : public Gesture
 {
 public:
-    PinchGesture(bool triggerWhenThresholdReached, uint minimumFingers, uint maximumFingers, bool triggerOneActionOnly, qreal threshold, PinchDirection direction);
-
     PinchDirection direction() const { return m_direction; }
 
     bool thresholdReached(const qreal &scale) const override;
+
+    void setDirection(const PinchDirection &direction);
 private:
-    const PinchDirection m_direction;
+    PinchDirection m_direction = PinchDirection::Any;
 };
 
 } // namespace libgestures
