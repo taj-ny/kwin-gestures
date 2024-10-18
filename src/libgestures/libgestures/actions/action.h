@@ -24,6 +24,12 @@ public:
 
     bool repeat() const { return m_repeatInterval != 0; };
 
+    /**
+     * @return Whether any other actions belonging to a gesture should not be executed. @c true if the action has been
+     * executed and blockOtherActions has been set to @c true, @c false otherwise.
+     */
+    [[nodiscard]] bool blocksOtherActions() const;
+
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
@@ -32,6 +38,7 @@ public:
      */
     bool satisfiesConditions() const;
 
+    void setBlockOtherActions(const bool &blockOtherActions);
     void setRepeatInterval(const qreal &interval);
 signals:
     /**
@@ -65,6 +72,7 @@ private slots:
     void onGestureStarted();
     void onGestureUpdated(const qreal &delta);
 private:
+    bool m_blockOtherActions = false;
     qreal m_repeatInterval = 0;
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 

@@ -21,6 +21,7 @@ void Gesture::onCancelled()
 
     m_accumulatedDelta = 0;
     m_hasStarted = false;
+    m_blockingAction = std::nullopt;
 }
 
 void Gesture::onEnded()
@@ -29,10 +30,16 @@ void Gesture::onEnded()
         return;
 
     for (const auto &action : m_actions)
+    {
+        if (!action->repeat() && !m_triggerWhenThresholdReached && action->canExecute() && thresholdReached(m_accumulatedDelta)
+            && action->satisfiesConditions() && (!m_blockingAction || m_blockingAction->get() == action.get()))
+            action->execute();
         Q_EMIT action->gestureEnded();
+    }
 
     m_accumulatedDelta = 0;
     m_hasStarted = false;
+    m_blockingAction = std::nullopt;
 }
 
 void Gesture::onStarted()
@@ -54,20 +61,23 @@ void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
 
     for (const auto &action : m_actions)
     {
-        if (!action->satisfiesConditions())
+        if (!action->satisfiesConditions() || (m_blockingAction.has_value() && m_blockingAction.value().get() != action.get()))
             continue;
 
-        if (!action->repeat() && m_triggerWhenThresholdReached && action->canExecute()) {
+        if (!action->repeat() && m_triggerWhenThresholdReached && action->canExecute())
+        {
             action->execute();
-            if (m_triggerOneActionOnly)
-            {
-                Q_EMIT ended();
-                endedPrematurely = true;
-                return;
-            }
+            if (!action->blocksOtherActions())
+                continue;
+
+            Q_EMIT ended();
+            endedPrematurely = true;
+            return;
         }
 
         Q_EMIT action->gestureUpdated(delta);
+        if (action->blocksOtherActions())
+            m_blockingAction = action;
     }
 }
 
@@ -119,11 +129,6 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 {
     m_minimumFingers = minimum;
     m_maximumFingers = maximum;
-}
-
-void Gesture::setTriggerOneActionOnly(const bool &triggerOneActionOnly)
-{
-    m_triggerOneActionOnly = triggerOneActionOnly;
 }
 
 } // namespace libgestures

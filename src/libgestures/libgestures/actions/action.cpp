@@ -35,6 +35,11 @@ bool GestureAction::canExecute() const
     return m_repeatInterval != 0 || !m_triggered;
 }
 
+bool GestureAction::blocksOtherActions() const
+{
+    return m_triggered && m_blockOtherActions;
+}
+
 void GestureAction::onGestureCancelled()
 {
     if (m_when == When::Cancelled && canExecute() && satisfiesConditions())
@@ -80,6 +85,11 @@ void GestureAction::onGestureUpdated(const qreal &delta)
         execute();
         m_accumulatedDelta -= m_repeatInterval;
     }
+}
+
+void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
+{
+    m_blockOtherActions = blockOtherActions;
 }
 
 void GestureAction::setRepeatInterval(const qreal &interval)

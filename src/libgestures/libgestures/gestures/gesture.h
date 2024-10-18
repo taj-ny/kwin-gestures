@@ -34,12 +34,6 @@ public:
     void setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached);
     void setThreshold(const qreal &threshold);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
-
-    /**
-     * @param triggerOneActionOnly Whether only one action should be executed during a gesture. This can cause a
-     * gesture to end prematurely.
-     */
-    void setTriggerOneActionOnly(const bool &triggerOneActionOnly);
 signals:
     /**
      * Emitted when the gesture has been cancelled.
@@ -75,7 +69,6 @@ private slots:
 private:
     uint8_t m_minimumFingers = 0;
     uint8_t m_maximumFingers = 0;
-    bool m_triggerOneActionOnly = false;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
@@ -83,6 +76,11 @@ private:
 
     qreal m_accumulatedDelta = 0;
     bool m_hasStarted = false;
+
+    /**
+     * The action that currently blocks other actions. Reset after gesture has been cancelled or ended.
+     */
+    std::optional<std::shared_ptr<GestureAction>> m_blockingAction;
 };
 
 } // namespace libgestures

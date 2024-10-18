@@ -34,7 +34,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 minimumFingers = maximumFingers = fingers;
             }
             const bool triggerWhenThresholdReached = gestureGroup.readEntry("TriggerWhenThresholdReached", false);
-            const bool triggerOneActionOnly = gestureGroup.readEntry("TriggerOneActionOnly", false);
 
             std::shared_ptr<libgestures::Gesture> gesture;
             if (gestureType == "Hold")
@@ -89,7 +88,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
 
             gesture->setFingers(minimumFingers, maximumFingers);
             gesture->setTriggerWhenThresholdReached(triggerWhenThresholdReached);
-            gesture->setTriggerOneActionOnly(triggerOneActionOnly);
 
             if (!gesture)
                 continue;
@@ -128,6 +126,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                     continue;
 
                 action->setRepeatInterval(actionGroup.readEntry("RepeatInterval", 0.0));
+                action->setBlockOtherActions(actionGroup.readEntry("BlockOtherActions", false));
 
                 const auto conditions = readConditions(actionGroup.group("Conditions"), windowInfoProvider);
                 for (const auto &condition : conditions)

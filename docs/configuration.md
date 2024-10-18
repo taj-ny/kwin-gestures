@@ -14,8 +14,7 @@ See [example_gestures.md](example_gestures.md) for examples.
             - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets **MinimumFingers** and **MaximumFingers**.<br>Minimum value: **2** for hold and pinch gestures, **3** for swipe.<br>Default: **none**
             - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
             - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
-            - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: **false**
-            - **TriggerOneActionOnly** (bool) - Whether to trigger only the first action that satisfies a condition.<br>Default: **false**<br>&nbsp;
+            - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: **false**&nbsp;
             - **[Hold]** - Configuration for hold gestures.
                 - **Threshold** (int) - In milliseconds.<br>Default: **0**
             - **[Pinch]** - Configuration for pinch gestures.
@@ -44,7 +43,8 @@ See [example_gestures.md](example_gestures.md) for examples.
                         - ``Command`` - Run a command.
                         - ``GlobalShortcut`` - Invoke a global shortcut.
                         - ``KeySequence`` - Send keystrokes.
-                    - **RepeatInterval** (int/float) - Whether and how often this action should repeat.<br>Can be negative for all gestures except hold.<br>Default: **0 (no repeating)**<br>&nbsp;
+                    - **RepeatInterval** (int/float) - Whether and how often this action should repeat.<br>Can be negative for all gestures except hold.<br>Default: **0 (no repeating)**
+                    - **BlockOtherActions** (bool) - Whether this action should block other actions if triggered.<br>Default: **false**<br>&nbsp;
                     - **[Command]** - Configuration for the GlobalShortcut action.
                         - **Command** (string) - The command to run.<br>Default: **none**
                     - **[GlobalShortcut]** - Configuration for the GlobalShortcut action.
