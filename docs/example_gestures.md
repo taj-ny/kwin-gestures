@@ -22,7 +22,7 @@ Type=KeySequence
 WindowClassRegex=firefox
 
 [Gestures][Touchpad][0][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,keyboardPressKey LEFTBRACE,release LEFTCTRL,keyboardReleaseKey LEFTBRACE
+Sequence=press LEFTCTRL,press LEFTBRACE,release LEFTCTRL,release LEFTBRACE
 
 
 [Gestures][Touchpad][1]
