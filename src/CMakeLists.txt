@@ -1,5 +1,3 @@
-add_subdirectory(kwin)
-
 set(libgestures_SRCS
     libgestures/libgestures/actions/action.cpp
     libgestures/libgestures/actions/command.cpp
@@ -21,3 +19,7 @@ target_link_libraries(libgestures PRIVATE
     Qt6::DBus
 )
 target_include_directories(libgestures PUBLIC libgestures)
+
+if (BUILD_KWIN_EFFECT)
+    add_subdirectory(kwin)
+endif()
