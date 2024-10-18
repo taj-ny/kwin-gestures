@@ -3,13 +3,15 @@ cmake_minimum_required(VERSION 3.16.0)
 project(kwin_gestures)
 set(PROJECT_VERSION "0.2.0")
 
-set(KF_MIN_VERSION "5.240.0")
 set(QT_MIN_VERSION "6.6.0")
 set(QT_MAJOR_VERSION 6)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+option(BUILD_KWIN_EFFECT "Build the KWin effect" ON)
+option(BUILD_TESTS "Build tests" OFF)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose Release or Debug" FORCE)
@@ -25,20 +27,13 @@ include(KDECMakeSettings)
 include(KDECompilerSettings NO_POLICY_SCOPE)
 
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
-    Widgets
+    Core
+    DBus
 )
-
-include_directories(${Qt6Widgets_INCLUDE_DIRS})
-add_definitions(${Qt6Widgets_DEFINITIONS})
-
-find_package(KWin REQUIRED COMPONENTS
-    kwineffects
-)
-
-if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
-    add_compile_definitions(KWIN_6_2_OR_GREATER)
-endif()
 
 add_subdirectory(src)
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

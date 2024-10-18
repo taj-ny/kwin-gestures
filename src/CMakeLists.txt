@@ -1,24 +1,25 @@
-set(kwin_gestures_SOURCES
-    gestureseffect.cpp
-    inputfilter.cpp
-    main.cpp
-    virtualkeyboard.cpp
-    config/config.cpp
-    gesturerecognizer.cpp
-    gestures/condition.cpp
-    gestures/gesture.cpp
-    gestures/holdgesture.cpp
-    gestures/pinchgesture.cpp
-    gestures/swipegesture.cpp
-    gestures/actions/action.cpp
-    gestures/actions/command.cpp
-    gestures/actions/globalshortcut.cpp
-    gestures/actions/keysequence.cpp
+set(libgestures_SRCS
+    libgestures/libgestures/actions/action.cpp
+    libgestures/libgestures/actions/command.cpp
+    libgestures/libgestures/actions/kdeglobalshortcut.cpp
+    libgestures/libgestures/actions/keysequence.cpp
+    libgestures/libgestures/gestures/gesture.cpp
+    libgestures/libgestures/gestures/gesturerecognizer.cpp
+    libgestures/libgestures/gestures/holdgesture.h
+    libgestures/libgestures/gestures/pinchgesture.cpp
+    libgestures/libgestures/gestures/swipegesture.cpp
+    libgestures/libgestures/condition.cpp
+    libgestures/libgestures/input.h
+    libgestures/libgestures/windowinfoprovider.cpp
 )
 
-add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})
-target_link_libraries(kwin_gestures
-    KWin::kwin
+add_library(libgestures STATIC ${libgestures_SRCS})
+target_link_libraries(libgestures PRIVATE
+    Qt6::Core
+    Qt6::DBus
 )
+target_include_directories(libgestures PUBLIC libgestures)
 
-install(TARGETS kwin_gestures DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)
+if (BUILD_KWIN_EFFECT)
+    add_subdirectory(kwin)
+endif()
