@@ -1,4 +1,3 @@
-#include "test_gesturerecognizer_shared.h"
 #include "test_gesturerecognizer.h"
 #include <QSignalSpy>
 
@@ -86,6 +85,34 @@ void TestGestureRecognizer::gestureEnd_activeGesture_gestureEndedSignalEmittedAn
     QVERIFY(returnValue);
 }
 
+void TestGestureRecognizer::holdGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue()
+{
+    const auto gesture1 = std::make_shared<HoldGesture>();
+    gesture1->setThreshold(1);
+    gesture1->setFingers(2, 2);
+    gesture1->setTriggerWhenThresholdReached(true);
+    gesture1->setTriggerOneActionOnly(true);
+    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto gesture2 = std::make_shared<HoldGesture>();
+    gesture2->setThreshold(1);
+    gesture2->setFingers(2, 2);
+    gesture2->setTriggerWhenThresholdReached(true);
+
+    gestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue(
+        gesture1,
+        gesture2,
+        [this]()
+        {
+            m_gestureRecognizer->holdGestureBegin(2);
+        },
+        [this](bool &endedPrematurely)
+        {
+            m_gestureRecognizer->holdGestureUpdate(1, endedPrematurely);
+            return true;
+        }
+    );
+}
+
 void TestGestureRecognizer::pinchGestureUpdate_directions_data()
 {
     QTest::addColumn<PinchDirection>("direction");
@@ -122,6 +149,36 @@ void TestGestureRecognizer::pinchGestureUpdate_directions()
             return m_gestureRecognizer->pinchGestureUpdate(delta, 0, QPointF(), _);
         },
         correct
+    );
+}
+
+void TestGestureRecognizer::pinchGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue()
+{
+    const auto gesture1 = std::make_shared<PinchGesture>();
+    gesture1->setDirection(PinchDirection::Expanding);
+    gesture1->setThreshold(0.1);
+    gesture1->setFingers(2, 2);
+    gesture1->setTriggerWhenThresholdReached(true);
+    gesture1->setTriggerOneActionOnly(true);
+    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto gesture2 = std::make_shared<PinchGesture>();
+    gesture2->setDirection(PinchDirection::Expanding);
+    gesture2->setThreshold(0.1);
+    gesture2->setFingers(2, 2);
+    gesture2->setTriggerWhenThresholdReached(true);
+
+    gestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue(
+        gesture1,
+        gesture2,
+        [this]()
+        {
+            m_gestureRecognizer->pinchGestureBegin(2);
+        },
+        [this](bool &endedPrematurely)
+        {
+            m_gestureRecognizer->pinchGestureUpdate(1.1, 0, QPointF(), endedPrematurely);
+            return true;
+        }
     );
 }
 
@@ -198,6 +255,36 @@ void TestGestureRecognizer::swipeGestureUpdate_directions()
     );
 }
 
+void TestGestureRecognizer::swipeGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue()
+{
+    const auto gesture1 = std::make_shared<SwipeGesture>();
+    gesture1->setDirection(SwipeDirection::Right);
+    gesture1->setThreshold(1);
+    gesture1->setFingers(3, 3);
+    gesture1->setTriggerWhenThresholdReached(true);
+    gesture1->setTriggerOneActionOnly(true);
+    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto gesture2 = std::make_shared<SwipeGesture>();
+    gesture2->setDirection(SwipeDirection::Right);
+    gesture2->setThreshold(1);
+    gesture2->setFingers(3, 3);
+    gesture2->setTriggerWhenThresholdReached(true);
+
+    gestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue(
+        gesture1,
+        gesture2,
+        [this]()
+        {
+            m_gestureRecognizer->swipeGestureBegin(3);
+        },
+        [this](bool &endedPrematurely)
+        {
+            m_gestureRecognizer->swipeGestureUpdate(QPointF(1, 0), endedPrematurely);
+            return true;
+        }
+    );
+}
+
 void TestGestureRecognizer::gestureUpdate_directions(
     std::shared_ptr<Gesture> gesture,
     std::function<void()> gestureBegin,
@@ -215,6 +302,29 @@ void TestGestureRecognizer::gestureUpdate_directions(
     QCOMPARE(gestureUpdate(), correct);
     QCOMPARE(cancelledSpy.count(), correct ? 0 : 1);
     QCOMPARE(updatedSpy.count(), correct ? 1 : 0);
+}
+
+void TestGestureRecognizer::gestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue(
+    std::shared_ptr<Gesture> gesture1,
+    std::shared_ptr<Gesture> gesture2,
+    std::function<void()> gestureBegin,
+    std::function<bool(bool&)> gestureUpdate
+)
+{
+    const QSignalSpy spy1(gesture1.get(), &Gesture::updated);
+    const QSignalSpy spy2(gesture2.get(), &Gesture::updated);
+
+    m_gestureRecognizer->registerGesture(gesture1);
+    m_gestureRecognizer->registerGesture(gesture2);
+
+    gestureBegin();
+    bool endedPrematurely = false;
+    const bool returnValue = gestureUpdate(endedPrematurely);
+
+    QCOMPARE(spy1.count(), 1);
+    QCOMPARE(spy2.count(), 0);
+    QVERIFY(endedPrematurely);
+    QVERIFY(returnValue);
 }
 
 } // namespace libgestures
