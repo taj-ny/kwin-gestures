@@ -114,4 +114,4 @@ Before reporting any issues related to gesture recognition, run ``libinput debug
 Depending on the touchpad, 3 or 4-finger pinch gestures may sometimes be incorrectly interpreted as swipe gestures due to the touchpad only being able to track 2 fingers. As a workaround, move only 2 fingers in opposite directions. See https://wayland.freedesktop.org/libinput/doc/1.25.0/gestures.html#gestures-on-two-finger-touchpads for more information.
 
 # Credits
-- [KWin](https://invent.kde.org/plasma/kwin) - Gesture recognition, sending keystrokes
+- [KWin](https://invent.kde.org/plasma/kwin) - Gesture recognition code (parts of it), sending keystrokes

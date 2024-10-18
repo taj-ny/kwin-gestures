@@ -1,0 +1,29 @@
+name: Test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+      options: --user root
+
+    steps:
+      - name: Update packages
+        run: pacman -Syu --noconfirm
+
+      - name: Install dependencies
+        run: pacman -S --needed --noconfirm base-devel git extra-cmake-modules qt6-tools kwin
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build -DBUILD_KWIN_EFFECT=OFF -DBUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build -j $(nproc)
+
+      - name: Run tests
+        run: ctest --test-dir ${{github.workspace}}/build --output-on-failure --verbose
