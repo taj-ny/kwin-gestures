@@ -23,7 +23,7 @@ jobs:
         run: cmake -B ${{github.workspace}}/build -DBUILD_KWIN_EFFECT=OFF -DBUILD_TESTS=ON
 
       - name: Build
-        run: cmake --build ${{github.workspace}}/build
+        run: cmake --build ${{github.workspace}}/build -j $(nproc)
 
       - name: Run tests
         run: ctest --test-dir ${{github.workspace}}/build --output-on-failure --verbose
