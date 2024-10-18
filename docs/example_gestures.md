@@ -41,7 +41,7 @@ Type=KeySequence
 WindowClassRegex=firefox
 
 [Gestures][Touchpad][1][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,keyboardPressKey RIGHTBRACE,release LEFTCTRL,keyboardReleaseKey RIGHTBRACE
+Sequence=press LEFTCTRL,press RIGHTBRACE,release LEFTCTRL,release RIGHTBRACE
 
 
 [Gestures][Touchpad][2]
@@ -60,7 +60,7 @@ Type=KeySequence
 WindowClassRegex=firefox
 
 [Gestures][Touchpad][2][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,keyboardPressKey F5,release LEFTCTRL,keyboardReleaseKey F5
+Sequence=press LEFTCTRL,press F5,release LEFTCTRL,release F5
 ```
 
 ### Volume control
