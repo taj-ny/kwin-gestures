@@ -5,7 +5,7 @@
 namespace libgestures
 {
 
-enum SwipeDirection
+enum class SwipeDirection
 {
     Left,
     Right,
@@ -19,8 +19,6 @@ class SwipeGesture : public Gesture
 {
 public:
     SwipeDirection direction() const { return m_direction; }
-
-    bool thresholdReached(const qreal &delta) const override;
 
     void setDirection(const SwipeDirection &direction);
 private:

@@ -45,27 +45,27 @@ void TestAction::canExecute_repeatingNotExecuted_returnsTrue()
 
 void TestAction::canExecute_nonRepeatingExecutedOnce_returnsFalse()
 {
-    m_action->execute();
+    m_action->tryExecute();
     QVERIFY(!m_action->canExecute());
 }
 
 void TestAction::canExecute_repeatingExecutedOnce_returnsTrue()
 {
     m_action->setRepeatInterval(1);
-    m_action->execute();
+    m_action->tryExecute();
     QVERIFY(m_action->canExecute());
 }
 
 void TestAction::canExecute_nonRepeatingExecutedOnceAndEnded_returnsTrue()
 {
-    m_action->execute();
+    m_action->tryExecute();
     Q_EMIT m_action->gestureEnded();
     QVERIFY(m_action->canExecute());
 }
 
 void TestAction::canExecute_nonRepeatingExecutedOnceAndCancelled_returnsTrue()
 {
-    m_action->execute();
+    m_action->tryExecute();
     Q_EMIT m_action->gestureCancelled();
     QVERIFY(m_action->canExecute());
 }

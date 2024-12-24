@@ -526,7 +526,7 @@ class KeySequenceGestureAction : public GestureAction
 public:
     explicit KeySequenceGestureAction(std::shared_ptr<Input> input);
 
-    void execute() override;
+    bool tryExecute() override;
 
     void setSequence(const QString &sequence);
 private:

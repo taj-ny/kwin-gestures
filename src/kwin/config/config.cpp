@@ -33,7 +33,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
             {
                 minimumFingers = maximumFingers = fingers;
             }
-            const bool triggerWhenThresholdReached = gestureGroup.readEntry("TriggerWhenThresholdReached", false);
 
             std::shared_ptr<libgestures::Gesture> gesture;
             if (gestureType == "Hold")
@@ -41,7 +40,6 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 const auto holdGestureGroup = gestureGroup.group("Hold");
 
                 const auto holdGesture = std::make_shared<libgestures::HoldGesture>();
-                holdGesture->setThreshold(holdGestureGroup.readEntry("Threshold", 0));
                 filter->registerTouchpadGesture(holdGesture);
                 gesture = holdGesture;
             }
@@ -50,14 +48,13 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 const auto pinchGestureGroup = gestureGroup.group("Pinch");
 
                 const auto pinchGesture = std::make_shared<libgestures::PinchGesture>();
-                const auto directionStr = pinchGestureGroup.readEntry("Direction", "");
+                const auto directionStr = gestureGroup.readEntry("Direction", "");
                 libgestures::PinchDirection direction = libgestures::PinchDirection::Any;
                 if (directionStr == "Contracting")
                     direction = libgestures::PinchDirection::Contracting;
                 else if (directionStr == "Expanding")
                     direction = libgestures::PinchDirection::Expanding;
                 pinchGesture->setDirection(direction);
-                pinchGesture->setThreshold(pinchGestureGroup.readEntry("Threshold", 1.0));
 
                 filter->registerTouchpadGesture(pinchGesture);
                 gesture = pinchGesture;
@@ -67,7 +64,7 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 const auto swipeGestureGroup = gestureGroup.group("Swipe");
 
                 const auto swipeGesture = std::make_shared<libgestures::SwipeGesture>();
-                const auto directionString = swipeGestureGroup.readEntry("Direction", "Left");
+                const auto directionString = gestureGroup.readEntry("Direction", "Left");
                 auto direction = libgestures::SwipeDirection::Left;
                 if (directionString == "Right")
                     direction = libgestures::SwipeDirection::Right;
@@ -80,14 +77,22 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
                 else if (directionString == "UpDown")
                     direction = libgestures::SwipeDirection::UpDown;
                 swipeGesture->setDirection(direction);
-                swipeGesture->setThreshold(swipeGestureGroup.readEntry("Threshold", 0.0));
 
                 filter->registerTouchpadGesture(swipeGesture);
                 gesture = swipeGesture;
             }
 
+            const auto speedStr = gestureGroup.readEntry("Speed", "Any");
+            libgestures::GestureSpeed speed = libgestures::GestureSpeed::Any;
+            if (speedStr == "Slow")
+                speed = libgestures::GestureSpeed::Slow;
+            else if (speedStr == "Fast")
+                speed = libgestures::GestureSpeed::Fast;
+            gesture->setSpeed(speed);
+
             gesture->setFingers(minimumFingers, maximumFingers);
-            gesture->setTriggerWhenThresholdReached(triggerWhenThresholdReached);
+            gesture->setThresholds(gestureGroup.readEntry("MinimumThreshold", -1.0),
+                                   gestureGroup.readEntry("MaximumThreshold", -1.0));
 
             if (!gesture)
                 continue;
@@ -124,6 +129,26 @@ void Config::read(std::shared_ptr<GestureInputEventFilter> filter, std::shared_p
 
                 if (!action)
                     continue;
+
+                libgestures::When when;
+                auto whenStr = actionGroup.readEntry("When", "");
+                if (whenStr == "Started")
+                    when = libgestures::When::Started;
+                else if (whenStr == "Ended")
+                    when = libgestures::When::Ended;
+                else if (whenStr == "Updated")
+                    when = libgestures::When::Updated;
+                else if (whenStr == "Cancelled")
+                    when = libgestures::When::Cancelled;
+                else if (whenStr == "EndedOrCancelled")
+                    when = libgestures::When::EndedOrCancelled;
+                action->setWhen(when);
+
+                action->setThresholds(actionGroup.readEntry("MinimumThreshold", -1.0),
+                                      actionGroup.readEntry("MaximumThreshold", -1.0));
+
+//                action->setTriggerWhenThresholdReached(actionGroup.readEntry("TriggerWhenThresholdReached", false));
+
 
                 action->setRepeatInterval(actionGroup.readEntry("RepeatInterval", 0.0));
                 action->setBlockOtherActions(actionGroup.readEntry("BlockOtherActions", false));

@@ -7,6 +7,13 @@
 namespace libgestures
 {
 
+enum GestureSpeed
+{
+    Any,
+    Slow,
+    Fast
+};
+
 class Gesture : public QObject
 {
     Q_OBJECT
@@ -19,20 +26,13 @@ public:
      */
     [[nodiscard]] bool satisfiesConditions(const uint8_t &fingerCount) const;
 
-    /**
-     * @returns Whether the specified threshold has been reached.
-     */
-    [[nodiscard]] virtual bool thresholdReached(const qreal &accumulatedDelta) const;
+    GestureSpeed speed() const;
 
     void addAction(const std::shared_ptr<GestureAction> &action);
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
-    /**
-     * @param triggerWhenThresholdReached Whether gesture actions should be immediately triggered once the specified
-     * threshold is reached.
-     */
-    void setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached);
-    void setThreshold(const qreal &threshold);
+    void setSpeed(const GestureSpeed &speed);
+    void setThresholds(const qreal &minimum, const qreal &maximum);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
 signals:
     /**
@@ -58,29 +58,29 @@ signals:
      * triggered.
      */
     void updated(const qreal &delta, bool &endedPrematurely);
-protected:
-    bool m_triggerWhenThresholdReached = false;
-    qreal m_threshold = 0;
 private slots:
     void onCancelled();
     void onEnded();
     void onStarted();
     void onUpdated(const qreal &delta, bool &endedPrematurely);
 private:
+    /**
+     * @return Whether the accumulated delta fits within the specified range.
+     */
+    [[nodiscard]] bool thresholdReached() const;
+
     uint8_t m_minimumFingers = 0;
     uint8_t m_maximumFingers = 0;
+    qreal m_minimumThreshold = -1;
+    qreal m_maximumThreshold = -1;
+    GestureSpeed m_speed = GestureSpeed::Any;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
     std::vector<std::shared_ptr<GestureAction>> m_actions;
 
-    qreal m_accumulatedDelta = 0;
+    qreal m_absoluteAccumulatedDelta = 0;
     bool m_hasStarted = false;
-
-    /**
-     * The action that currently blocks other actions. Reset after gesture has been cancelled or ended.
-     */
-    std::optional<std::shared_ptr<GestureAction>> m_blockingAction;
 };
 
 } // namespace libgestures

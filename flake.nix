@@ -2,7 +2,7 @@
   description = "Custom touchpad and touchscreen shortcuts";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/1925c603f17fc89f4c8f6bf6f631a802ad85d784";
+    nixpkgs.url = "github:NixOS/nixpkgs/970e93b9f82e2a0f3675757eb0bfc73297cc6370";
     utils.url = "github:numtide/flake-utils";
   };
 
