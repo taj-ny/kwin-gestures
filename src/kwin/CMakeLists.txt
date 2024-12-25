@@ -6,6 +6,8 @@ find_package(KWin REQUIRED COMPONENTS
     kwineffects
 )
 
+find_package(yaml-cpp REQUIRED)
+
 if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
     add_compile_definitions(KWIN_6_2_OR_GREATER)
 endif()
@@ -24,6 +26,7 @@ target_link_libraries(kwin_gestures PRIVATE
     KWin::kwin
     libgestures
     Qt6::Widgets
+    yaml-cpp
 )
 
 install(TARGETS kwin_gestures DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/plugins)

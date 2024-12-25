@@ -6,6 +6,7 @@
 , wrapQtAppsHook
 , qttools
 , kglobalacceld
+, yaml-cpp
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +25,7 @@ stdenv.mkDerivation rec {
     kwin
     qttools
     kglobalacceld
+    yaml-cpp
   ];
 
   meta = with lib; {
