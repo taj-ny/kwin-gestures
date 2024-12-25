@@ -9,7 +9,7 @@ namespace libgestures
 class KDEGlobalShortcutGestureAction : public GestureAction
 {
 public:
-    void execute() override;
+    bool tryExecute() override;
 
     void setComponent(const QString &component);
     void setShortcut(const QString &shortcut);

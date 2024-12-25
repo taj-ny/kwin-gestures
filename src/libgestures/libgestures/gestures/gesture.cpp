@@ -13,61 +13,77 @@ Gesture::Gesture()
 
 void Gesture::onCancelled()
 {
+    m_absoluteAccumulatedDelta = 0;
+
     if (!m_hasStarted)
         return;
 
-    for (auto &action : m_actions)
-        Q_EMIT action->gestureCancelled();
-
-    m_accumulatedDelta = 0;
     m_hasStarted = false;
+
+    for (const auto &action : m_actions)
+    {
+        bool actionExecuted = false;
+        Q_EMIT action->gestureCancelled(actionExecuted);
+        if (action->blocksOtherActions() && actionExecuted)
+            break;
+    }
 }
 
 void Gesture::onEnded()
 {
+    m_absoluteAccumulatedDelta = 0;
+
     if (!m_hasStarted)
         return;
 
-    for (const auto &action : m_actions)
-        Q_EMIT action->gestureEnded();
-
-    m_accumulatedDelta = 0;
     m_hasStarted = false;
+
+    for (const auto &action : m_actions)
+    {
+        bool actionExecuted = false;
+        Q_EMIT action->gestureEnded(actionExecuted);
+        if (action->blocksOtherActions() && actionExecuted)
+            break;
+    }
 }
 
 void Gesture::onStarted()
 {
-    m_hasStarted = true;
+    if (!m_hasStarted)
+        return;
 
     for (const auto &action : m_actions)
-        Q_EMIT action->gestureStarted();
+    {
+        bool actionExecuted = false;
+        Q_EMIT action->gestureStarted(actionExecuted);
+        if (action->blocksOtherActions() && actionExecuted)
+            break;
+    }
 }
 
 void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
 {
-    m_accumulatedDelta += delta;
-
-    if (!m_hasStarted && !thresholdReached(m_accumulatedDelta))
+    m_absoluteAccumulatedDelta += std::abs(delta);
+    if (!thresholdReached())
         return;
-    else if (!m_hasStarted)
+
+    if (!m_hasStarted)
+    {
+        m_hasStarted = true;
         Q_EMIT started();
+    }
 
     for (const auto &action : m_actions)
     {
-        if (!action->satisfiesConditions())
-            continue;
-
-        if (!action->repeat() && m_triggerWhenThresholdReached && action->canExecute()) {
-            action->execute();
-            if (m_triggerOneActionOnly)
-            {
-                Q_EMIT ended();
-                endedPrematurely = true;
-                return;
-            }
+        qWarning("trying to update");
+        bool actionExecuted = false;
+        Q_EMIT action->gestureUpdated(delta, actionExecuted);
+        if (actionExecuted && action->blocksOtherActions())
+        {
+            endedPrematurely = true;
+            Q_EMIT ended();
+            return;
         }
-
-        Q_EMIT action->gestureUpdated(delta);
     }
 }
 
@@ -85,14 +101,9 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
 
     const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction)
     {
-        return triggerAction->satisfiesConditions();
+        return triggerAction->canExecute();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
-}
-
-bool Gesture::thresholdReached(const qreal &accumulatedDelta) const
-{
-    return accumulatedDelta >= m_threshold;
 }
 
 void Gesture::addAction(const std::shared_ptr<GestureAction> &action)
@@ -105,14 +116,10 @@ void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
     m_conditions.push_back(condition);
 }
 
-void Gesture::setTriggerWhenThresholdReached(const bool &triggerWhenThresholdReached)
+void Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
 {
-    m_triggerWhenThresholdReached = triggerWhenThresholdReached;
-}
-
-void Gesture::setThreshold(const qreal &threshold)
-{
-    m_threshold = threshold;
+    m_minimumThreshold = minimum;
+    m_maximumThreshold = maximum;
 }
 
 void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
@@ -121,9 +128,20 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
     m_maximumFingers = maximum;
 }
 
-void Gesture::setTriggerOneActionOnly(const bool &triggerOneActionOnly)
+bool Gesture::thresholdReached() const
 {
-    m_triggerOneActionOnly = triggerOneActionOnly;
+    return ((m_minimumThreshold == -1 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
+                                       && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
+}
+
+void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
+{
+    m_speed = speed;
+}
+
+GestureSpeed Gesture::speed() const
+{
+    return m_speed;
 }
 
 } // namespace libgestures

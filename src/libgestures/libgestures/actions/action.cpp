@@ -24,67 +24,114 @@ bool GestureAction::satisfiesConditions() const
     }) != m_conditions.end();
 }
 
-void GestureAction::execute()
+bool GestureAction::thresholdReached() const
 {
+    return (m_minimumThreshold == -1 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
+        && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold);
+}
+
+bool GestureAction::tryExecute()
+{
+    if (!canExecute() || !thresholdReached())
+        return false;
+
     m_triggered = true;
     Q_EMIT executed();
+    return true;
 }
 
 bool GestureAction::canExecute() const
 {
-    return m_repeatInterval != 0 || !m_triggered;
+    return (m_repeatInterval != 0 || !m_triggered) && satisfiesConditions();
 }
 
-void GestureAction::onGestureCancelled()
+bool GestureAction::blocksOtherActions() const
 {
-    if (m_when == When::Cancelled && canExecute() && satisfiesConditions())
-        execute();
-
-    m_accumulatedDelta = 0;
-    m_triggered = false;
+    return m_triggered && m_blockOtherActions;
 }
 
-void GestureAction::onGestureEnded()
+void GestureAction::onGestureCancelled(bool &actionExecuted)
 {
-    if (m_when == When::Ended && canExecute() && satisfiesConditions())
-        execute();
-
-    m_accumulatedDelta = 0;
-    m_triggered = false;
-}
-
-void GestureAction::onGestureStarted()
-{
-    if (m_when == When::Started && canExecute() && satisfiesConditions())
-        execute();
+    if ((m_when == When::Cancelled || m_when == When::EndedOrCancelled) && tryExecute())
+        actionExecuted = true;
 
     m_triggered = false;
     m_accumulatedDelta = 0;
+    m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta)
+void GestureAction::onGestureEnded(bool &actionExecuted)
 {
-    if (m_repeatInterval == 0 || m_when != When::Updated)
-        return;
+    if ((m_when == When::Ended || m_when == When::EndedOrCancelled) && tryExecute())
+        actionExecuted = true;
 
+    m_triggered = false;
+    m_accumulatedDelta = 0;
+    m_absoluteAccumulatedDelta = 0;
+}
+
+void GestureAction::onGestureStarted(bool &actionExecuted)
+{
+    if (m_when == When::Started && tryExecute())
+        actionExecuted = true;
+
+    m_triggered = false;
+    m_accumulatedDelta = 0;
+    m_absoluteAccumulatedDelta = 0;
+}
+
+void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
+{
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0))
     {
         // Direction changed, reset delta
         m_accumulatedDelta = 0;
     }
     else
-        m_accumulatedDelta += delta;
-
-    while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
     {
-        execute();
-        m_accumulatedDelta -= m_repeatInterval;
+        m_accumulatedDelta += delta;
+        m_absoluteAccumulatedDelta += std::abs(delta);
     }
+
+    if (m_when != When::Updated)
+        return;
+
+    if (repeat())
+    {
+        while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
+        {
+            if (tryExecute())
+                actionExecuted = true;
+            m_accumulatedDelta -= m_repeatInterval;
+        }
+        return;
+    }
+
+    if (tryExecute()) {
+        qWarning("executing action from updated no repeat");
+        actionExecuted = true;
+    }
+}
+
+void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
+{
+    m_blockOtherActions = blockOtherActions;
 }
 
 void GestureAction::setRepeatInterval(const qreal &interval)
 {
     m_repeatInterval = interval;
+}
+
+void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
+{
+    m_minimumThreshold = minimum;
+    m_maximumThreshold = maximum;
+}
+
+void GestureAction::setWhen(const libgestures::When &when)
+{
+    m_when = when;
 }
 
 } // namespace libgestures

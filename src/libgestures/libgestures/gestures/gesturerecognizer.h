@@ -108,7 +108,17 @@ private:
     qreal m_previousPinchScale = 1;
 
     std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
-    uint m_currentFingerCount = 0;
+
+    uint8_t m_inputEventsToSample = 5;
+    qreal m_swipeGestureFastThreshold = 150;
+    qreal m_pinchContractingFastThreshold = 0.3;
+    qreal m_pinchExpandingFastThreshold = 0.5;
+
+    GestureSpeed m_speed = GestureSpeed::Any;
+    bool m_isDeterminingSpeed = false;
+    uint8_t m_sampledInputEvents = 0;
+    qreal m_accumulatedAbsoluteSampledDelta = 0;
+
 
     friend class TestGestureRecognizer;
 };

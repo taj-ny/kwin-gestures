@@ -8,9 +8,12 @@ KeySequenceGestureAction::KeySequenceGestureAction(std::shared_ptr<Input> input)
 {
 }
 
-void KeySequenceGestureAction::execute()
+bool KeySequenceGestureAction::tryExecute()
 {
-    GestureAction::execute();
+    if (!GestureAction::tryExecute())
+        return false;
+
+    qWarning() << "executing sequence " << m_sequence;
     for (const auto &command : m_sequence.split(","))
     {
         const auto action = command.split(" ")[0];
@@ -24,6 +27,8 @@ void KeySequenceGestureAction::execute()
         else if (action == "release")
             m_input->keyboardRelease(s_keyMap.at(key));
     }
+
+    return true;
 }
 
 void KeySequenceGestureAction::setSequence(const QString &sequence)

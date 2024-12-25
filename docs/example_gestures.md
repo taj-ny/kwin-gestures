@@ -102,7 +102,7 @@ Command=pactl set-sink-volume @DEFAULT_SINK@ +5%
 [Gestures][Touchpad][4]
 Type=Swipe
 Fingers=4
-TriggerWhenThresholdReached=false
+TriggerWhenThresholdReached=true
 
 [Gestures][Touchpad][4][Swipe]
 Direction=Down
@@ -123,6 +123,7 @@ Type=GlobalShortcut
 
 [Gestures][Touchpad][4][Actions][1][Conditions][0]
 WindowState=Maximized
+BlockOtherActions=true # Prevent the minimize window action from triggering during the same gesture
 
 [Gestures][Touchpad][4][Actions][1][GlobalShortcut]
 Component=kwin
