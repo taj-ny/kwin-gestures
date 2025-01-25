@@ -119,7 +119,7 @@ This gesture will work even if you change the direction without lifting fingers.
 
   actions:
     - on: begin
-      keyboard: +LEFTALT +TAB -TAB
+      keyboard: +LEFTALT TAB
 
     - on: update
       interval: -100

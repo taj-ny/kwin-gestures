@@ -11,36 +11,35 @@ bool KeySequenceGestureAction::tryExecute()
     if (!GestureAction::tryExecute())
         return false;
 
-    if (m_sequence.startsWith("-") || m_sequence.startsWith("+")) {
-        // Complex format
-        for (const auto &command : m_sequence.split(" ")) {
+    for (const auto &command : m_sequence.split(" ")) {
+        if (command.startsWith("+") || command.startsWith("-")) {
             const auto action = command[0];
             const auto key = command.mid(1);
 
-            if (!s_keyMap.contains(key))
+            if (!s_keyMap.contains(key)) {
                 continue;
+            }
 
             if (action == "+")
                 libgestures::input()->keyboardPress(s_keyMap.at(key));
             else if (action == "-")
                 libgestures::input()->keyboardRelease(s_keyMap.at(key));
-        }
-    } else {
-        // Simple format
-        std::stack<uint32_t> keys;
-        for (const auto &keyRaw : m_sequence.split("+")) {
-            if (!s_keyMap.contains(keyRaw))
-                continue;
+        } else {
+            std::stack<uint32_t> keys;
+            for (const auto &keyRaw : command.split("+")) {
+                if (!s_keyMap.contains(keyRaw))
+                    continue;
 
-            const auto key = s_keyMap.at(keyRaw);
-            keys.push(key);
-            libgestures::input()->keyboardPress(key);
-        }
+                const auto key = s_keyMap.at(keyRaw);
+                keys.push(key);
+                libgestures::input()->keyboardPress(key);
+            }
 
-        while (!keys.empty()) {
-            const auto key = keys.top();
-            libgestures::input()->keyboardRelease(key);
-            keys.pop();
+            while (!keys.empty()) {
+                const auto key = keys.top();
+                libgestures::input()->keyboardRelease(key);
+                keys.pop();
+            }
         }
     }
 
