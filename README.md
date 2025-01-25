@@ -1,4 +1,4 @@
-0# KWin Gestures
+# KWin Gestures
 Highly customizable custom touchpad gestures for KDE Plasma 6.
 
 Gestures are handled by **libgestures**, which is included in the project. It doesn't depend on KWin, so it could be used for other window managers or as a standalone application for X11.
