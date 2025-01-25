@@ -50,13 +50,16 @@ struct convert<std::shared_ptr<libgestures::Condition>>
     {
         condition = std::make_shared<libgestures::Condition>();
 
-        for (const auto &negatedRaw : node["negate"].as<QString>("").split(" ")) {
-            if (negatedRaw.contains("window_class")) {
-                condition->setNegateWindowClass(true);
-            } else if (negatedRaw.contains("window_state")) {
-                condition->setNegateWindowState(true);
-            } else {
-                throw Exception(node.Mark(), "Invalid condition property");
+        const auto negatedNode = node["negate"];
+        if (negatedNode.IsDefined()) {
+            for (const auto &negatedRaw : negatedNode.as<QString>("").split(" ")) {
+                if (negatedRaw.contains("window_class")) {
+                    condition->setNegateWindowClass(true);
+                } else if (negatedRaw.contains("window_state")) {
+                    condition->setNegateWindowState(true);
+                } else {
+                    throw Exception(node.Mark(), "Invalid negated condition property");
+                }
             }
         }
 
