@@ -162,7 +162,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             threshold.min = thresholdRaw.toFloat();
         }
 
-        action->setWhen(node["when"].as<libgestures::When>(libgestures::When::Ended));
+        action->setOn(node["on"].as<libgestures::On>(libgestures::On::End));
         action->setThresholds(threshold.min, threshold.max);
         action->setRepeatInterval(node["interval"].as<qreal>(0));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
@@ -278,23 +278,23 @@ struct convert<libgestures::WindowStates>
 };
 
 template <>
-struct convert<libgestures::When>
+struct convert<libgestures::On>
 {
-    static bool decode(const Node &node, libgestures::When &when)
+    static bool decode(const Node &node, libgestures::On &when)
     {
         const auto raw = node.as<QString>();
-        if (raw == "started") {
-            when = libgestures::When::Started;
-        } else if (raw == "updated") {
-            when = libgestures::When::Updated;
-        } else if (raw == "cancelled") {
-            when = libgestures::When::Cancelled;
-        } else if (raw == "ended") {
-            when = libgestures::When::Ended;
-        } else if (raw == "ended_cancelled") {
-            when = libgestures::When::EndedOrCancelled;
+        if (raw == "begin") {
+            when = libgestures::On::Begin;
+        } else if (raw == "update") {
+            when = libgestures::On::Update;
+        } else if (raw == "cancel") {
+            when = libgestures::On::Cancel;
+        } else if (raw == "end") {
+            when = libgestures::On::End;
+        } else if (raw == "end_cancel") {
+            when = libgestures::On::EndOrCancel;
         } else {
-            throw Exception(node.Mark(), "Invalid action 'when' property value");
+            throw Exception(node.Mark(), "Invalid action event ('on')");
         }
 
         return true;

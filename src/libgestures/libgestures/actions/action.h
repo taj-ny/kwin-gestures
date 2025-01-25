@@ -5,13 +5,13 @@
 namespace libgestures
 {
 
-enum When
+enum On
 {
-    Ended,
-    Started,
-    Updated,
-    Cancelled,
-    EndedOrCancelled
+    End,
+    Begin,
+    Update,
+    Cancel,
+    EndOrCancel
 };
 
 class GestureAction : public QObject
@@ -48,7 +48,7 @@ public:
     void setBlockOtherActions(const bool &blockOtherActions);
     void setRepeatInterval(const qreal &interval);
     void setThresholds(const qreal &minimum, const qreal &maximum);
-    void setWhen(const When &when);
+    void setOn(const On &on);
 signals:
     /**
      * Emitted when the action has been executed.
@@ -106,7 +106,7 @@ private:
      */
     qreal m_absoluteAccumulatedDelta = 0;
     bool m_triggered = false;
-    When m_when = When::Updated;
+    On m_on = On::Update;
 
     friend class TestGestureRecognizer;
 };

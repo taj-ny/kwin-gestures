@@ -15,7 +15,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - when: updated
+    - on: update
       threshold: 10
       keyboard: LEFTCTRL+LEFTBRACE
 
@@ -27,7 +27,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - when: updated
+    - on: update
       threshold: 10
       keyboard: LEFTCTRL+RIGHTBRACE
 
@@ -39,7 +39,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - when: updated
+    - on: update
       threshold: 10
       keyboard: F5
 ```
@@ -56,11 +56,11 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: horizontal
 
   actions:
-    - when: updated
+    - on: update
       interval: -50
       command: pactl set-sink-volume @DEFAULT_SINK@ -5%
 
-    - when: updated
+    - on: update
       interval: 50
       command: pactl set-sink-volume @DEFAULT_SINK@ +5%
 ```
@@ -77,7 +77,7 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: down
 
   actions:
-    - when: updated # Unmaximize window if maximized
+    - on: update # Unmaximize window if maximized
       threshold: 10
       plasma_shortcut: kwin,Window Maximize
       block_other: y # Prevent the minimize window action from triggering during the same gesture
@@ -85,7 +85,7 @@ This gesture will work even if you change the direction without lifting fingers.
       conditions:
         - window_state: maximized
 
-    - when: updated # Minimize window if not fullscreen and not maximized
+    - on: update # Minimize window if not fullscreen and not maximized
       threshold: 10
       plasma_shortcut: kwin,Window Minimize
 
@@ -98,7 +98,7 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: up
 
   actions:
-    - when: ended # Maximize window if not maximized
+    - on: end # Maximize window if not maximized
       threshold: 10
       plasma_shortcut: kwin,Window Maximize
 
@@ -111,7 +111,7 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: inward
 
   actions:
-    - when: updated
+    - on: update
       threshold: 0.2
       plasma_shortcut: kwin,Window Close
 ```
@@ -125,18 +125,18 @@ This gesture will work even if you change the direction without lifting fingers.
   speed: fast
 
   actions:
-    - when: started
+    - on: begin
       keyboard: +LEFTALT +TAB -TAB
 
-    - when: updated
+    - on: update
       interval: -100
       keyboard: LEFTSHIFT+TAB
 
-    - when: updated
+    - on: update
       interval: 100
       keyboard: TAB
 
-    - when: ended_cancelled
+    - on: end_cancel
       keyboard: -LEFTALT
 
 
@@ -147,7 +147,7 @@ This gesture will work even if you change the direction without lifting fingers.
   speed: slow
 
   actions:
-    - when: updated
+    - on: update
       keyboard: LEFTALT+LEFTSHIFT+TAB
 
 # Quick window switching (right)
@@ -157,6 +157,6 @@ This gesture will work even if you change the direction without lifting fingers.
   speed: slow
 
   actions:
-    - when: updated
+    - on: update
       keyboard: LEFTALT+TAB
 ```

@@ -52,7 +52,7 @@ bool GestureAction::blocksOtherActions() const
 
 void GestureAction::onGestureCancelled(bool &actionExecuted)
 {
-    if ((m_when == When::Cancelled || m_when == When::EndedOrCancelled) && tryExecute())
+    if ((m_on == On::Cancel || m_on == On::EndOrCancel) && tryExecute())
         actionExecuted = true;
 
     m_triggered = false;
@@ -62,7 +62,7 @@ void GestureAction::onGestureCancelled(bool &actionExecuted)
 
 void GestureAction::onGestureEnded(bool &actionExecuted)
 {
-    if ((m_when == When::Ended || m_when == When::EndedOrCancelled) && tryExecute())
+    if ((m_on == On::End || m_on == On::EndOrCancel) && tryExecute())
         actionExecuted = true;
 
     m_triggered = false;
@@ -72,7 +72,7 @@ void GestureAction::onGestureEnded(bool &actionExecuted)
 
 void GestureAction::onGestureStarted(bool &actionExecuted)
 {
-    if (m_when == When::Started && tryExecute())
+    if (m_on == On::Begin && tryExecute())
         actionExecuted = true;
 
     m_triggered = false;
@@ -93,7 +93,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
         m_absoluteAccumulatedDelta += std::abs(delta);
     }
 
-    if (m_when != When::Updated)
+    if (m_on != On::Update)
         return;
 
     if (repeat())
@@ -128,9 +128,9 @@ void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
     m_maximumThreshold = maximum;
 }
 
-void GestureAction::setWhen(const libgestures::When &when)
+void GestureAction::setOn(const libgestures::On &on)
 {
-    m_when = when;
+    m_on = on;
 }
 
 }
