@@ -38,7 +38,7 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 private:
-    std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::shared_ptr<libgestures::GestureRecognizer>();
+    std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
     /**
      * Amount of fingers currently on the touchpad.
      */
