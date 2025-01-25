@@ -17,7 +17,7 @@ bool KeySequenceGestureAction::tryExecute()
             const auto action = command[0];
             const auto key = command.mid(1);
 
-            if (!s_keyMap.contains(key.toUpper()))
+            if (!s_keyMap.contains(key))
                 continue;
 
             if (action == "+")
@@ -29,7 +29,7 @@ bool KeySequenceGestureAction::tryExecute()
         // Simple format
         std::stack<uint32_t> keys;
         for (const auto &keyRaw : m_sequence.split("+")) {
-            if (!s_keyMap.contains(keyRaw.toUpper()))
+            if (!s_keyMap.contains(keyRaw))
                 continue;
 
             const auto key = s_keyMap.at(keyRaw);
@@ -49,7 +49,7 @@ bool KeySequenceGestureAction::tryExecute()
 
 void KeySequenceGestureAction::setSequence(const QString &sequence)
 {
-    m_sequence = sequence;
+    m_sequence = sequence.toUpper();
 }
 
 }
