@@ -1,3 +1,5 @@
+add_subdirectory(kcm)
+
 find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Widgets
 )
