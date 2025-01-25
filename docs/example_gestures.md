@@ -15,8 +15,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - on: update
-      threshold: 10
+    - on: begin
       keyboard: LEFTCTRL+LEFTBRACE
 
 - type: swipe
@@ -27,8 +26,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - on: update
-      threshold: 10
+    - on: begin
       keyboard: LEFTCTRL+RIGHTBRACE
 
 - type: swipe
@@ -39,8 +37,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
     - window_class: firefox
 
   actions:
-    - on: update
-      threshold: 10
+    - on: begin
       keyboard: F5
 ```
 
@@ -77,16 +74,14 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: down
 
   actions:
-    - on: update # Unmaximize window if maximized
-      threshold: 10
+    - on: begin # Unmaximize window if maximized
       plasma_shortcut: kwin,Window Maximize
       block_other: y # Prevent the minimize window action from triggering during the same gesture
 
       conditions:
         - window_state: maximized
 
-    - on: update # Minimize window if not fullscreen and not maximized
-      threshold: 10
+    - on: begin # Minimize window if not fullscreen and not maximized
       plasma_shortcut: kwin,Window Minimize
 
       conditions:
@@ -98,8 +93,7 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: up
 
   actions:
-    - on: end # Maximize window if not maximized
-      threshold: 10
+    - on: begin # Maximize window if not maximized
       plasma_shortcut: kwin,Window Maximize
 
       conditions:
@@ -111,8 +105,7 @@ This gesture will work even if you change the direction without lifting fingers.
   direction: inward
 
   actions:
-    - on: update
-      threshold: 0.2
+    - on: begin
       plasma_shortcut: kwin,Window Close
 ```
 
@@ -147,7 +140,7 @@ This gesture will work even if you change the direction without lifting fingers.
   speed: slow
 
   actions:
-    - on: update
+    - on: begin
       keyboard: LEFTALT+LEFTSHIFT+TAB
 
 # Quick window switching (right)
@@ -157,6 +150,6 @@ This gesture will work even if you change the direction without lifting fingers.
   speed: slow
 
   actions:
-    - on: update
+    - on: begin
       keyboard: LEFTALT+TAB
 ```
