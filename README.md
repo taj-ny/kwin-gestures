@@ -1,3 +1,5 @@
+https://github.com/user-attachments/assets/5511c31e-5be0-446c-925e-bc7f959a1b41
+
 # KWin Gestures
 Highly customizable custom touchpad gestures for KDE Plasma 6.
 
