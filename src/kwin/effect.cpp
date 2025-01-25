@@ -21,6 +21,15 @@ Effect::Effect()
 #endif
 
     reconfigure(ReconfigureAll);
+
+    if (!QFile::exists(configFile)) {
+        QFile(configFile).open(QIODevice::WriteOnly);
+    }
+
+    m_configFileWatcher.addPath(configFile);
+    m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+    connect(&m_configFileWatcher, &QFileSystemWatcher::directoryChanged, this, &Effect::slotConfigDirectoryChanged);
+    connect(&m_configFileWatcher, &QFileSystemWatcher::fileChanged, this, &Effect::slotConfigFileChanged);
 }
 
 Effect::~Effect()
@@ -30,13 +39,26 @@ Effect::~Effect()
     }
 }
 
+void Effect::slotConfigFileChanged()
+{
+    if (!m_configFileWatcher.files().contains(configFile)) {
+        m_configFileWatcher.addPath(configFile);
+    }
+
+    reconfigure(ReconfigureAll);
+}
+
+void Effect::slotConfigDirectoryChanged()
+{
+    if (!m_configFileWatcher.files().contains(configFile) && QFile::exists(configFile)) {
+        m_configFileWatcher.addPath(configFile);
+        reconfigure(ReconfigureAll);
+    }
+}
+
 void Effect::reconfigure(ReconfigureFlags flags)
 {
     Q_UNUSED(flags)
-
-    if (!QFile::exists(configFile)) {
-        QFile(configFile).open(QIODevice::WriteOnly);
-    }
 
     try {
         auto gestureRecognizer = YAML::LoadFile(configFile.toStdString())["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();

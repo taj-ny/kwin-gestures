@@ -1,7 +1,7 @@
 # Configuration
 There is currently no configuration UI and I have no intention of making one.
 
-The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the effect is loaded. Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures`` or toggle the effect in system settings after updating it.
+The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the effect is loaded. The effect is reconfigured when the file changes.
 
 See [example_gestures.md](example_gestures.md) for examples.
 

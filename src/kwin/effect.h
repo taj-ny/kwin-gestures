@@ -5,6 +5,8 @@
 #include "impl/kwinwindowinfoprovider.h"
 #include "inputfilter.h"
 
+#include <QFileSystemWatcher>
+
 class Effect : public KWin::Effect
 {
 public:
@@ -16,6 +18,11 @@ public:
 
     void reconfigure(ReconfigureFlags flags) override;
 
+private slots:
+    void slotConfigFileChanged();
+    void slotConfigDirectoryChanged();
+
 private:
     std::unique_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_unique<GestureInputEventFilter>();
+    QFileSystemWatcher m_configFileWatcher;
 };
