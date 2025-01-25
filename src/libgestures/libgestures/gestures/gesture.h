@@ -83,4 +83,4 @@ private:
     bool m_hasStarted = false;
 };
 
-} // namespace libgestures
+}

@@ -1,18 +1,12 @@
 #include "condition.h"
-
-#include <utility>
+#include "libgestures/libgestures.h"
 
 namespace libgestures
 {
 
-Condition::Condition(std::shared_ptr<WindowInfoProvider> windowInfoProvider)
-    : m_windowInfoProvider(std::move(windowInfoProvider))
-{
-}
-
 bool Condition::isSatisfied() const
 {
-    const auto windowData = m_windowInfoProvider->activeWindow();
+    const auto windowData = libgestures::windowInfoProvider()->activeWindow();
     if (!windowData)
         return false;
 
@@ -20,42 +14,46 @@ bool Condition::isSatisfied() const
         && isWindowStateSubConditionSatisfied(windowData.value());
 }
 
-void Condition::setNegate(const bool &negate)
-{
-    m_negate = negate;
-}
-
-void Condition::setWindowClassRegex(const QRegularExpression &windowClassRegex)
-{
-    m_windowClassRegex = windowClassRegex;
-}
-
-void Condition::setWindowState(const WindowState &windowState)
-{
-    m_windowState = windowState;
-}
-
 bool Condition::isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const
 {
-    if (!m_windowClassRegex || m_windowClassRegex->pattern().isEmpty())
+    if (!m_windowClass || m_windowClass->pattern().isEmpty()) {
         return true;
+    }
 
-    if (m_windowClassRegex.value().match(data.resourceClass()).hasMatch()
-        || m_windowClassRegex.value().match(data.resourceName()).hasMatch())
-        return !m_negate;
-
-    return m_negate;
+    return ((*m_windowClass).match(data.resourceClass()).hasMatch()
+            || (*m_windowClass).match(data.resourceName()).hasMatch())
+            == !m_negateWindowClass;
 }
 
 bool Condition::isWindowStateSubConditionSatisfied(const WindowInfo &data) const
 {
-    if (!m_windowState)
+    if (m_windowState == WindowState::All)
         return true;
 
     const bool satisfied =
-        ((m_windowState.value() & WindowState::Fullscreen) && (data.state() & WindowState::Fullscreen))
-        || ((m_windowState.value() & WindowState::Maximized) && (data.state() & WindowState::Maximized));
-    return m_negate == !satisfied;
+        ((m_windowState & WindowState::Fullscreen) && (data.state() & WindowState::Fullscreen))
+        || ((m_windowState & WindowState::Maximized) && (data.state() & WindowState::Maximized));
+    return m_negateWindowState == !satisfied;
 }
 
-} // namespace libgestures
+void Condition::setWindowClass(const QRegularExpression &windowClassRegex)
+{
+    m_windowClass = windowClassRegex;
+}
+
+void Condition::setWindowState(const WindowStates &windowState)
+{
+    m_windowState = windowState;
+}
+
+void Condition::setNegateWindowClass(const bool &negate)
+{
+    m_negateWindowClass = negate;
+}
+
+void Condition::setNegateWindowState(const bool &negate)
+{
+    m_negateWindowState = negate;
+}
+
+}

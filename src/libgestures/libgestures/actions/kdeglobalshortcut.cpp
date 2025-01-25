@@ -25,4 +25,4 @@ void KDEGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
     m_shortcut = shortcut;
 }
 
-} // namespace libgestures
+}

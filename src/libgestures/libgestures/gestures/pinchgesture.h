@@ -9,8 +9,8 @@ namespace libgestures
 enum class PinchDirection
 {
     Any,
-    Contracting,
-    Expanding
+    Inward,
+    Outward
 };
 
 class PinchGesture : public Gesture
@@ -23,4 +23,4 @@ private:
     PinchDirection m_direction = PinchDirection::Any;
 };
 
-} // namespace libgestures
+}

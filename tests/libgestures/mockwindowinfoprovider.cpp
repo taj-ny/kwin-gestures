@@ -15,4 +15,4 @@ std::optional<const WindowInfo> MockWindowInfoProvider::activeWindow() const
     return m_info;
 }
 
-} // namespace libgestures
+}

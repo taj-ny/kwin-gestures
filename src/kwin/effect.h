@@ -15,8 +15,7 @@ public:
     static bool enabledByDefault() { return false; };
 
     void reconfigure(ReconfigureFlags flags) override;
+
 private:
-    std::shared_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_shared<GestureInputEventFilter>();
-    std::shared_ptr<libgestures::Input> m_input = std::make_shared<KWinInput>();
-    std::shared_ptr<libgestures::WindowInfoProvider> m_windowInfoProvider = std::make_shared<KWinWindowInfoProvider>();
+    std::unique_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_unique<GestureInputEventFilter>();
 };

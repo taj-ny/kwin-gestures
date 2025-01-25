@@ -14,7 +14,9 @@ KWinInput::KWinInput()
 
 KWinInput::~KWinInput()
 {
-    KWin::input()->removeInputDevice(m_device.get());
+    if (KWin::input()) {
+        KWin::input()->removeInputDevice(m_device.get());
+    }
 }
 
 void KWinInput::keyboardPress(const uint32_t &key)

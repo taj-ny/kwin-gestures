@@ -62,7 +62,7 @@ void TestCondition::isWindowClassRegexSubConditionSatisfied()
     const WindowInfo windowData(s_windowCaption, resourceClass, resourceName, WindowState::Unimportant);
 
     m_condition->setNegate(negate);
-    m_condition->setWindowClassRegex(QRegularExpression(regex));
+    m_condition->setWindowClass(QRegularExpression(regex));
 
     QCOMPARE(m_condition->isWindowClassRegexSubConditionSatisfied(windowData), result);
 }
@@ -112,7 +112,7 @@ void TestCondition::isWindowStateSubConditionSatisfied()
     QCOMPARE(m_condition->isWindowStateSubConditionSatisfied(windowData), result);
 }
 
-} // namespace libgestures
+}
 
 QTEST_MAIN(libgestures::TestCondition)
 #include "test_condition.moc"

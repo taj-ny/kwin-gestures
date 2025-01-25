@@ -96,7 +96,6 @@ private:
     qreal m_repeatInterval = 0;
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;
-    bool m_triggerWhenThresholdReached = 0;
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
     qreal m_accumulatedDelta = 0;
@@ -112,4 +111,4 @@ private:
     friend class TestGestureRecognizer;
 };
 
-} // namespace libgestures
+}

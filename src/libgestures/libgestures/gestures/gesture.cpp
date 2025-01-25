@@ -75,7 +75,6 @@ void Gesture::onUpdated(const qreal &delta, bool &endedPrematurely)
 
     for (const auto &action : m_actions)
     {
-        qWarning("trying to update");
         bool actionExecuted = false;
         Q_EMIT action->gestureUpdated(delta, actionExecuted);
         if (actionExecuted && action->blocksOtherActions())
@@ -144,4 +143,4 @@ GestureSpeed Gesture::speed() const
     return m_speed;
 }
 
-} // namespace libgestures
+}

@@ -3,6 +3,11 @@
 #include "holdgesture.h"
 #include "pinchgesture.h"
 #include "swipegesture.h"
+
+#ifdef LIBGESTURES_YAML
+#include "yaml_convert.h"
+#endif
+
 #include <QObject>
 #include <QPointF>
 
@@ -16,6 +21,11 @@ enum Axis
     None
 };
 
+enum InputDevice
+{
+    Touchpad
+};
+
 /**
  * Recognizes and handles gestures based on received input events.
  */
@@ -23,6 +33,8 @@ class GestureRecognizer : public QObject
 {
     Q_OBJECT
 public:
+    GestureRecognizer() = default;
+
     /**
      * Adds a gesture to the end of the gesture list.
      * @remark This method doesn't prevent duplicate gestures from being added.
@@ -123,4 +135,4 @@ private:
     friend class TestGestureRecognizer;
 };
 
-} // namespace libgestures
+}

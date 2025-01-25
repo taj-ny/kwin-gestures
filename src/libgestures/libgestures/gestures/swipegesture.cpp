@@ -8,4 +8,4 @@ void SwipeGesture::setDirection(const libgestures::SwipeDirection &direction)
     m_direction = direction;
 }
 
-} // namespace libgestures
+}

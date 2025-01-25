@@ -16,4 +16,4 @@ private:
     QString m_command;
 };
 
-} // namespace libgesture
+}

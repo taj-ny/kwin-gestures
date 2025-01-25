@@ -18,4 +18,4 @@ public:
     virtual void keyboardRelease([[maybe_unused]] const uint32_t &key) { };
 };
 
-} // namespace libgestures
+}

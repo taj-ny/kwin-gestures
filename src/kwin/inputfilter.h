@@ -21,14 +21,7 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
-    void registerTouchpadGesture(std::shared_ptr<libgestures::HoldGesture> gesture);
-    void registerTouchpadGesture(std::shared_ptr<libgestures::PinchGesture> gesture);
-    void registerTouchpadGesture(std::shared_ptr<libgestures::SwipeGesture> gesture);
-
-    /**
-     * Unregisters gestures for all devices.
-     */
-    void unregisterGestures();
+    void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     void holdGestureUpdate(const qreal &delta);
@@ -45,7 +38,7 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 private:
-    libgestures::GestureRecognizer m_touchpadGestureRecognizer;
+    std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::shared_ptr<libgestures::GestureRecognizer>();
     /**
      * Amount of fingers currently on the touchpad.
      */

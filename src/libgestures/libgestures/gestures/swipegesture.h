@@ -9,10 +9,10 @@ enum class SwipeDirection
 {
     Left,
     Right,
-    LeftRight,
     Down,
     Up,
-    UpDown,
+    Vertical,
+    Horizontal
 };
 
 class SwipeGesture : public Gesture
@@ -25,4 +25,4 @@ private:
     SwipeDirection m_direction = SwipeDirection::Left;
 };
 
-} // namespace libgestures
+}

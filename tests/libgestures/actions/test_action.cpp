@@ -113,7 +113,7 @@ void TestAction::onGestureUpdated_repeating()
     QCOMPARE(spy.count(), actionExecutions);
 }
 
-} // namespace libgestures
+}
 
 QTEST_MAIN(libgestures::TestAction)
 #include "test_action.moc"

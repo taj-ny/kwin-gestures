@@ -108,7 +108,6 @@ void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
     }
 
     if (tryExecute()) {
-        qWarning("executing action from updated no repeat");
         actionExecuted = true;
     }
 }
@@ -134,4 +133,4 @@ void GestureAction::setWhen(const libgestures::When &when)
     m_when = when;
 }
 
-} // namespace libgestures
+}

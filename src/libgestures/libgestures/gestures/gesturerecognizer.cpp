@@ -1,5 +1,9 @@
 #include "gesturerecognizer.h"
 
+//#ifdef LIBGESTURES_YAML
+#include "libgestures/yaml_convert.h"
+//#endif
+
 namespace libgestures
 {
 
@@ -40,7 +44,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
     m_previousPinchScale = scale;
 
     // Determine the direction of the swipe
-    PinchDirection direction = scale < 1 ? PinchDirection::Contracting : PinchDirection::Expanding;
+    PinchDirection direction = scale < 1 ? PinchDirection::Inward : PinchDirection::Outward;
 
     if (m_isDeterminingSpeed)
     {
@@ -137,9 +141,9 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
     {
         const auto gesture = *it;
 
-        if ((!((gesture->direction() == SwipeDirection::LeftRight
+        if ((!((gesture->direction() == SwipeDirection::Horizontal
                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
-              || (gesture->direction() == SwipeDirection::UpDown
+              || (gesture->direction() == SwipeDirection::Vertical
                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
             && gesture->direction() != direction)
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
@@ -257,4 +261,4 @@ void GestureRecognizer::resetMembers()
     m_speed = GestureSpeed::Any;
 }
 
-} // namespace libgestures
+}

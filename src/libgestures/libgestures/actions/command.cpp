@@ -18,4 +18,4 @@ void CommandGestureAction::setCommand(const QString &command)
     m_command = command;
 }
 
-} // namespace libgesture
+}

@@ -50,4 +50,4 @@ private:
     std::shared_ptr<HoldGesture> m_hold3To4;
 };
 
-} // namespace libgestures
+}
