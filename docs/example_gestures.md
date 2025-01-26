@@ -3,7 +3,7 @@ All gestures provided here are instant - actions trigger immediately when the ge
 
 Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
 
-### Firefox/Dolphin navigation
+## Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
 - Swipe 3 fingers left - Go back
 - Swipe 3 fingers right - Go forward
@@ -50,7 +50,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
         - window_class: dolphin
 ```
 
-### Volume control
+## Volume control
 This is an example of a gesture with repeating actions. It's possible to change the swipe direction during the gesture.
 
 Stop all audio before trying this, as the threshold may be too small for some devices.
@@ -73,7 +73,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
       command: pactl set-sink-volume @DEFAULT_SINK@ +5%
 ```
 
-# Window management
+## Window management
 - Swipe 4 fingers up to maximize window if not maximized
 - Swipe 4 fingers down to unmaximize window if maximized
 - Swipe 4 fingers down to minimize window if not maximized and not fullscreen
@@ -148,7 +148,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
       plasma_shortcut: kwin,Window Quick Tile Right
 ```
 
-# Window switching
+## Window switching
 - Swipe 4 fingers left/right slowly to switch window
 - Swipe 4 fingers left/right fast to open the alt+tab menu
 
@@ -169,7 +169,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
     - on: update
       interval: 75
-      keyboard: TAB
+      keyboard: tab
 
     - on: end_cancel
       keyboard: -leftalt
@@ -195,7 +195,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
       keyboard: leftalt+tab
 ```
 
-# KRunner
+## KRunner
 - Hold 4 fingers to launch KRunner
 
 ```yaml
