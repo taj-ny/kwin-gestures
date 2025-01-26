@@ -2,6 +2,7 @@
 #include "input_event_spy.h"
 #include "keyboard_input.h"
 #include "kwininput.h"
+#include <linux/input-event-codes.h>
 #include "wayland/keyboard.h"
 #include "xkb.h"
 
@@ -13,16 +14,34 @@ KWinInput::KWinInput()
 
 KWinInput::~KWinInput()
 {
-    KWin::input()->removeInputDevice(m_device.get());
+    if (KWin::input()) {
+        KWin::input()->removeInputDevice(m_device.get());
+    }
 }
 
-void KWinInput::keyboardPress(const uint32_t &key) const
+void KWinInput::keyboardPress(const uint32_t &key)
 {
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyPressed);
+    if (key == KEY_LEFTALT || key == KEY_RIGHTALT)
+        m_modifiers |= Qt::KeyboardModifier::AltModifier;
+    else if (key == KEY_LEFTSHIFT || key == KEY_RIGHTSHIFT)
+        m_modifiers |= Qt::KeyboardModifier::ShiftModifier;
+    else if (key == KEY_LEFTCTRL || key == KEY_RIGHTCTRL)
+        m_modifiers |= Qt::KeyboardModifier::ControlModifier;
+    else if (key == KEY_LEFTMETA || key == KEY_RIGHTMETA)
+        m_modifiers |= Qt::KeyboardModifier::MetaModifier;
 }
 
-void KWinInput::keyboardRelease(const uint32_t &key) const
+void KWinInput::keyboardRelease(const uint32_t &key)
 {
+    if (key == KEY_LEFTALT || key == KEY_RIGHTALT)
+        m_modifiers &= ~Qt::KeyboardModifier::AltModifier;
+    else if (key == KEY_LEFTSHIFT || key == KEY_RIGHTSHIFT)
+        m_modifiers &= ~Qt::KeyboardModifier::ShiftModifier;
+    else if (key == KEY_LEFTCTRL || key == KEY_RIGHTCTRL)
+        m_modifiers &= ~Qt::KeyboardModifier::ControlModifier;
+    else if (key == KEY_LEFTMETA || key == KEY_RIGHTMETA)
+        m_modifiers &= ~Qt::KeyboardModifier::MetaModifier;
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyReleased);
 }
 
@@ -33,11 +52,10 @@ void KWinInput::sendKey(const uint32_t &key, const KWin::InputRedirection::Keybo
     xkb->updateKey(key, state);
 
     const xkb_keysym_t keySym = xkb->toKeysym(key);
-    const Qt::KeyboardModifiers globalShortcutsModifiers = xkb->modifiersRelevantForGlobalShortcuts(key);
     KWin::KeyEvent event(
             state == KWin::InputRedirection::KeyboardKeyPressed ? QEvent::KeyPress : QEvent::KeyRelease,
-            xkb->toQtKey(keySym, key, globalShortcutsModifiers ? Qt::ControlModifier : Qt::KeyboardModifiers()),
-            Qt::KeyboardModifier::NoModifier,
+            xkb->toQtKey(keySym, key, m_modifiers),
+            m_modifiers,
             key,
             keySym,
             xkb->toString(xkb->currentKeysym()),
@@ -45,7 +63,7 @@ void KWinInput::sendKey(const uint32_t &key, const KWin::InputRedirection::Keybo
             std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()),
             m_device.get());
     event.setAccepted(false);
-    event.setModifiersRelevantForGlobalShortcuts(globalShortcutsModifiers);
+    event.setModifiersRelevantForGlobalShortcuts(m_modifiers);
 
     KWin::input()->processSpies(std::bind(&KWin::InputEventSpy::keyEvent, std::placeholders::_1, &event));
     KWin::input()->processFilters(std::bind(&KWin::InputEventFilter::keyEvent, std::placeholders::_1, &event));

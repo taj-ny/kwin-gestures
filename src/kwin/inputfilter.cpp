@@ -1,5 +1,7 @@
 #include "input_event_spy.h"
 #include "inputfilter.h"
+
+#include <utility>
 #include "wayland_server.h"
 
 GestureInputEventFilter::GestureInputEventFilter()
@@ -13,24 +15,9 @@ GestureInputEventFilter::GestureInputEventFilter()
     });
 }
 
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::HoldGesture> gesture)
+void GestureInputEventFilter::setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
 {
-    m_touchpadGestureRecognizer.registerGesture(gesture);
-}
-
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::PinchGesture> gesture)
-{
-    m_touchpadGestureRecognizer.registerGesture(gesture);
-}
-
-void GestureInputEventFilter::registerTouchpadGesture(std::shared_ptr<libgestures::SwipeGesture> gesture)
-{
-    m_touchpadGestureRecognizer.registerGesture(gesture);
-}
-
-void GestureInputEventFilter::unregisterGestures()
-{
-    m_touchpadGestureRecognizer.unregisterGestures();
+    m_touchpadGestureRecognizer = gestureRecognizer;
 }
 
 bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
@@ -43,7 +30,7 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
 #endif
 
     m_touchpadGestureFingerCount = fingerCount;
-    m_touchpadGestureRecognizer.holdGestureBegin(fingerCount);
+    m_touchpadGestureRecognizer->holdGestureBegin(fingerCount);
     m_touchpadHoldGestureTimer.start(1);
     return false;
 }
@@ -56,7 +43,7 @@ void GestureInputEventFilter::holdGestureUpdate(const qreal &delta)
 #endif
 
     auto endedPrematurely = false;
-    m_touchpadGestureRecognizer.holdGestureUpdate(delta, endedPrematurely);
+    m_touchpadGestureRecognizer->holdGestureUpdate(delta, endedPrematurely);
     if (!endedPrematurely)
         return;
 
@@ -75,7 +62,7 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer.holdGestureEnd())
+    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->holdGestureEnd())
     {
         KWin::input()->processSpies([&time](auto &&spy)
         {
@@ -104,7 +91,7 @@ bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds tim
 #endif
 
     if (m_touchpadGestureFingerCount >= 2)
-        m_touchpadGestureRecognizer.holdGestureCancel();
+        m_touchpadGestureRecognizer->holdGestureCancel();
 
     return false;
 }
@@ -120,7 +107,7 @@ bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::mi
 
     m_touchpadGestureFingerCount = fingerCount;
     if (m_touchpadGestureFingerCount >= 3)
-        m_touchpadGestureRecognizer.swipeGestureBegin(fingerCount);
+        m_touchpadGestureRecognizer->swipeGestureBegin(fingerCount);
 
     return false;
 }
@@ -138,7 +125,7 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
         return false;
 
     auto endedPrematurely = false;
-    const auto filter = m_touchpadGestureRecognizer.swipeGestureUpdate(delta, endedPrematurely);
+    const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, endedPrematurely);
     if (endedPrematurely)
     {
         swipeGestureEnd(time);
@@ -157,7 +144,7 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer.swipeGestureEnd())
+    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->swipeGestureEnd())
     {
         KWin::input()->processSpies([&time](auto &&spy)
         {
@@ -184,7 +171,7 @@ bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds ti
 #endif
 
     if (m_touchpadGestureFingerCount >= 3)
-        m_touchpadGestureRecognizer.swipeGestureCancel();
+        m_touchpadGestureRecognizer->swipeGestureCancel();
 
     return false;
 }
@@ -200,7 +187,7 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
 
     m_touchpadGestureFingerCount = fingerCount;
     if (m_touchpadGestureFingerCount >= 2)
-        m_touchpadGestureRecognizer.pinchGestureBegin(fingerCount);
+        m_touchpadGestureRecognizer->pinchGestureBegin(fingerCount);
 
     return false;
 }
@@ -218,7 +205,7 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
         return false;
 
     auto endedPrematurely = false;
-    const auto filter = m_touchpadGestureRecognizer.pinchGestureUpdate(scale, angleDelta, delta, endedPrematurely);
+    const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, endedPrematurely);
     if (endedPrematurely)
     {
         pinchGestureEnd(time);
@@ -237,7 +224,7 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 2 && m_touchpadGestureRecognizer.pinchGestureEnd())
+    if (m_touchpadGestureFingerCount >= 2 && m_touchpadGestureRecognizer->pinchGestureEnd())
     {
         KWin::input()->processSpies([&time](auto &&spy)
         {
@@ -264,7 +251,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 #endif
 
     if (m_touchpadGestureFingerCount >= 2)
-        m_touchpadGestureRecognizer.pinchGestureCancel();
+        m_touchpadGestureRecognizer->pinchGestureCancel();
 
     return false;
 }

@@ -9,9 +9,10 @@
             }
         ],
         "Category": "Tools",
-        "Description": "Custom touchpad gestures. See taj-ny/kwin-gestures on GitHub for configuration.",
+        "Description": "Custom touchpad gestures",
         "EnabledByDefault": false,
         "License": "GPL",
         "Name": "Gestures"
-    }
+    },
+    "X-KDE-ConfigModule": "kwin_gestures_kcm"
 }

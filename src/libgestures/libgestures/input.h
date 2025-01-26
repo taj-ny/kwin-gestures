@@ -14,8 +14,8 @@ public:
     Input() = default;
     virtual ~Input() = default;
 
-    virtual void keyboardPress([[maybe_unused]] const uint32_t &key) const { };
-    virtual void keyboardRelease([[maybe_unused]] const uint32_t &key) const { };
+    virtual void keyboardPress([[maybe_unused]] const uint32_t &key) { };
+    virtual void keyboardRelease([[maybe_unused]] const uint32_t &key) { };
 };
 
-} // namespace libgestures
+}

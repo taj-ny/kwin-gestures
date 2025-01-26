@@ -3,10 +3,14 @@
 namespace libgestures
 {
 
-void CommandGestureAction::execute()
+bool CommandGestureAction::tryExecute()
 {
-    GestureAction::execute();
+    if (!GestureAction::tryExecute())
+        return false;
+
     std::ignore = std::system((m_command + " &").toStdString().c_str());
+
+    return true;
 }
 
 void CommandGestureAction::setCommand(const QString &command)
@@ -14,4 +18,4 @@ void CommandGestureAction::setCommand(const QString &command)
     m_command = command;
 }
 
-} // namespace libgesture
+}

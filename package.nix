@@ -6,11 +6,12 @@
 , wrapQtAppsHook
 , qttools
 , kglobalacceld
+, yaml-cpp
 }:
 
 stdenv.mkDerivation rec {
   pname = "kwin-gestures";
-  version = "0.2.0";
+  version = "1.0.0";
 
   src = ./.;
 
@@ -24,11 +25,12 @@ stdenv.mkDerivation rec {
     kwin
     qttools
     kglobalacceld
+    yaml-cpp
   ];
 
   meta = with lib; {
-    description = "Custom touchpad and touchscreen shortcuts";
+    description = "Custom touchpad gestures for Plasma 6";
     license = licenses.gpl3;
-    homepage = "https://github.com/taj-ny/kwin-custom-shortcuts";
+    homepage = "https://github.com/taj-ny/kwin-gestures";
   };
 }

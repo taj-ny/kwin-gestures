@@ -9,4 +9,4 @@ class HoldGesture : public Gesture
 {
 };
 
-} // namespace libgestures
+}

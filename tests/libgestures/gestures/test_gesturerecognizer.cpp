@@ -13,14 +13,6 @@ void TestGestureRecognizer::init()
     m_hold2To3->setFingers(2, 3);
     m_hold3To4 = std::make_shared<HoldGesture>();
     m_hold3To4->setFingers(3, 4);
-
-    m_hold2_2actions_trigger1only = std::make_shared<HoldGesture>();
-    m_hold2_2actions_trigger1only->setTriggerWhenThresholdReached(true);
-    m_hold2_2actions_trigger1only->setFingers(2, 2);
-    m_hold2_2actions_trigger1only->setTriggerOneActionOnly(true);
-    m_hold2_2actions_trigger1only->setThreshold(1);
-    m_hold2_2actions_trigger1only->addAction(std::make_shared<GestureAction>());
-    m_hold2_2actions_trigger1only->addAction(std::make_shared<GestureAction>());
 }
 
 void TestGestureRecognizer::gestureBegin_calledTwice_hasOneActiveGesture()
@@ -91,8 +83,9 @@ void TestGestureRecognizer::holdGestureUpdate_twoActiveGesturesAndOneEndsPrematu
     gesture1->setThreshold(1);
     gesture1->setFingers(2, 2);
     gesture1->setTriggerWhenThresholdReached(true);
-    gesture1->setTriggerOneActionOnly(true);
-    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto action = std::make_shared<GestureAction>();
+    action->setBlockOtherActions(true);
+    gesture1->addAction(action);
     const auto gesture2 = std::make_shared<HoldGesture>();
     gesture2->setThreshold(1);
     gesture2->setFingers(2, 2);
@@ -119,10 +112,10 @@ void TestGestureRecognizer::pinchGestureUpdate_directions_data()
     QTest::addColumn<qreal>("delta");
     QTest::addColumn<bool>("correct");
 
-    QTest::addRow("in in correct") << PinchDirection::Contracting << 0.9 << true;
-    QTest::addRow("in out wrong") << PinchDirection::Contracting << 1.1 << false;
-    QTest::addRow("out in wrong") << PinchDirection::Expanding << 0.9 << false;
-    QTest::addRow("out out correct") << PinchDirection::Expanding << 1.1 << true;
+    QTest::addRow("in in correct") << PinchDirection::In << 0.9 << true;
+    QTest::addRow("in out wrong") << PinchDirection::In << 1.1 << false;
+    QTest::addRow("out in wrong") << PinchDirection::Out << 0.9 << false;
+    QTest::addRow("out out correct") << PinchDirection::Out << 1.1 << true;
     QTest::addRow("any in correct") << PinchDirection::Any << 0.9 << true;
     QTest::addRow("any out correct") << PinchDirection::Any << 1.1 << true;
 }
@@ -155,14 +148,15 @@ void TestGestureRecognizer::pinchGestureUpdate_directions()
 void TestGestureRecognizer::pinchGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue()
 {
     const auto gesture1 = std::make_shared<PinchGesture>();
-    gesture1->setDirection(PinchDirection::Expanding);
+    gesture1->setDirection(PinchDirection::Out);
     gesture1->setThreshold(0.1);
     gesture1->setFingers(2, 2);
     gesture1->setTriggerWhenThresholdReached(true);
-    gesture1->setTriggerOneActionOnly(true);
-    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto action = std::make_shared<GestureAction>();
+    action->setBlockOtherActions(true);
+    gesture1->addAction(action);
     const auto gesture2 = std::make_shared<PinchGesture>();
-    gesture2->setDirection(PinchDirection::Expanding);
+    gesture2->setDirection(PinchDirection::Out);
     gesture2->setThreshold(0.1);
     gesture2->setFingers(2, 2);
     gesture2->setTriggerWhenThresholdReached(true);
@@ -202,9 +196,9 @@ void TestGestureRecognizer::swipeGestureUpdate_directions_data()
             else if (expectedDirection == "down")
                 swipeDirection = SwipeDirection::Down;
             else if (expectedDirection == "leftright")
-                swipeDirection = SwipeDirection::LeftRight;
+                swipeDirection = SwipeDirection::Horizontal;
             else if (expectedDirection == "updown")
-                swipeDirection = SwipeDirection::UpDown;
+                swipeDirection = SwipeDirection::Vertical;
             else
                 Q_UNREACHABLE();
 
@@ -221,8 +215,8 @@ void TestGestureRecognizer::swipeGestureUpdate_directions_data()
                 Q_UNREACHABLE();
 
             bool correct = (expectedDirection == direction)
-                || (swipeDirection == SwipeDirection::LeftRight && (direction == "left" || direction == "right"))
-                || (swipeDirection == SwipeDirection::UpDown && (direction == "up" || direction == "down"));
+                || (swipeDirection == SwipeDirection::Horizontal && (direction == "left" || direction == "right"))
+                || (swipeDirection == SwipeDirection::Vertical && (direction == "up" || direction == "down"));
 
             QTest::addRow("%s %s %s", expectedDirection.toStdString().c_str(), direction.toStdString().c_str(), correct ? "correct" : "wrong")
                 << swipeDirection << delta << correct;
@@ -262,8 +256,9 @@ void TestGestureRecognizer::swipeGestureUpdate_twoActiveGesturesAndOneEndsPremat
     gesture1->setThreshold(1);
     gesture1->setFingers(3, 3);
     gesture1->setTriggerWhenThresholdReached(true);
-    gesture1->setTriggerOneActionOnly(true);
-    gesture1->addAction(std::make_shared<GestureAction>());
+    const auto action = std::make_shared<GestureAction>();
+    action->setBlockOtherActions(true);
+    gesture1->addAction(action);
     const auto gesture2 = std::make_shared<SwipeGesture>();
     gesture2->setDirection(SwipeDirection::Right);
     gesture2->setThreshold(1);
@@ -327,7 +322,7 @@ void TestGestureRecognizer::gestureUpdate_twoActiveGesturesAndOneEndsPrematurely
     QVERIFY(returnValue);
 }
 
-} // namespace libgestures
+}
 
 QTEST_MAIN(libgestures::TestGestureRecognizer)
 #include "test_gesturerecognizer.moc"

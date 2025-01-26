@@ -10,6 +10,7 @@ set(libgestures_SRCS
     libgestures/libgestures/gestures/swipegesture.cpp
     libgestures/libgestures/condition.cpp
     libgestures/libgestures/input.h
+    libgestures/libgestures/libgestures.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 
@@ -18,6 +19,12 @@ target_link_libraries(libgestures PRIVATE
     Qt6::Core
     Qt6::DBus
 )
+
+
+find_package(yaml-cpp REQUIRED)
+target_link_libraries(libgestures PRIVATE yaml-cpp)
+target_compile_options(libgestures PUBLIC -fexceptions -fPIC)
+
 target_include_directories(libgestures PUBLIC libgestures)
 
 if (BUILD_KWIN_EFFECT)

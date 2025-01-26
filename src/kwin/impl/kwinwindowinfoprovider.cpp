@@ -8,7 +8,7 @@ std::optional<const libgestures::WindowInfo> KWinWindowInfoProvider::activeWindo
     if (!window)
         return std::nullopt;
 
-    libgestures::WindowState state = libgestures::WindowState::Unimportant;
+    libgestures::WindowStates state = static_cast<libgestures::WindowState>(0);
     if (window->isFullScreen())
         state = state | libgestures::WindowState::Fullscreen;
     if (window->frameGeometry() == KWin::effects->clientArea(KWin::MaximizeArea, KWin::effects->activeScreen(), KWin::effects->currentDesktop()))

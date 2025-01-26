@@ -4,11 +4,15 @@
 namespace libgestures
 {
 
-void KDEGlobalShortcutGestureAction::execute()
+bool KDEGlobalShortcutGestureAction::tryExecute()
 {
-    GestureAction::execute();
+    if (!GestureAction::tryExecute())
+        return false;
+
     QDBusInterface interface("org.kde.kglobalaccel", "/component/" + m_component, "org.kde.kglobalaccel.Component");
     interface.call("invokeShortcut", m_shortcut);
+
+    return true;
 }
 
 void KDEGlobalShortcutGestureAction::setComponent(const QString &component)
@@ -21,4 +25,4 @@ void KDEGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
     m_shortcut = shortcut;
 }
 
-} // namespace libgestures
+}

@@ -1,34 +1,54 @@
 #include "keysequence.h"
+#include "libgestures/libgestures.h"
+
+#include <stack>
 
 namespace libgestures
 {
 
-KeySequenceGestureAction::KeySequenceGestureAction(std::shared_ptr<Input> input)
-    : m_input(input)
+bool KeySequenceGestureAction::tryExecute()
 {
-}
+    if (!GestureAction::tryExecute())
+        return false;
 
-void KeySequenceGestureAction::execute()
-{
-    GestureAction::execute();
-    for (const auto &command : m_sequence.split(","))
-    {
-        const auto action = command.split(" ")[0];
-        const auto key = command.split(" ")[1];
+    for (const auto &command : m_sequence.split(" ")) {
+        if (command.startsWith("+") || command.startsWith("-")) {
+            const auto action = command[0];
+            const auto key = command.mid(1);
 
-        if (!s_keyMap.contains(key))
-            continue;
+            if (!s_keyMap.contains(key)) {
+                continue;
+            }
 
-        if (action == "press")
-            m_input->keyboardPress(s_keyMap.at(key));
-        else if (action == "release")
-            m_input->keyboardRelease(s_keyMap.at(key));
+            if (action == '+')
+                libgestures::input()->keyboardPress(s_keyMap.at(key));
+            else if (action == '-')
+                libgestures::input()->keyboardRelease(s_keyMap.at(key));
+        } else {
+            std::stack<uint32_t> keys;
+            for (const auto &keyRaw : command.split("+")) {
+                if (!s_keyMap.contains(keyRaw))
+                    continue;
+
+                const auto key = s_keyMap.at(keyRaw);
+                keys.push(key);
+                libgestures::input()->keyboardPress(key);
+            }
+
+            while (!keys.empty()) {
+                const auto key = keys.top();
+                libgestures::input()->keyboardRelease(key);
+                keys.pop();
+            }
+        }
     }
+
+    return true;
 }
 
 void KeySequenceGestureAction::setSequence(const QString &sequence)
 {
-    m_sequence = sequence;
+    m_sequence = sequence.toUpper();
 }
 
-} // namespace libgestures
+}

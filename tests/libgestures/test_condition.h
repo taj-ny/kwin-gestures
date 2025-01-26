@@ -37,4 +37,4 @@ private:
     std::shared_ptr<Condition> m_condition = std::make_shared<Condition>(m_normalWindowProvider);
 };
 
-} // namespace libgestures
+}

@@ -1,165 +1,209 @@
 # Example gestures
+All gestures provided here are instant - actions trigger immediately when the gesture begins. If you don't like that, replace ``on: begin`` with ``on: end``.
 
-### Firefox navigation
+Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
+
+## Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
 - Swipe 3 fingers left - Go back
 - Swipe 3 fingers right - Go forward
-- Swipe 3 fingers down - Refresh
-```
-[Gestures][Touchpad][0]
-Type=Swipe
-Fingers=3
-TriggerWhenThresholdReached=true
 
-[Gestures][Touchpad][0][Swipe]
-Direction=Left
-Threshold=10
+```yaml
+# Go back
+- type: swipe
+  fingers: 3
+  direction: left
 
-[Gestures][Touchpad][0][Actions][0]
-Type=KeySequence
+  actions:
+    # Firefox
+    - on: begin
+      keyboard: leftctrl+leftbrace
 
-[Gestures][Touchpad][0][Actions][0][Conditions][0]
-WindowClassRegex=firefox
+      conditions:
+        - window_class: firefox
 
-[Gestures][Touchpad][0][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,press LEFTBRACE,release LEFTCTRL,release LEFTBRACE
+    # Dolphin
+    - on: begin
+      keyboard: backspace
 
+      conditions:
+        - window_class: dolphin
 
-[Gestures][Touchpad][1]
-Type=Swipe
-Fingers=3
-TriggerWhenThresholdReached=true
+# Go forward
+- type: swipe
+  fingers: 3
+  direction: right
 
-[Gestures][Touchpad][1][Swipe]
-Direction=Right
-Threshold=10
+  actions:
+    # Firefox
+    - on: begin
+      keyboard: leftctrl+rightbrace
 
-[Gestures][Touchpad][1][Actions][0]
-Type=KeySequence
+      conditions:
+        - window_class: firefox
 
-[Gestures][Touchpad][1][Actions][0][Conditions][0]
-WindowClassRegex=firefox
+    # Dolphin
+    - on: begin
+      keyboard: leftalt+right
 
-[Gestures][Touchpad][1][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,press RIGHTBRACE,release LEFTCTRL,release RIGHTBRACE
-
-
-[Gestures][Touchpad][2]
-Type=Swipe
-Fingers=3
-TriggerWhenThresholdReached=true
-
-[Gestures][Touchpad][2][Swipe]
-Direction=Down
-Threshold=10
-
-[Gestures][Touchpad][2][Actions][0]
-Type=KeySequence
-
-[Gestures][Touchpad][2][Actions][0][Conditions][0]
-WindowClassRegex=firefox
-
-[Gestures][Touchpad][2][Actions][0][KeySequence]
-Sequence=press LEFTCTRL,press F5,release LEFTCTRL,release F5
+      conditions:
+        - window_class: dolphin
 ```
 
-### Volume control
-This gesture will work even if you change the direction without lifting fingers. It's recommended not to test this with audio playing just in case the interval is too small.
+## Volume control
+This is an example of a gesture with repeating actions. It's possible to change the swipe direction during the gesture.
+
+Stop all audio before trying this, as the threshold may be too small for some devices.
 
 - Swipe 4 fingers left to decrease volume by 5%
 - Swipe 4 fingers right to increase volume by 5%
 
-```
-[Gestures][Touchpad][3]
-Type=Swipe
-Fingers=4
+```yaml
+- type: swipe
+  fingers: 4
+  direction: left_right
 
-[Gestures][Touchpad][3][Swipe]
-Direction=LeftRight
+  actions:
+    - on: update
+      interval: -50
+      command: pactl set-sink-volume @DEFAULT_SINK@ -5%
 
-[Gestures][Touchpad][3][Actions][0]
-Type=Command
-RepeatInterval=-50
-
-[Gestures][Touchpad][3][Actions][0][Command]
-Command=pactl set-sink-volume @DEFAULT_SINK@ -5%
-
-[Gestures][Touchpad][3][Actions][1]
-Type=Command
-RepeatInterval=50
-
-[Gestures][Touchpad][3][Actions][1][Command]
-Command=pactl set-sink-volume @DEFAULT_SINK@ +5%
+    - on: update
+      interval: 50
+      command: pactl set-sink-volume @DEFAULT_SINK@ +5%
 ```
 
-# Window management
+## Window management
 - Swipe 4 fingers up to maximize window if not maximized
 - Swipe 4 fingers down to unmaximize window if maximized
 - Swipe 4 fingers down to minimize window if not maximized and not fullscreen
+- Swipe 4 fingers left quickly to tile the window left
+- Swipe 4 fingers right quickly to tile the window right
 - Pinch 2 fingers in to close window
 
+```yaml
+# Unmaximize/minimize
+- type: swipe
+  fingers: 4
+  direction: down
+
+  actions:
+    # Unmaximize window if maximized
+    - on: begin
+      plasma_shortcut: kwin,Window Maximize
+      block_other: true # Prevent the minimize window action from triggering during the same gesture
+
+      conditions:
+        - window_state: maximized
+
+    # Minimize window if not fullscreen and not maximized
+    - on: begin
+      plasma_shortcut: kwin,Window Minimize
+
+      conditions:
+        - negate: window_state
+          window_state: fullscreen maximized
+
+# Maximize
+- type: swipe
+  fingers: 4
+  direction: up
+
+  actions:
+    # Maximize window if not already maximized
+    - on: begin
+      plasma_shortcut: kwin,Window Maximize
+
+      conditions:
+        - negate: window_state
+          window_state: maximized
+
+# Close window
+- type: pinch
+  fingers: 2
+  direction: in
+
+  actions:
+    - on: begin
+      plasma_shortcut: kwin,Window Close
+
+# Tile left
+- type: swipe
+  fingers: 4
+  direction: left
+  speed: fast
+
+  actions:
+    - on: begin
+      plasma_shortcut: kwin,Window Quick Tile Left
+
+# Tile right
+- type: swipe
+  fingers: 4
+  direction: right
+  speed: fast
+
+  actions:
+    - on: begin
+      plasma_shortcut: kwin,Window Quick Tile Right
 ```
-[Gestures][Touchpad][4]
-Type=Swipe
-Fingers=4
-TriggerWhenThresholdReached=false
 
-[Gestures][Touchpad][4][Swipe]
-Direction=Down
+## Window switching
+- Swipe 4 fingers left/right slowly to switch window
+- Swipe 4 fingers left/right fast to open the alt+tab menu
 
-[Gestures][Touchpad][4][Actions][0] # Minimize window if not fullscreen and not maximized
-Type=GlobalShortcut
+```yaml
+# Window switching
+- type: swipe
+  direction: left_right
+  fingers: 4
+  speed: fast
 
-[Gestures][Touchpad][4][Actions][0][Conditions][0]
-Negate=true
-WindowState=Fullscreen|Maximized
+  actions:
+    - on: begin
+      keyboard: +leftalt tab
 
-[Gestures][Touchpad][4][Actions][0][GlobalShortcut]
-Component=kwin
-Shortcut=Window Minimize
+    - on: update
+      interval: -75
+      keyboard: leftshift+tab
 
-[Gestures][Touchpad][4][Actions][1] # Unmaximize window if maximized
-Type=GlobalShortcut
+    - on: update
+      interval: 75
+      keyboard: tab
 
-[Gestures][Touchpad][4][Actions][1][Conditions][0]
-WindowState=Maximized
+    - on: end_cancel
+      keyboard: -leftalt
 
-[Gestures][Touchpad][4][Actions][1][GlobalShortcut]
-Component=kwin
-Shortcut=Window Maximize
+# Quick window switching (left)
+- type: swipe
+  direction: left
+  fingers: 4
+  speed: slow
 
+  actions:
+    - on: begin
+      keyboard: leftalt+leftshift+tab
 
-[Gestures][Touchpad][5]
-Type=Swipe
-Fingers=4
-TriggerWhenThresholdReached=true
+# Quick window switching (right)
+- type: swipe
+  direction: right
+  fingers: 4
+  speed: slow
 
-[Gestures][Touchpad][5][Swipe]
-Direction=Up
+  actions:
+    - on: begin
+      keyboard: leftalt+tab
+```
 
-[Gestures][Touchpad][5][Actions][0] # Maximize window if not maximized
-Type=GlobalShortcut
+## KRunner
+- Hold 4 fingers to launch KRunner
 
-[Gestures][Touchpad][5][Actions][0][Conditions][0]
-Negate=true
-WindowState=Maximized
+```yaml
+# Launch KRunner
+- type: hold
+  fingers: 4
 
-[Gestures][Touchpad][5][Actions][0][GlobalShortcut]
-Component=kwin
-Shortcut=Window Maximize
-
-[Gestures][Touchpad][6]
-Type=Pinch
-Fingers=2
-TriggerWhenThresholdReached=true
-
-[Gestures][Touchpad][6][Pinch]
-Direction=Contracting
-
-[Gestures][Touchpad][6][Actions][0] # Close window
-Type=GlobalShortcut
-
-[Gestures][Touchpad][6][Actions][0][GlobalShortcut]
-Component=kwin
-Shortcut=Window Close
+  actions:
+    - on: begin
+      plasma_shortcut: org_kde_krunner_desktop,_launch
 ```

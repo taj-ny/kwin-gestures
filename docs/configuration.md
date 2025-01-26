@@ -1,55 +1,87 @@
 # Configuration
-There is currently no configuration UI and there probably won't be one. The configuration file is located at ``~/.config/kwingesturesrc``. The format may change at any time until 1.0.0 is released. Any changes will be mentioned in the release description.
+There is currently no configuration UI and I have no intention of making one.
 
-Run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures`` or toggle the effect in system settings after updating the file.
+The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the effect is loaded. The effect is reconfigured when the file changes.
 
 See [example_gestures.md](example_gestures.md) for examples.
 
-### Configuration file structure
+When the configuration fails to load, the error will be logged. To see it, run ``journalctl --boot=0 -g "kwin_gestures:" -n 5``. The message should contain the approximate position of where the error has occurred.
+```
+kwin_gestures: Failed to load configuration: Invalid swipe direction (line 4, column 17)
+```
 
-- **[Gestures]**
-    - **[$Device]** (enum) - Which device to add this gesture for (``Touchpad``).<br>
-        - **[$GestureId]** (int) - Unique ID for the gesture.
-            - **Type** (enum) - ``Hold``, ``Pinch``, ``Swipe``
-            - **Fingers** (int) - Number of fingers required to trigger this gesture.<br>Sets **MinimumFingers** and **MaximumFingers**.<br>Minimum value: **2** for hold and pinch gestures, **3** for swipe.<br>Default: **none**
-            - **MinimumFingers** (int) - Minimum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
-            - **MaximumFingers** (int) - Maximum number of fingers required to trigger this gesture.<br>See **Fingers** for accepted values.<br>Default: **none**
-            - **TriggerWhenThresholdReached** (bool) - Whether to trigger the gesture immediately after the specified threshold is reached.<br>Default: **false**
-            - **TriggerOneActionOnly** (bool) - Whether to trigger only the first action that satisfies a condition.<br>Default: **false**<br>&nbsp;
-            - **[Hold]** - Configuration for hold gestures.
-                - **Threshold** (int) - In milliseconds.<br>Default: **0**
-            - **[Pinch]** - Configuration for pinch gestures.
-                - **Direction** (enum)
-                    - ``Contracting``
-                    - ``Expanding``
-                    - ``Any`` - Either contracting or expanding, intended for repeating actions.
-                - **Threshold** (float) - Should be >= 1.0 for expanding gestures and =< 1.0 for contracting gestures.<br>Default: **1.0**
-            - **[Swipe]** - Configuration for swipe gestures.
-                - **Direction** (enum)
-                    - ``Left``
-                    - ``Right``
-                    - ``Up``
-                    - ``Down``
-                    - ``LeftRight`` - Either left or right, intended for repeating actions.
-                    - ``UpDown`` - Either up or down, intended for repeating actions.
-                - **Threshold** (int) - Threshold in pixels for the X axis if **Direction** is ``Left``, ``Right`` or ``LeftRight``, and Y axis if **Direction** is ``Up``, ``Down`` or ``UpDown``.<br>Must be positive.<br>Default: **0**<br>&nbsp;
-            - **[Conditions]** - At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.
-                - **[$ConditionId]** (int) - Unique ID for this condition.
-                    - **Negate** (bool) - If true, this condition will be satisfied only when none of its specified properties are.<br>Default: **false**
-                    - **WindowClassRegex** (string) - A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the condition will not be satisfied.<br>Default: **none**
-                    - **WindowState** (enum) - ``Fullscreen``, ``Maximized``. Values can be combined using the | separator, For example, ``Fullscreen|Maximized`` will match either fullscreen or maximized windows.<br>Default: **none**<br>&nbsp;
-            - **[Actions]** - What do to when the gesture is triggered. Actions are executed in order as they appear in the configuration file.
-                - **[$ActionId]** (int) - Unique ID for this action.
-                    - **Type** (enum)
-                        - ``Command`` - Run a command.
-                        - ``GlobalShortcut`` - Invoke a global shortcut.
-                        - ``KeySequence`` - Send keystrokes.
-                    - **RepeatInterval** (int/float) - Whether and how often this action should repeat.<br>Can be negative for all gestures except hold.<br>Default: **0 (no repeating)**<br>&nbsp;
-                    - **[Command]** - Configuration for the GlobalShortcut action.
-                        - **Command** (string) - The command to run.<br>Default: **none**
-                    - **[GlobalShortcut]** - Configuration for the GlobalShortcut action.
-                        - **Component** (string) - Run ``qdbus org.kde.kglobalaccel | grep /component`` for the list of components. Don't put the ``/component/`` prefix here.<br>Default: **none**
-                        - **Shortcut** (string) - Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br>Default: **none**
-                    - **[KeySequence]** - Configuration for the KeySequence action.
-                        - **Sequence** (string) - The key sequence to run. Case-sensitive. Invalid format will cause a crash (for now). For the full list of keys see [src/gestures/actions/keysequence.h](src/gestures/actions/keysequence.h).<br>Example: ``press LEFTCTRL,keyboardPressKey T,release LEFTCTRL,keyboardReleaseKey T``.<br>Default: **none**<br>&nbsp;
-                    - **[Conditions]** - Same as **[Gestures][\$Device][$GestureId][Conditions]**, but only applied to this action.
+# Configuration file structure
+Bolded properties must be set.
+
+## Device
+The only device supported at the time is *touchpad*.
+
+The device is the root element in the configuration file:
+```yaml
+touchpad:
+  gestures:
+    # ...
+```
+
+| Property     | Description                                                      |
+|--------------|------------------------------------------------------------------|
+| **gestures** | List of gestures for this device. See *Gesture* below.           |
+| speed        | Settings for how gesture speed is determined. See *Speed* below. |
+
+## Speed
+The defaults may not work for everyone, as they depend on the device's sensitivity and size.
+
+| Property            | Description                                                                                                                                                                                                                                                                                                                                                               | Default |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| events              | How many input events to sample in order to determine the speed at which the gesture is performed. The average of each event's delta is compared against the thresholds below. If the threshold is reached, the gesture is considered to have been performed fast, otherwise slow.<br><br>**Note**: No gestures will be triggered until all events have been sampled.     | *3*     |
+| swipe_threshold     |                                                                                                                                                                                                                                                                                                                                                                           | *20*    |
+| pinch_in_threshold  |                                                                                                                                                                                                                                                                                                                                                                           | *0.04*  |
+| pinch_out_threshold |                                                                                                                                                                                                                                                                                                                                                                           | *0.08*  |
+
+## Gesture
+
+| Property      | Description                                                                                                                                                                                                                                                                                                     | Default |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| **type**      | *hold*, *pinch*, *swipe*<br><br>For *pinch in* gestures, the scale ranges from 1.0 to 0.0. For *pinch out*, the scale is larger than 1.0.                                                                                                                                                                       | *none*  |
+| **direction** | For pinch gestures: *in*, *out*, *any*<br>For swipe gestures: *left*, *right*, *up*, *down*, *left_right* (*left* and *right*), *up_down* (*up* and *down*)                                                                                                                                                     | *none*  |
+| **fingers**   | The exact amount or range of fingers required to trigger this gesture.<br><br>Minimum value: *1* for *hold* gestures, *2* for *pinch* gestures, *3* for *swipe*.<br>Maximum value: Depends on how many fingers the device can detect.<br><br>Examples: ``1``, ``2-3``                                           | *none*  |
+| speed         | *any*, *fast*, *slow*<br><br>The speed at which the gesture must be performed.<br><br>If a value other than *any* is specified, this gesture will cause all other gestures of the same device and type to be delayed by *Speed->events* input events until the speed is determined.                             | *any*   |
+| threshold     | How far this gesture needs to progress in order to be activated.<br><br>A single number sets the minimum threshold, two numbers separated by ``-`` set both the minimum and the maximum.<br><br>A gesture with *begin* or *update* actions can't have a maximum threshold.<br><br>Examples: ``10``, ``100-200`` | *none*  |
+| conditions    | List of conditions. See *Condition* below.<br><br>At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.                                                                                                                                                  | *none*  |                                                                                                        
+| actions       | List of actions. See *Action* below.                                                                                                                                                                                                                                                                            | *none*  |
+
+## Condition
+All specified subconditions must be satisfied in order for the condition to be satisfied.  OR conditions can be created by adding multiple conditions.
+
+| Property     | Description                                                                                                                                                                | Default |
+|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| negate       | *window_class*, *window_state*<br><br>Which properties to negate.                                                                                                          | *none*  |
+| window_class | A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the condition will not be satisfied. | *none*  |
+| window_state | *fullscreen*, *maximized*<br><br>Multiple values can be specified.<br><br>Examples: ``fullscreen``, ``fullscreen maximized``                                               | *none*  |
+
+## Action
+| Property        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Default |
+|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| on              | *begin* - The gesture has started.<br>*end* - The gesture has ended.<br>*cancel* - The gesture has been cancelled, for example due a to a finger being lifted or the direction being changed.<br>*update* - An input event has been sent by the device. Can only be executed once, unless *interval* is set.<br>*end_cancel* - *end* or *cancel*<br><br>When the action should be triggered.<br>To make a gesture trigger when the fingers are lifted, use *ended*.<br>To make a gesture trigger immediately the specified threshold is reached, use *updated*.                                                                                                                                                                                                                                                                                                                                     | *end*   |
+| interval        | Whether and how often an *update* action should be repeated.<br><br>Can be negative for all gestures except *hold*.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | *none*  |
+| block_other     | *false*, *true*<br><br>Whether this action should block other actions when executed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | *none*  |
+| command         | Execute a command.<br><br>Example: ``dolphin``<br><br>Mutually exclusive with *keyboard* and *plasma_shortcut*.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | *none*  |
+| keyboard        | List of keyboard actions separated by space. There are two types of actions:<br>- Manual - A plus (press) or a minus (release) followed by the key, for example ``+LEFTCTRL +N -N -LEFTCTRL``. Keys must be released manually.<br>- Automatic - One or more keys separated by a ``+``, for example ``LEFTCTRL+N``. Keys are pressed in the order as they appear and then released in reverse order.<br>Both types of actions can be combined, for example ``+LEFTSHIFT T+E -LEFTSHIFT S+T`` results in ``TEst``.<br><br>Full key list: [src/libgestures/libgestures/gestures/keysequence.h](src/libgestures/libgestures/gestures/keysequence.h)<br><br>**Note:** If you misspell or forget to release a modifier key, you won't be able to release it using your keyboard and modifying the configuration file may not be possible.<br><br>Mutually exclusive with *command* and *plasma_shortcut*. | *none*  |
+| plasma_shortcut | Invoke a KDE Plasma global shortcut. Format: ``[component],[shortcut]``.<br><br>Run ``qdbus org.kde.kglobalaccel \| grep /component`` for the list of components. Don't put the */component/* prefix in this file.<br>Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br><br>Examples: ``kwin,Window Minimize``<br><br>Mutually exclusive with *command* and *keyboard*.                                                                                                                                                                                                                                                                                                                                                                                                                                           | *none*  |
+| conditions      | List of conditions. See *Condition* below.<br><br>At least one condition (or 0 if none specified) must be satisfied in order for this action to be triggered.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | *none*  |
+| threshold       | Same as *Gesture->threshold*, but only applied to this action.<br><br>*Begin* and *update* actions can't have thresholds.
+
+# Example
+```yaml
+touchpad:
+  speed:
+    swipe_threshold: 15
+
+  gestures:
+    - type: pinch
+      fingers: 2
+      direction: in
+
+      actions:
+        - plasma_shortcut: kwin,Window Close
+```

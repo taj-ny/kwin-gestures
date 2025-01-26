@@ -29,7 +29,7 @@ void TestGesture::thresholdReached()
     QCOMPARE(gesture->thresholdReached(accumulatedDelta), result);
 }
 
-} // namespace libgestures
+}
 
 QTEST_MAIN(libgestures::TestGesture)
 #include "test_gesture.moc"
