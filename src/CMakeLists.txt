@@ -23,7 +23,7 @@ target_link_libraries(libgestures PRIVATE
 
 find_package(yaml-cpp REQUIRED)
 target_link_libraries(libgestures PRIVATE yaml-cpp)
-target_compile_options(libgestures PUBLIC -fexceptions)
+target_compile_options(libgestures PUBLIC -fexceptions -fPIC)
 
 target_include_directories(libgestures PUBLIC libgestures)
 
