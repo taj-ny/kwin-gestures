@@ -20,9 +20,9 @@ bool KeySequenceGestureAction::tryExecute()
                 continue;
             }
 
-            if (action == "+")
+            if (action == '+')
                 libgestures::input()->keyboardPress(s_keyMap.at(key));
-            else if (action == "-")
+            else if (action == '-')
                 libgestures::input()->keyboardRelease(s_keyMap.at(key));
         } else {
             std::stack<uint32_t> keys;
