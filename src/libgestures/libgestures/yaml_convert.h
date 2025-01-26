@@ -192,6 +192,18 @@ struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
             gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
         }
 
+        const auto speedNode = node["speed"];
+        if (speedNode.IsDefined()) {
+            gestureRecognizer->setInputEventsToSample(
+                speedNode["events"].as<uint8_t>(gestureRecognizer->m_inputEventsToSample));
+            gestureRecognizer->setSwipeFastThreshold(
+                speedNode["swipe_threshold"].as<qreal>(gestureRecognizer->m_swipeGestureFastThreshold));
+            gestureRecognizer->setPinchInFastThreshold(
+                speedNode["pinch_in_threshold"].as<qreal>(gestureRecognizer->m_pinchInFastThreshold));
+            gestureRecognizer->setPinchOutFastThreshold(
+                speedNode["pinch_out_threshold"].as<qreal>(gestureRecognizer->m_pinchOutFastThreshold));
+        }
+
         return true;
     }
 };
@@ -222,10 +234,10 @@ struct convert<libgestures::PinchDirection>
     static bool decode(const Node &node, libgestures::PinchDirection &direction)
     {
         const auto directionRaw = node.as<QString>();
-        if (directionRaw == "inward") {
-            direction = libgestures::PinchDirection::Inward;
-        } else if (directionRaw == "outward") {
-            direction = libgestures::PinchDirection::Outward;
+        if (directionRaw == "in") {
+            direction = libgestures::PinchDirection::In;
+        } else if (directionRaw == "out") {
+            direction = libgestures::PinchDirection::Out;
         } else {
             throw Exception(node.Mark(), "Invalid pinch direction");
         }

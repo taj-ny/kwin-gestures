@@ -102,7 +102,7 @@ This gesture will work even if you change the direction without lifting fingers.
 
 - type: pinch
   fingers: 2
-  direction: inward
+  direction: in
 
   actions:
     - on: begin

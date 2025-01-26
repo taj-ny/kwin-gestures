@@ -12,6 +12,7 @@ X11 is currently not supported.
 - Application-specific gestures
 - Trigger actions before fingers are lifted for a more responsive feel
 - Repeating actions with support for changing the direction mid-gesture
+- Fast and slow gestures
 
 # Installation
 <details>

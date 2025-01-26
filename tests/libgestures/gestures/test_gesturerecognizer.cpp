@@ -112,10 +112,10 @@ void TestGestureRecognizer::pinchGestureUpdate_directions_data()
     QTest::addColumn<qreal>("delta");
     QTest::addColumn<bool>("correct");
 
-    QTest::addRow("in in correct") << PinchDirection::Inward << 0.9 << true;
-    QTest::addRow("in out wrong") << PinchDirection::Inward << 1.1 << false;
-    QTest::addRow("out in wrong") << PinchDirection::Outward << 0.9 << false;
-    QTest::addRow("out out correct") << PinchDirection::Outward << 1.1 << true;
+    QTest::addRow("in in correct") << PinchDirection::In << 0.9 << true;
+    QTest::addRow("in out wrong") << PinchDirection::In << 1.1 << false;
+    QTest::addRow("out in wrong") << PinchDirection::Out << 0.9 << false;
+    QTest::addRow("out out correct") << PinchDirection::Out << 1.1 << true;
     QTest::addRow("any in correct") << PinchDirection::Any << 0.9 << true;
     QTest::addRow("any out correct") << PinchDirection::Any << 1.1 << true;
 }
@@ -148,7 +148,7 @@ void TestGestureRecognizer::pinchGestureUpdate_directions()
 void TestGestureRecognizer::pinchGestureUpdate_twoActiveGesturesAndOneEndsPrematurely_endedPrematurelySetToTrueAndOnlyOneGestureUpdatedAndReturnsTrue()
 {
     const auto gesture1 = std::make_shared<PinchGesture>();
-    gesture1->setDirection(PinchDirection::Outward);
+    gesture1->setDirection(PinchDirection::Out);
     gesture1->setThreshold(0.1);
     gesture1->setFingers(2, 2);
     gesture1->setTriggerWhenThresholdReached(true);
@@ -156,7 +156,7 @@ void TestGestureRecognizer::pinchGestureUpdate_twoActiveGesturesAndOneEndsPremat
     action->setBlockOtherActions(true);
     gesture1->addAction(action);
     const auto gesture2 = std::make_shared<PinchGesture>();
-    gesture2->setDirection(PinchDirection::Outward);
+    gesture2->setDirection(PinchDirection::Out);
     gesture2->setThreshold(0.1);
     gesture2->setFingers(2, 2);
     gesture2->setTriggerWhenThresholdReached(true);

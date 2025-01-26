@@ -25,6 +25,26 @@ void GestureRecognizer::unregisterGestures()
     m_gestures.clear();
 }
 
+void GestureRecognizer::setInputEventsToSample(const uint8_t &events)
+{
+    m_inputEventsToSample = events;
+}
+
+void GestureRecognizer::setSwipeFastThreshold(const qreal &threshold)
+{
+    m_swipeGestureFastThreshold = threshold;
+}
+
+void GestureRecognizer::setPinchInFastThreshold(const qreal &threshold)
+{
+    m_pinchInFastThreshold = threshold;
+}
+
+void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
+{
+    m_pinchOutFastThreshold = threshold;
+}
+
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
 {
     for (const auto &holdGesture : m_activeHoldGestures)
@@ -44,7 +64,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
     m_previousPinchScale = scale;
 
     // Determine the direction of the swipe
-    PinchDirection direction = scale < 1 ? PinchDirection::Inward : PinchDirection::Outward;
+    PinchDirection direction = scale < 1 ? PinchDirection::In : PinchDirection::Out;
 
     if (m_isDeterminingSpeed)
     {
@@ -54,7 +74,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
             return true;
         }
 
-        if (m_accumulatedAbsoluteSampledDelta >= (scale < 1 ? m_pinchContractingFastThreshold : m_pinchExpandingFastThreshold))
+        if ((m_accumulatedAbsoluteSampledDelta / m_inputEventsToSample) >= (scale < 1 ? m_pinchInFastThreshold : m_pinchOutFastThreshold))
             m_speed = GestureSpeed::Fast;
         else
             m_speed = GestureSpeed::Slow;
@@ -95,7 +115,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             return true;
         }
 
-        if (m_accumulatedAbsoluteSampledDelta >= m_swipeGestureFastThreshold)
+        if ((m_accumulatedAbsoluteSampledDelta / m_inputEventsToSample) >= m_swipeGestureFastThreshold)
             m_speed = GestureSpeed::Fast;
         else
             m_speed = GestureSpeed::Slow;

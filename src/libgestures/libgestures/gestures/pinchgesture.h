@@ -9,8 +9,8 @@ namespace libgestures
 enum class PinchDirection
 {
     Any,
-    Inward,
-    Outward
+    In,
+    Out
 };
 
 class PinchGesture : public Gesture

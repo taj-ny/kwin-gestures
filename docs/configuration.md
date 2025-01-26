@@ -23,10 +23,20 @@ touchpad:
     # ...
 ```
 
-| Property     | Description                                                |
-|--------------|------------------------------------------------------------|
-| **gestures** | List of gestures for this device. See *Gesture* below.     |
-| settings     | TODO                                                       |
+| Property     | Description                                                      |
+|--------------|------------------------------------------------------------------|
+| **gestures** | List of gestures for this device. See *Gesture* below.           |
+| speed        | Settings for how gesture speed is determined. See *Speed* below. |
+
+## Speed
+The defaults may not work for everyone, as they depend on the device's sensitivity and size.
+
+| Property            | Description                                                                                                                                                                                                                                                                                                                                                               | Default |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| events              | How many input events to sample in order to determine the speed at which the gesture is performed. The average of each event's delta is compared against the thresholds below. If the threshold is reached, the gesture is considered to have been performed fast, otherwise slow.<br><br>**Note**: No gestures will be triggered until all events have been sampled.     | *3*     |
+| swipe_threshold     |                                                                                                                                                                                                                                                                                                                                                                           | *20*    |
+| pinch_in_threshold  |                                                                                                                                                                                                                                                                                                                                                                           | *0.04*  |
+| pinch_out_threshold |                                                                                                                                                                                                                                                                                                                                                                           | *0.08*  |
 
 ## Gesture
 
@@ -40,7 +50,7 @@ touchpad:
 | conditions    | List of conditions. See *Condition* below.<br><br>At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.                                                                                                             | *none*  |                                                                                                        
 | actions       | List of actions. See *Action* below.                                                                                                                                                                                                                                       | *none*  |
 
-# Condition
+## Condition
 All specified subconditions must be satisfied in order for the condition to be satisfied.  OR conditions can be created by adding multiple conditions.
 
 | Property     | Description                                                                                                                                                                | Default |
@@ -49,7 +59,7 @@ All specified subconditions must be satisfied in order for the condition to be s
 | window_class | A regular expression executed on the currently focused window's resource class and resource name. If a match is not found for either, the condition will not be satisfied. | *none*  |
 | window_state | *fullscreen*, *maximized*<br><br>Multiple values can be specified.<br><br>Examples: ``fullscreen``, ``fullscreen maximized``                                               | *none*  |
 
-# Action
+## Action
 | Property        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Default |
 |-----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | on              | *begin* - The gesture has started.<br>*end* - The gesture has ended.<br>*cancel* - The gesture has been cancelled, for example due a to a finger being lifted or the direction being changed.<br>*update* - An input event has been sent by the device. Can only be executed once, unless *interval* is set.<br>*end_cancel* - *end* or *cancel*<br><br>When the action should be triggered.<br>To make a gesture trigger when the fingers are lifted, use *ended*.<br>To make a gesture trigger immediately the specified threshold is reached, use *updated*.                                                                                                                                                                                                                                                                                                                                       | *end*   |
@@ -58,3 +68,18 @@ All specified subconditions must be satisfied in order for the condition to be s
 | command         | Execute a command.<br><br>Example: ``dolphin``<br><br>Mutually exclusive with *keyboard* and *plasma_shortcut*.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | *none*  |
 | keyboard        | List of keyboard actions separated by space. There are two types of actions:<br>- Manual - A plus (press) or a minus (release) followed by the key, for example ``+LEFTCTRL +N -N -LEFTCTRL``. Keys must be released manually.<br>- Automatic - One or more keys separated by a ``+``, for example ``LEFTCTRL+N``. Keys are pressed in the order as they appear and then released in reverse order.<br>Both types of actions can be combined, for example ``+LEFTSHIFT T+E -LEFTSHIFT S+T`` results in ``TEst``.<br><br>Full key list: [src/libgestures/libgestures/gestures/keysequence.h](src/libgestures/libgestures/gestures/keysequence.h)<br><br>**Note:** If you misspell or forget to release a modifier key, you won't be able to release it using your keyboard and modifying the configuration file may not be possible.<br><br>Mutually exclusive with *command* and *plasma_shortcut*.   | *none*  |
 | plasma_shortcut | Invoke a KDE Plasma global shortcut. Format: ``[component],[shortcut]``.<br><br>Run ``qdbus org.kde.kglobalaccel \| grep /component`` for the list of components. Don't put the */component/* prefix in this file.<br>Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br><br>Examples: ``kwin,Window Minimize``<br><br>Mutually exclusive with *command* and *keyboard*.                                                                                                                                                                                                                                                                                                                                                                                                                                             | *none*  |
+
+# Example
+```yaml
+touchpad:
+  speed:
+    swipe_threshold: 15
+
+  gestures:
+    - type: pinch
+      fingers: 2
+      direction: in
+
+      actions:
+        - plasma_shortcut: kwin,Window Close
+```
