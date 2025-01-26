@@ -61,7 +61,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 ```yaml
 - type: swipe
   fingers: 4
-  direction: horizontal
+  direction: left_right
 
   actions:
     - on: update
@@ -155,7 +155,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 ```yaml
 # Window switching
 - type: swipe
-  direction: horizontal
+  direction: left_right
   fingers: 4
   speed: fast
 

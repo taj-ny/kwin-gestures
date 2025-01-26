@@ -157,9 +157,9 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
     {
         const auto gesture = *it;
 
-        if ((!((gesture->direction() == SwipeDirection::Horizontal
+        if ((!((gesture->direction() == SwipeDirection::LeftRight
                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
-              || (gesture->direction() == SwipeDirection::Vertical
+              || (gesture->direction() == SwipeDirection::UpDown
                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
             && gesture->direction() != direction)
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))

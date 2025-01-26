@@ -11,8 +11,8 @@ enum class SwipeDirection
     Right,
     Down,
     Up,
-    Vertical,
-    Horizontal
+    LeftRight,
+    UpDown
 };
 
 class SwipeGesture : public Gesture

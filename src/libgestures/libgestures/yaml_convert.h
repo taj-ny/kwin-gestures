@@ -256,14 +256,14 @@ struct convert<libgestures::SwipeDirection>
             direction = libgestures::SwipeDirection::Left;
         } else if (directionRaw == "right") {
             direction = libgestures::SwipeDirection::Right;
-        } else if (directionRaw == "horizontal") {
-            direction = libgestures::SwipeDirection::Horizontal;
+        } else if (directionRaw == "left_right") {
+            direction = libgestures::SwipeDirection::LeftRight;
         } else if (directionRaw == "up") {
             direction = libgestures::SwipeDirection::Up;
         } else if (directionRaw == "down") {
             direction = libgestures::SwipeDirection::Down;
-        } else if (directionRaw == "vertical") {
-            direction = libgestures::SwipeDirection::Vertical;
+        } else if (directionRaw == "up_down") {
+            direction = libgestures::SwipeDirection::UpDown;
         } else {
             throw Exception(node.Mark(), "Invalid swipe direction");
         }
