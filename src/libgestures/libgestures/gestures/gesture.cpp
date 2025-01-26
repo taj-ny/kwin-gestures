@@ -130,7 +130,7 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 bool Gesture::thresholdReached() const
 {
     return ((m_minimumThreshold == -1 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
-                                       && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
+        && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
 }
 
 void Gesture::setSpeed(const libgestures::GestureSpeed &speed)

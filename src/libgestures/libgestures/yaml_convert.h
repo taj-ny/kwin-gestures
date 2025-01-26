@@ -157,15 +157,21 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
         range threshold(-1, -1);
-        if (thresholdRaw.contains("-")) {
-            const auto split = thresholdRaw.split("-");
-            threshold.min = split[0].toFloat();
-            threshold.max = split[1].toFloat();
-        } else {
-            threshold.min = thresholdRaw.toFloat();
+        if (!thresholdRaw.isEmpty()) {
+            if (thresholdRaw.contains("-")) {
+                const auto split = thresholdRaw.split("-");
+                threshold.min = split[0].toFloat();
+                threshold.max = split[1].toFloat();
+            } else {
+                threshold.min = thresholdRaw.toFloat();
+            }
+        }
+        const auto on = node["on"].as<libgestures::On>(libgestures::On::End);
+        if ((on == libgestures::On::Begin || on == libgestures::On::Update) && (threshold.min != -1 || threshold.max != -1)) {
+            throw Exception(node.Mark(), "Begin and update actions can't have thresholds");
         }
 
-        action->setOn(node["on"].as<libgestures::On>(libgestures::On::End));
+        action->setOn(on);
         action->setThresholds(threshold.min, threshold.max);
         action->setRepeatInterval(node["interval"].as<qreal>(0));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
