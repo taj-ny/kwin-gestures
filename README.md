@@ -1,5 +1,5 @@
 # KWin Gestures
-Highly customizable touchpad gestures for KDE Plasma 6.
+Custom touchpad gestures for Plasma 6.
 
 X11 is currently not supported.
 
