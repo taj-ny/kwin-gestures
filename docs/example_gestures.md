@@ -194,3 +194,16 @@ Stop all audio before trying this, as the threshold may be too small for some de
     - on: begin
       keyboard: leftalt+tab
 ```
+
+# KRunner
+- Hold 4 fingers to launch KRunner
+
+```yaml
+# Launch KRunner
+- type: hold
+  fingers: 4
+
+  actions:
+    - on: begin
+      plasma_shortcut: org_kde_krunner_desktop,_launch
+```
