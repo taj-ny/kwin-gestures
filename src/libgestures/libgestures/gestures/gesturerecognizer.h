@@ -4,10 +4,6 @@
 #include "pinchgesture.h"
 #include "swipegesture.h"
 
-#ifdef LIBGESTURES_YAML
-#include "yaml_convert.h"
-#endif
-
 #include <QObject>
 #include <QPointF>
 
@@ -19,11 +15,6 @@ enum Axis
     Horizontal,
     Vertical,
     None
-};
-
-enum InputDevice
-{
-    Touchpad
 };
 
 /**

@@ -1,9 +1,5 @@
 #include "gesturerecognizer.h"
 
-//#ifdef LIBGESTURES_YAML
-#include "libgestures/yaml_convert.h"
-//#endif
-
 namespace libgestures
 {
 
