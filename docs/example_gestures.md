@@ -16,7 +16,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
 
   actions:
     - on: begin
-      keyboard: LEFTCTRL+LEFTBRACE
+      keyboard: leftctrl+leftbrace
 
 - type: swipe
   fingers: 3
@@ -27,7 +27,7 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
 
   actions:
     - on: begin
-      keyboard: LEFTCTRL+RIGHTBRACE
+      keyboard: leftctrl+rightbrace
 
 - type: swipe
   fingers: 3
@@ -119,18 +119,18 @@ This gesture will work even if you change the direction without lifting fingers.
 
   actions:
     - on: begin
-      keyboard: +LEFTALT TAB
+      keyboard: +leftalt tab
 
     - on: update
       interval: -100
-      keyboard: LEFTSHIFT+TAB
+      keyboard: leftshift+tab
 
     - on: update
       interval: 100
       keyboard: TAB
 
     - on: end_cancel
-      keyboard: -LEFTALT
+      keyboard: -leftalt
 
 
 # Quick window switching (left)
@@ -141,7 +141,7 @@ This gesture will work even if you change the direction without lifting fingers.
 
   actions:
     - on: begin
-      keyboard: LEFTALT+LEFTSHIFT+TAB
+      keyboard: leftalt+leftshift+tab
 
 # Quick window switching (right)
 - type: swipe
@@ -151,5 +151,5 @@ This gesture will work even if you change the direction without lifting fingers.
 
   actions:
     - on: begin
-      keyboard: LEFTALT+TAB
+      keyboard: leftalt+tab
 ```
