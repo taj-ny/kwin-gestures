@@ -1,48 +1,59 @@
 # Example gestures
+All gestures provided here are instant - actions trigger immediately when the gesture begins. If you don't like that, replace ``on: begin`` with ``on: end``.
 
-### Firefox navigation
+Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
+
+### Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
 - Swipe 3 fingers left - Go back
 - Swipe 3 fingers right - Go forward
-- Swipe 3 fingers down - Refresh
 
 ```yaml
+# Go back
 - type: swipe
   fingers: 3
   direction: left
 
-  conditions:
-    - window_class: firefox
-
   actions:
+    # Firefox
     - on: begin
       keyboard: leftctrl+leftbrace
 
+      conditions:
+        - window_class: firefox
+
+    # Dolphin
+    - on: begin
+      keyboard: backspace
+
+      conditions:
+        - window_class: dolphin
+
+# Go forward
 - type: swipe
   fingers: 3
   direction: right
 
-  conditions:
-    - window_class: firefox
-
   actions:
+    # Firefox
     - on: begin
       keyboard: leftctrl+rightbrace
 
-- type: swipe
-  fingers: 3
-  direction: down
+      conditions:
+        - window_class: firefox
 
-  conditions:
-    - window_class: firefox
-
-  actions:
+    # Dolphin
     - on: begin
-      keyboard: F5
+      keyboard: leftalt+right
+
+      conditions:
+        - window_class: dolphin
 ```
 
 ### Volume control
-This gesture will work even if you change the direction without lifting fingers. It's recommended not to test this with audio playing just in case the interval is too small.
+This is an example of a gesture with repeating actions. It's possible to change the swipe direction during the gesture.
+
+Stop all audio before trying this, as the threshold may be too small for some devices.
 
 - Swipe 4 fingers left to decrease volume by 5%
 - Swipe 4 fingers right to increase volume by 5%
@@ -66,40 +77,48 @@ This gesture will work even if you change the direction without lifting fingers.
 - Swipe 4 fingers up to maximize window if not maximized
 - Swipe 4 fingers down to unmaximize window if maximized
 - Swipe 4 fingers down to minimize window if not maximized and not fullscreen
+- Swipe 4 fingers left quickly to tile the window left
+- Swipe 4 fingers right quickly to tile the window right
 - Pinch 2 fingers in to close window
 
 ```yaml
+# Unmaximize/minimize
 - type: swipe
   fingers: 4
   direction: down
 
   actions:
-    - on: begin # Unmaximize window if maximized
+    # Unmaximize window if maximized
+    - on: begin
       plasma_shortcut: kwin,Window Maximize
-      block_other: y # Prevent the minimize window action from triggering during the same gesture
+      block_other: true # Prevent the minimize window action from triggering during the same gesture
 
       conditions:
         - window_state: maximized
 
-    - on: begin # Minimize window if not fullscreen and not maximized
+    # Minimize window if not fullscreen and not maximized
+    - on: begin
       plasma_shortcut: kwin,Window Minimize
 
       conditions:
         - negate: window_state
           window_state: fullscreen maximized
 
+# Maximize
 - type: swipe
   fingers: 4
   direction: up
 
   actions:
-    - on: begin # Maximize window if not maximized
+    # Maximize window if not already maximized
+    - on: begin
       plasma_shortcut: kwin,Window Maximize
 
       conditions:
         - negate: window_state
           window_state: maximized
 
+# Close window
 - type: pinch
   fingers: 2
   direction: in
@@ -107,9 +126,32 @@ This gesture will work even if you change the direction without lifting fingers.
   actions:
     - on: begin
       plasma_shortcut: kwin,Window Close
+
+# Tile left
+- type: swipe
+  fingers: 4
+  direction: left
+  speed: fast
+
+  actions:
+    - on: begin
+      plasma_shortcut: kwin,Window Quick Tile Left
+
+# Tile right
+- type: swipe
+  fingers: 4
+  direction: right
+  speed: fast
+
+  actions:
+    - on: begin
+      plasma_shortcut: kwin,Window Quick Tile Right
 ```
 
 # Window switching
+- Swipe 4 fingers left/right slowly to switch window
+- Swipe 4 fingers left/right fast to open the alt+tab menu
+
 ```yaml
 # Window switching
 - type: swipe
@@ -122,16 +164,15 @@ This gesture will work even if you change the direction without lifting fingers.
       keyboard: +leftalt tab
 
     - on: update
-      interval: -100
+      interval: -75
       keyboard: leftshift+tab
 
     - on: update
-      interval: 100
+      interval: 75
       keyboard: TAB
 
     - on: end_cancel
       keyboard: -leftalt
-
 
 # Quick window switching (left)
 - type: swipe
