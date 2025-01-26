@@ -1,9 +1,11 @@
-https://github.com/user-attachments/assets/5511c31e-5be0-446c-925e-bc7f959a1b41
-
 # KWin Gestures
 Highly customizable touchpad gestures for KDE Plasma 6.
 
 X11 is currently not supported.
+
+https://github.com/user-attachments/assets/2c16790a-869b-44f3-a760-590137293759
+
+[peterfajdiga/kwin4_effect_geometry_change](https://github.com/peterfajdiga/kwin4_effect_geometry_change) was used for tile animations.
 
 # Features
 - Gestures: hold, pinch, swipe
