@@ -1,5 +1,4 @@
 #include "keysequence.h"
-#include "libgestures/libgestures.h"
 
 #include <stack>
 
@@ -11,6 +10,7 @@ bool KeySequenceGestureAction::tryExecute()
     if (!GestureAction::tryExecute())
         return false;
 
+    const auto input = libgestures::Input::implementation();
     for (const auto &command : m_sequence.split(" ")) {
         if (command.startsWith("+") || command.startsWith("-")) {
             const auto action = command[0];
@@ -21,9 +21,9 @@ bool KeySequenceGestureAction::tryExecute()
             }
 
             if (action == '+')
-                libgestures::input()->keyboardPress(s_keyMap.at(key));
+                input->keyboardPress(s_keyMap.at(key));
             else if (action == '-')
-                libgestures::input()->keyboardRelease(s_keyMap.at(key));
+                input->keyboardRelease(s_keyMap.at(key));
         } else {
             std::stack<uint32_t> keys;
             for (const auto &keyRaw : command.split("+")) {
@@ -32,12 +32,12 @@ bool KeySequenceGestureAction::tryExecute()
 
                 const auto key = s_keyMap.at(keyRaw);
                 keys.push(key);
-                libgestures::input()->keyboardPress(key);
+                input->keyboardPress(key);
             }
 
             while (!keys.empty()) {
                 const auto key = keys.top();
-                libgestures::input()->keyboardRelease(key);
+                input->keyboardRelease(key);
                 keys.pop();
             }
         }

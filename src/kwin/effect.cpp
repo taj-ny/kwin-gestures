@@ -1,5 +1,4 @@
 #include "effect.h"
-#include "libgestures/libgestures.h"
 #include "libgestures/yaml_convert.h"
 
 #include <QDir>
@@ -11,8 +10,8 @@ const QString configFile = QStandardPaths::writableLocation(QStandardPaths::Conf
 
 Effect::Effect()
 {
-    libgestures::libgestures::setInput(new KWinInput);
-    libgestures::libgestures::setWindowInfoProvider(new KWinWindowInfoProvider);
+    libgestures::Input::setImplementation(new KWinInput);
+    libgestures::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());

@@ -15,6 +15,8 @@ enum WindowState
 Q_DECLARE_FLAGS(WindowStates, WindowState)
 Q_DECLARE_OPERATORS_FOR_FLAGS(WindowStates)
 
+class WindowInfoProvider;
+
 class WindowInfo
 {
 public:
@@ -48,6 +50,15 @@ public:
     {
         return std::nullopt;
     };
+
+    static WindowInfoProvider *implementation()
+    {
+        return s_implementation.get();
+    }
+    static void setImplementation(WindowInfoProvider *implementation);
+
+private:
+    static std::unique_ptr<WindowInfoProvider> s_implementation;
 };
 
 }

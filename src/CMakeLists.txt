@@ -9,8 +9,7 @@ set(libgestures_SRCS
     libgestures/libgestures/gestures/pinchgesture.cpp
     libgestures/libgestures/gestures/swipegesture.cpp
     libgestures/libgestures/condition.cpp
-    libgestures/libgestures/input.h
-    libgestures/libgestures/libgestures.cpp
+    libgestures/libgestures/input.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 
