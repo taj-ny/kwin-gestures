@@ -23,6 +23,7 @@ private slots:
     void slotConfigDirectoryChanged();
 
 private:
+    bool m_autoReload = true;
     std::unique_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_unique<GestureInputEventFilter>();
     QFileSystemWatcher m_configFileWatcher;
 };

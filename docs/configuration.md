@@ -13,6 +13,12 @@ kwin_gestures: Failed to load configuration: Invalid swipe direction (line 4, co
 # Configuration file structure
 Bolded properties must be set.
 
+## Root
+| Property    | Type   | Description                                                                | Default |
+|-------------|--------|----------------------------------------------------------------------------|---------|
+| autoreload  | bool   | Whether the configuration should be automatically reloaded on file change. | *true*  |
+| touchpad    | Device | See *Device* below.                                                        |         |
+
 ## Device
 The only device supported at the time is *touchpad*.
 

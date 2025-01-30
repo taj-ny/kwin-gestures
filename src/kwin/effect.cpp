@@ -26,8 +26,6 @@ Effect::Effect()
         QFile(configFile).open(QIODevice::WriteOnly);
     }
 
-    m_configFileWatcher.addPath(configFile);
-    m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
     connect(&m_configFileWatcher, &QFileSystemWatcher::directoryChanged, this, &Effect::slotConfigDirectoryChanged);
     connect(&m_configFileWatcher, &QFileSystemWatcher::fileChanged, this, &Effect::slotConfigFileChanged);
 }
@@ -61,11 +59,21 @@ void Effect::reconfigure(ReconfigureFlags flags)
     Q_UNUSED(flags)
 
     try {
-        auto gestureRecognizer = YAML::LoadFile(configFile.toStdString())["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();
+        const auto config = YAML::LoadFile(configFile.toStdString());
+        m_autoReload = config["autoreload"].as<bool>(true);
+        auto gestureRecognizer = config["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();
         m_inputEventFilter->setTouchpadGestureRecognizer(gestureRecognizer);
     } catch (const YAML::Exception &e) {
         qCritical(KWIN_GESTURES).noquote() <<
             QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
             + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
+        return;
+    }
+
+    if (m_autoReload) {
+        m_configFileWatcher.addPath(configFile);
+        m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+    } else {
+        m_configFileWatcher.removePaths(m_configFileWatcher.files() + m_configFileWatcher.directories());
     }
 }
