@@ -167,8 +167,8 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             }
         }
         const auto on = node["on"].as<libgestures::On>(libgestures::On::End);
-        if ((on == libgestures::On::Begin || on == libgestures::On::Update) && (threshold.min != -1 || threshold.max != -1)) {
-            throw Exception(node.Mark(), "Begin and update actions can't have thresholds");
+        if (on == libgestures::On::Begin && (threshold.min != -1 || threshold.max != -1)) {
+            throw Exception(node.Mark(), "Begin actions can't have thresholds");
         }
 
         action->setOn(on);
