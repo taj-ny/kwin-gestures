@@ -21,6 +21,11 @@ void GestureRecognizer::unregisterGestures()
     m_gestures.clear();
 }
 
+void GestureRecognizer::setWidthToHeightRatio(const qreal &ratio)
+{
+    m_widthToHeightRatio = ratio;
+}
+
 void GestureRecognizer::setInputEventsToSample(const uint8_t &events)
 {
     m_inputEventsToSample = events;
@@ -107,7 +112,8 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
     {
         if (m_sampledInputEvents++ != m_inputEventsToSample)
         {
-            m_accumulatedAbsoluteSampledDelta += std::abs(delta.x()) + std::abs(delta.y());
+            m_accumulatedAbsoluteSampledDelta += std::sqrt(std::pow(delta.x(), 2) + std::pow(delta.y(), 2));
+            m_currentSwipeDelta = {};
             return true;
         }
 
@@ -119,38 +125,46 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
         m_isDeterminingSpeed = false;
     }
 
-    SwipeDirection direction; // Overall direction
-    Axis swipeAxis;
+    SwipeDirection validDirection = SwipeDirection::None;
+    SwipeDirection direction = SwipeDirection::None;
 
-    // Pick an axis for gestures so horizontal ones don't change to vertical ones without lifting fingers
-    if (m_currentSwipeAxis == Axis::None)
-    {
-        if (std::abs(m_currentSwipeDelta.x()) >= std::abs(m_currentSwipeDelta.y()))
-            swipeAxis = Axis::Horizontal;
-        else
-            swipeAxis = Axis::Vertical;
+    if (m_validSwipeDirection == SwipeDirection::None) {
+        if (isSwipeDiagonal(m_currentSwipeDelta)) {
+            if ((m_currentSwipeDelta.x() > 0 && m_currentSwipeDelta.y() < 0)
+                || (m_currentSwipeDelta.x() < 0 && m_currentSwipeDelta.y() > 0)) {
+                validDirection = SwipeDirection::LeftDownRightUp;
+            } else if ((m_currentSwipeDelta.x() > 0 && m_currentSwipeDelta.y() > 0)
+                || (m_currentSwipeDelta.x() < 0 && m_currentSwipeDelta.y() < 0)) {
+                validDirection = SwipeDirection::LeftUpRightDown;
+            }
+        } else if (std::abs(m_currentSwipeDelta.x()) > std::abs(m_currentSwipeDelta.y())) {
+            validDirection = SwipeDirection::LeftRight;
+        } else {
+            validDirection = SwipeDirection::UpDown;
+        }
 
-        if (std::abs(m_currentSwipeDelta.x()) >= 5 || std::abs(m_currentSwipeDelta.y()) >= 5)
-        {
+        if (std::abs(m_currentSwipeDelta.x()) >= 5 || std::abs(m_currentSwipeDelta.y()) >= 5) {
             // only lock in a direction if the delta is big enough
             // to prevent accidentally choosing the wrong direction
-            m_currentSwipeAxis = swipeAxis;
+            m_validSwipeDirection = validDirection;
         }
+    } else {
+        validDirection = m_validSwipeDirection;
     }
-    else
-        swipeAxis = m_currentSwipeAxis;
 
-    // Find the current swipe direction
-    switch (swipeAxis)
-    {
-        case Axis::Vertical:
-            direction = m_currentSwipeDelta.y() < 0 ? SwipeDirection::Up : SwipeDirection::Down;
-            break;
-        case Axis::Horizontal:
-            direction = m_currentSwipeDelta.x() < 0 ? SwipeDirection::Left : SwipeDirection::Right;
-            break;
-        default:
-            Q_UNREACHABLE();
+    qreal deltaSingle = 0;
+    if (validDirection == SwipeDirection::LeftRight) {
+        direction = delta.x() < 0 ? SwipeDirection::Left : SwipeDirection::Right;
+        deltaSingle = delta.x();
+    } else if (validDirection == SwipeDirection::UpDown) {
+        direction = delta.y() < 0 ? SwipeDirection::Up : SwipeDirection::Down;
+        deltaSingle = delta.y();
+    } else if (validDirection == SwipeDirection::LeftDownRightUp) {
+        direction = delta.x() > 0 && delta.y() < 0 ? SwipeDirection::RightUp : SwipeDirection::LeftDown;
+        deltaSingle = std::sqrt(std::pow(delta.x(), 2) + std::pow(delta.y(), 2));
+    } else if (validDirection == SwipeDirection::LeftUpRightDown) {
+        direction = delta.x() < 0 && delta.y() < 0 ? SwipeDirection::LeftUp : SwipeDirection::RightDown;
+        deltaSingle = std::sqrt(std::pow(delta.x(), 2) + std::pow(delta.y(), 2));
     }
 
     for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();)
@@ -160,7 +174,11 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
         if ((!((gesture->direction() == SwipeDirection::LeftRight
                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
               || (gesture->direction() == SwipeDirection::UpDown
-                  && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
+                  && (direction == SwipeDirection::Up || direction == SwipeDirection::Down))
+              || (gesture->direction() == SwipeDirection::LeftDownRightUp
+                  && (direction == SwipeDirection::LeftDown || direction == SwipeDirection::RightUp))
+              || (gesture->direction() == SwipeDirection::LeftUpRightDown
+                  && (direction == SwipeDirection::LeftUp || direction == SwipeDirection::RightDown)))
             && gesture->direction() != direction)
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
         {
@@ -169,7 +187,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             continue;
         }
 
-        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), endedPrematurely);
+        Q_EMIT gesture->updated(deltaSingle, endedPrematurely);
         if (endedPrematurely)
             return true;
 
@@ -266,13 +284,21 @@ void GestureRecognizer::gestureCancel(std::vector<std::shared_ptr<TGesture>> &ac
     resetMembers();
 }
 
+bool GestureRecognizer::isSwipeDiagonal(const QPointF &delta) const
+{
+    constexpr auto min = 35 * (M_PI / 180);
+    constexpr auto max = 70 * (M_PI / 180);
+    const auto angle = atan2(std::abs(delta.y() * m_widthToHeightRatio), std::abs(delta.x()));
+    return angle >= min && angle <= max;
+}
+
 void GestureRecognizer::resetMembers()
 {
     m_accumulatedAbsoluteSampledDelta = 0;
     m_sampledInputEvents = 0;
     m_isDeterminingSpeed = false;
     m_previousPinchScale = 1;
-    m_currentSwipeAxis = Axis::None;
+    m_validSwipeDirection = SwipeDirection::None;
     m_currentSwipeDelta = QPointF();
     m_speed = GestureSpeed::Any;
 }
