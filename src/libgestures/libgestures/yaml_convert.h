@@ -52,7 +52,7 @@ struct convert<std::shared_ptr<libgestures::Condition>>
 
         const auto negatedNode = node["negate"];
         if (negatedNode.IsDefined()) {
-            for (const auto &negatedRaw : negatedNode.as<QString>("").split(" ")) {
+            for (const auto &negatedRaw : negatedNode.as<QStringList>(QStringList())) {
                 if (negatedRaw.contains("window_class")) {
                     condition->setNegateWindowClass(true);
                 } else if (negatedRaw.contains("window_state")) {
@@ -143,7 +143,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             action.reset(commandAction);
         } else if (node["keyboard"].IsDefined()) {
             auto keySequenceAction = new libgestures::KeySequenceGestureAction;
-            keySequenceAction->setSequence(node["keyboard"].as<QString>());
+            keySequenceAction->setSequence(node["keyboard"].as<QStringList>().join(" "));
             action.reset(keySequenceAction);
         } else if (node["plasma_shortcut"].IsDefined()) {
             auto plasmaShortcutAction = new libgestures::KDEGlobalShortcutGestureAction;
@@ -284,7 +284,7 @@ struct convert<libgestures::WindowStates>
     static bool decode(const Node &node, libgestures::WindowStates &windowStates)
     {
         windowStates = static_cast<libgestures::WindowState>(0);
-        for (const auto &stateRaw : node.as<QString>().split(" ")) {
+        for (const auto &stateRaw : node.as<QStringList>()) {
             if (stateRaw == "maximized") {
                 windowStates |= libgestures::WindowState::Maximized;
             } else if (stateRaw == "fullscreen") {
@@ -328,6 +328,18 @@ struct convert<QString>
     static bool decode(const Node &node, QString &s)
     {
         s = QString::fromStdString(node.as<std::string>());
+        return true;
+    }
+};
+
+template <>
+struct convert<QStringList>
+{
+    static bool decode(const Node &node, QStringList &list)
+    {
+        for (const auto &s : node.as<std::vector<QString>>()) {
+            list << s;
+        }
         return true;
     }
 };

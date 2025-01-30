@@ -17,14 +17,14 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
   actions:
     # Firefox
     - on: begin
-      keyboard: leftctrl+leftbrace
+      keyboard: [ leftctrl+leftbrace ]
 
       conditions:
         - window_class: firefox
 
     # Dolphin
     - on: begin
-      keyboard: backspace
+      keyboard: [ backspace ]
 
       conditions:
         - window_class: dolphin
@@ -37,14 +37,14 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
   actions:
     # Firefox
     - on: begin
-      keyboard: leftctrl+rightbrace
+      keyboard: [ leftctrl+rightbrace ]
 
       conditions:
         - window_class: firefox
 
     # Dolphin
     - on: begin
-      keyboard: leftalt+right
+      keyboard: [ leftalt+right ]
 
       conditions:
         - window_class: dolphin
@@ -94,15 +94,15 @@ Stop all audio before trying this, as the threshold may be too small for some de
       block_other: true # Prevent the minimize window action from triggering during the same gesture
 
       conditions:
-        - window_state: maximized
+        - window_state: [ maximized ]
 
     # Minimize window if not fullscreen and not maximized
     - on: begin
       plasma_shortcut: kwin,Window Minimize
 
       conditions:
-        - negate: window_state
-          window_state: fullscreen maximized
+        - negate: [ window_state ]
+          window_state: [ fullscreen, maximized ]
 
 # Maximize
 - type: swipe
@@ -115,8 +115,8 @@ Stop all audio before trying this, as the threshold may be too small for some de
       plasma_shortcut: kwin,Window Maximize
 
       conditions:
-        - negate: window_state
-          window_state: maximized
+        - negate: [ window_state ]
+          window_state: [ maximized ]
 
 # Close window
 - type: pinch
@@ -161,18 +161,18 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: +leftalt tab
+      keyboard: [ +leftalt, tab ]
 
     - on: update
       interval: -75
-      keyboard: leftshift+tab
+      keyboard: [ leftshift+tab ]
 
     - on: update
       interval: 75
-      keyboard: tab
+      keyboard: [ tab ]
 
     - on: end_cancel
-      keyboard: -leftalt
+      keyboard: [ -leftalt ]
 
 # Quick window switching (left)
 - type: swipe
@@ -182,7 +182,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: leftalt+leftshift+tab
+      keyboard: [ leftalt+leftshift+tab ]
 
 # Quick window switching (right)
 - type: swipe
@@ -192,7 +192,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: leftalt+tab
+      keyboard: [ leftalt+tab ]
 ```
 
 ## KRunner
