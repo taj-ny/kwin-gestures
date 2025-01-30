@@ -11,8 +11,20 @@ enum class SwipeDirection
     Right,
     Down,
     Up,
+
+    LeftUp,
+    LeftDown,
+    RightUp,
+    RightDown,
+
+    // Bi-directional
     LeftRight,
-    UpDown
+    UpDown,
+
+    LeftUpRightDown,
+    LeftDownRightUp,
+
+    None
 };
 
 class SwipeGesture : public Gesture

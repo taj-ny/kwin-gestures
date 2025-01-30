@@ -198,6 +198,7 @@ struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
             gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
         }
 
+        gestureRecognizer->setWidthToHeightRatio(node["width_to_height_ratio"].as<qreal>(gestureRecognizer->m_widthToHeightRatio));
         const auto speedNode = node["speed"];
         if (speedNode.IsDefined()) {
             gestureRecognizer->setInputEventsToSample(
@@ -252,24 +253,29 @@ struct convert<libgestures::PinchDirection>
     }
 };
 
+const std::map<QString, libgestures::SwipeDirection> directions =
+{
+    { "left", libgestures::SwipeDirection::Left },
+    { "right", libgestures::SwipeDirection::Right },
+    { "up", libgestures::SwipeDirection::Up },
+    { "down", libgestures::SwipeDirection::Down },
+    { "left_up", libgestures::SwipeDirection::LeftUp },
+    { "left_down", libgestures::SwipeDirection::LeftDown },
+    { "right_up", libgestures::SwipeDirection::RightUp },
+    { "right_down", libgestures::SwipeDirection::RightDown },
+    { "left_right", libgestures::SwipeDirection::LeftRight },
+    { "up_down", libgestures::SwipeDirection::UpDown },
+    { "left_up_right_down", libgestures::SwipeDirection::LeftUpRightDown },
+    { "left_down_right_up", libgestures::SwipeDirection::LeftDownRightUp }
+};
 template <>
 struct convert<libgestures::SwipeDirection>
 {
     static bool decode(const Node &node, libgestures::SwipeDirection &direction)
     {
         const auto directionRaw = node.as<QString>();
-        if (directionRaw == "left") {
-            direction = libgestures::SwipeDirection::Left;
-        } else if (directionRaw == "right") {
-            direction = libgestures::SwipeDirection::Right;
-        } else if (directionRaw == "left_right") {
-            direction = libgestures::SwipeDirection::LeftRight;
-        } else if (directionRaw == "up") {
-            direction = libgestures::SwipeDirection::Up;
-        } else if (directionRaw == "down") {
-            direction = libgestures::SwipeDirection::Down;
-        } else if (directionRaw == "up_down") {
-            direction = libgestures::SwipeDirection::UpDown;
+        if (directions.contains(directionRaw)) {
+            direction = directions.at(directionRaw);
         } else {
             throw Exception(node.Mark(), "Invalid swipe direction");
         }

@@ -37,6 +37,7 @@ public:
      */
     void unregisterGestures();
 
+    void setWidthToHeightRatio(const qreal &ratio);
     void setInputEventsToSample(const uint8_t &events);
     void setSwipeFastThreshold(const qreal &threshold);
     void setPinchInFastThreshold(const qreal &threshold);
@@ -104,12 +105,17 @@ private:
     template <class TGesture>
     void gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures);
 
+    /**
+     * Checks whether the swipe gesture the specified delta belongs to has been performed diagonally.
+     */
+    bool isSwipeDiagonal(const QPointF &delta) const;
+
     void resetMembers();
 
     std::vector<std::shared_ptr<Gesture>> m_gestures;
 
     std::vector<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
-    Axis m_currentSwipeAxis = Axis::None;
+    SwipeDirection m_validSwipeDirection = SwipeDirection::None;
     QPointF m_currentSwipeDelta;
 
     std::vector<std::shared_ptr<PinchGesture>> m_activePinchGestures;
@@ -117,6 +123,7 @@ private:
 
     std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
 
+    qreal m_widthToHeightRatio = 1;
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;
     qreal m_pinchInFastThreshold = 0.04;
