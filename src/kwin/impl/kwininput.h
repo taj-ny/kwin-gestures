@@ -31,6 +31,8 @@ public:
     void keyboardPress(const uint32_t &key) override;
     void keyboardRelease(const uint32_t &key) override;
 
+    void mouseMoveAbsolute([[maybe_unused]] const QPointF &pos) override;
+    void mouseMoveRelative([[maybe_unused]] const QPointF &pos) override;
     void mousePress(const uint32_t &button) override;
     void mouseRelease(const uint32_t &button) override;
 private:

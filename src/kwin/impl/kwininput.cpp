@@ -48,6 +48,16 @@ void KWinInput::keyboardRelease(const uint32_t &key)
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyReleased);
 }
 
+void KWinInput::mouseMoveAbsolute(const QPointF &pos)
+{
+    KWin::input()->pointer()->processMotionAbsolute(pos, timestamp(), m_device.get());
+}
+
+void KWinInput::mouseMoveRelative(const QPointF &pos)
+{
+    KWin::input()->pointer()->processMotion(pos, pos, timestamp(), m_device.get());
+}
+
 void KWinInput::mousePress(const uint32_t &button)
 {
     sendMouseButton(button, KWin::InputRedirection::PointerButtonState::PointerButtonPressed);
