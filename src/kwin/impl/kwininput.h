@@ -30,8 +30,16 @@ public:
 
     void keyboardPress(const uint32_t &key) override;
     void keyboardRelease(const uint32_t &key) override;
+
+    void mouseMoveAbsolute([[maybe_unused]] const QPointF &pos) override;
+    void mouseMoveRelative([[maybe_unused]] const QPointF &pos) override;
+    void mousePress(const uint32_t &button) override;
+    void mouseRelease(const uint32_t &button) override;
 private:
     void sendKey(const uint32_t &key, const KWin::InputRedirection::KeyboardKeyState &state) const;
+    void sendMouseButton(const uint32_t &button, const KWin::InputRedirection::PointerButtonState &state) const;
+
+    std::chrono::microseconds timestamp() const;
 
     Qt::KeyboardModifiers m_modifiers;
     std::unique_ptr<InputDevice> m_device;

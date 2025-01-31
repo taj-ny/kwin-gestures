@@ -1,10 +1,13 @@
+#include "kwininput.h"
+
 #include "input_event.h"
 #include "input_event_spy.h"
 #include "keyboard_input.h"
-#include "kwininput.h"
-#include <linux/input-event-codes.h>
+#include "pointer_input.h"
 #include "wayland/keyboard.h"
 #include "xkb.h"
+
+#include <linux/input-event-codes.h>
 
 KWinInput::KWinInput()
     : m_device(std::make_unique<InputDevice>())
@@ -45,6 +48,26 @@ void KWinInput::keyboardRelease(const uint32_t &key)
     sendKey(key, KWin::InputRedirection::KeyboardKeyState::KeyboardKeyReleased);
 }
 
+void KWinInput::mouseMoveAbsolute(const QPointF &pos)
+{
+    KWin::input()->pointer()->processMotionAbsolute(pos, timestamp(), m_device.get());
+}
+
+void KWinInput::mouseMoveRelative(const QPointF &pos)
+{
+    KWin::input()->pointer()->processMotion(pos, pos, timestamp(), m_device.get());
+}
+
+void KWinInput::mousePress(const uint32_t &button)
+{
+    sendMouseButton(button, KWin::InputRedirection::PointerButtonState::PointerButtonPressed);
+}
+
+void KWinInput::mouseRelease(const uint32_t &button)
+{
+    sendMouseButton(button, KWin::InputRedirection::PointerButtonState::PointerButtonReleased);
+}
+
 void KWinInput::sendKey(const uint32_t &key, const KWin::InputRedirection::KeyboardKeyState &state) const
 {
     // https://invent.kde.org/plasma/kwin/-/blob/Plasma/6.2/src/keyboard_input.cpp
@@ -60,7 +83,7 @@ void KWinInput::sendKey(const uint32_t &key, const KWin::InputRedirection::Keybo
             keySym,
             xkb->toString(xkb->currentKeysym()),
             false,
-            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()),
+            timestamp(),
             m_device.get());
     event.setAccepted(false);
     event.setModifiersRelevantForGlobalShortcuts(m_modifiers);
@@ -71,14 +94,24 @@ void KWinInput::sendKey(const uint32_t &key, const KWin::InputRedirection::Keybo
     xkb->forwardModifiers();
 }
 
+void KWinInput::sendMouseButton(const uint32_t &button, const KWin::InputRedirection::PointerButtonState &state) const
+{
+    KWin::input()->pointer()->processButton(button, state, timestamp(), m_device.get());
+}
+
+std::chrono::microseconds KWinInput::timestamp() const
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
+}
+
 QString InputDevice::sysName() const
 {
-    return "KWin Gestures Virtual Keyboard";
+    return "kwin_gestures";
 }
 
 QString InputDevice::name() const
 {
-    return sysName();
+    return "KWin Gestures";
 }
 
 bool InputDevice::isEnabled() const
@@ -108,7 +141,7 @@ bool InputDevice::isKeyboard() const
 
 bool InputDevice::isPointer() const
 {
-    return false;
+    return true;
 }
 
 bool InputDevice::isTouchpad() const

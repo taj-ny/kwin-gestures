@@ -7,7 +7,7 @@
 namespace libgestures
 {
 
-static const std::map<QString, uint32_t> s_keyMap =
+static const std::unordered_map<QString, uint32_t> s_keyboard =
 {
     { "RESERVED", KEY_RESERVED },
     { "ESC", KEY_ESC },
@@ -518,8 +518,31 @@ static const std::map<QString, uint32_t> s_keyMap =
     { "MAX", KEY_MAX }
 };
 
+// https://invent.kde.org/plasma/kwin/-/blob/cc4d99ae/src/mousebuttons.cpp#L14
+static const std::unordered_map<QString, uint32_t> s_mouse =
+{
+    { "LEFT", BTN_LEFT },
+    { "MIDDLE", BTN_MIDDLE },
+    { "RIGHT", BTN_RIGHT },
+    // in QtWayland mapped like that
+    { "SIDE", BTN_EXTRA },
+    { "EXTRA", BTN_EXTRA },
+    { "FORWARD", BTN_FORWARD },
+    { "BACK", BTN_BACK },
+    { "TASK", BTN_TASK },
+    { "EXTRA6", 0x118 },
+    { "EXTRA7", 0x119 },
+    { "EXTRA8", 0x11a },
+    { "EXTRA9", 0x11b },
+    { "EXTRA10", 0x11c },
+    { "EXTRA11", 0x11d },
+    { "EXTRA12", 0x11e },
+    { "EXTRA12", 0x11f }
+};
+
 /**
- * @remark Requires Input::keyboardPress and Input::keyboardRelease to be implemented.
+ * @remark Requires Input::keyboardPress, Input::keyboardRelease, Input::mousePress and Input::mouseRelease to be
+ * implemented.
  */
 class KeySequenceGestureAction : public GestureAction
 {

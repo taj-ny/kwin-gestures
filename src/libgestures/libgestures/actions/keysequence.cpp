@@ -16,21 +16,21 @@ bool KeySequenceGestureAction::tryExecute()
             const auto action = command[0];
             const auto key = command.mid(1);
 
-            if (!s_keyMap.contains(key)) {
+            if (!s_keyboard.contains(key)) {
                 continue;
             }
 
             if (action == '+')
-                libgestures::input()->keyboardPress(s_keyMap.at(key));
+                libgestures::input()->keyboardPress(s_keyboard.at(key));
             else if (action == '-')
-                libgestures::input()->keyboardRelease(s_keyMap.at(key));
+                libgestures::input()->keyboardRelease(s_keyboard.at(key));
         } else {
             std::stack<uint32_t> keys;
             for (const auto &keyRaw : command.split("+")) {
-                if (!s_keyMap.contains(keyRaw))
+                if (!s_keyboard.contains(keyRaw))
                     continue;
 
-                const auto key = s_keyMap.at(keyRaw);
+                const auto key = s_keyboard.at(keyRaw);
                 keys.push(key);
                 libgestures::input()->keyboardPress(key);
             }
