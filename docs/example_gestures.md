@@ -25,9 +25,7 @@ Swipe 3 fingers to drag the window. Swipe gestures have a different acceleration
       input:
         - keyboard: [ -leftmeta ]
         - mouse: [ -left ]
-
 ```
-
 
 ## Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
