@@ -23,20 +23,19 @@ void KWinInput::keyboardKey(const uint32_t &key, const bool &state)
 {
     KWin::input()->keyboard()->processKey(
         key,
+#ifdef KWIN_6_3_OR_GREATER
+        state ? KWin::KeyboardKeyState::Pressed : KWin::KeyboardKeyState::Released,
+#else
         state ? KWin::InputRedirection::KeyboardKeyPressed : KWin::InputRedirection::KeyboardKeyReleased,
+#endif
         std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()),
         m_device.get()
     );
 }
 
-QString InputDevice::sysName() const
-{
-    return "KWin Gestures Virtual Keyboard";
-}
-
 QString InputDevice::name() const
 {
-    return sysName();
+    return "kwin_gestures";
 }
 
 bool InputDevice::isEnabled() const
@@ -47,16 +46,6 @@ bool InputDevice::isEnabled() const
 void InputDevice::setEnabled(bool enabled)
 {
     Q_UNUSED(enabled)
-}
-
-KWin::LEDs InputDevice::leds() const
-{
-    return KWin::LEDs::fromInt(0);
-}
-
-void InputDevice::setLeds(KWin::LEDs leds)
-{
-    Q_UNUSED(leds)
 }
 
 bool InputDevice::isKeyboard() const
@@ -98,3 +87,20 @@ bool InputDevice::isLidSwitch() const
 {
     return false;
 }
+
+#ifndef KWIN_6_3_OR_GREATER
+QString InputDevice::sysName() const
+{
+    return name();
+}
+
+KWin::LEDs InputDevice::leds() const
+{
+    return KWin::LEDs::fromInt(0);
+}
+
+void InputDevice::setLeds(KWin::LEDs leds)
+{
+    Q_UNUSED(leds)
+}
+#endif
