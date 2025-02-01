@@ -32,7 +32,7 @@ bool InputGestureAction::tryExecute()
             input->mouseMoveRelative(action.mouseMoveRelative);
         }
         if (action.mouseMoveRelativeByDelta) {
-            input->mouseMoveRelative(QPointF(m_currentDeltaMultiplied, 0));
+            input->mouseMoveRelative(m_currentDeltaPointMultiplied);
         }
     }
 

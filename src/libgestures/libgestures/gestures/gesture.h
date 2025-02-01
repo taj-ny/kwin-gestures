@@ -57,12 +57,12 @@ signals:
      * @param endedPrematurely Whether the gesture recognizer should end the gesture. Used when only one action can be
      * triggered.
      */
-    void updated(const qreal &delta, const qreal &deltaMultiplied, bool &endedPrematurely);
+    void updated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
 private slots:
     void onCancelled();
     void onEnded();
     void onStarted();
-    void onUpdated(const qreal &delta, const qreal &deltaMultiplied, bool &endedPrematurely);
+    void onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
 private:
     /**
      * @return Whether the accumulated delta fits within the specified range.

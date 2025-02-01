@@ -50,7 +50,7 @@ void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematu
 {
     for (const auto &holdGesture : m_activeHoldGestures)
     {
-        Q_EMIT holdGesture->updated(delta, delta, endedPrematurely);
+        Q_EMIT holdGesture->updated(delta, QPointF(), endedPrematurely);
         if (endedPrematurely)
             return;
     }
@@ -94,7 +94,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
             continue;
         }
 
-        Q_EMIT gesture->updated(pinchDelta, pinchDelta, endedPrematurely);
+        Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
         if (endedPrematurely)
             return true;
 
@@ -166,7 +166,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
               || (gesture->direction() == SwipeDirection::UpDown
                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
-            && gesture->direction() != direction)
+            && (gesture->direction() != SwipeDirection::Any && gesture->direction() != direction))
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
         {
             gesture->cancelled();
@@ -174,8 +174,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             continue;
         }
 
-        const auto deltaSingle = swipeAxis == Axis::Vertical ? delta.y() : delta.x();
-        Q_EMIT gesture->updated(deltaSingle, deltaSingle * m_deltaMultiplier, endedPrematurely);
+        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier, endedPrematurely);
         if (endedPrematurely)
             return true;
 
