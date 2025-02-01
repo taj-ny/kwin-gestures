@@ -1,7 +1,9 @@
 #pragma once
 
-#include "core/inputdevice.h"
 #include "libgestures/input.h"
+
+#include "core/inputdevice.h"
+#include "kwin/input.h"
 
 class InputDevice : public KWin::InputDevice
 {
