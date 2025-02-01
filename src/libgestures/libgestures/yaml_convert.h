@@ -527,12 +527,14 @@ static const std::unordered_map<QString, uint32_t> s_mouse =
     { "LEFT", BTN_LEFT },
     { "MIDDLE", BTN_MIDDLE },
     { "RIGHT", BTN_RIGHT },
-    // in QtWayland mapped like that
-    { "SIDE", BTN_EXTRA },
-    { "EXTRA", BTN_EXTRA },
-    { "FORWARD", BTN_FORWARD },
-    { "BACK", BTN_BACK },
-    { "TASK", BTN_TASK },
+
+    // Those 5 button are supposed to be like this (I think)
+    { "BACK", BTN_SIDE },
+    { "FORWARD",  BTN_EXTRA },
+    { "TASK", BTN_FORWARD },
+    { "SIDE", BTN_BACK },
+    { "EXTRA", BTN_TASK },
+
     { "EXTRA6", 0x118 },
     { "EXTRA7", 0x119 },
     { "EXTRA8", 0x11a },
@@ -540,7 +542,7 @@ static const std::unordered_map<QString, uint32_t> s_mouse =
     { "EXTRA10", 0x11c },
     { "EXTRA11", 0x11d },
     { "EXTRA12", 0x11e },
-    { "EXTRA12", 0x11f }
+    { "EXTRA13", 0x11f }
 };
 
 namespace YAML
