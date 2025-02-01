@@ -14,8 +14,10 @@ public:
     Input() = default;
     virtual ~Input() = default;
 
-    virtual void keyboardPress([[maybe_unused]] const uint32_t &key) { };
-    virtual void keyboardRelease([[maybe_unused]] const uint32_t &key) { };
+    /**
+     * @param state True to press, false to release.
+     */
+    virtual void keyboardKey([[maybe_unused]] const uint32_t &key, [[maybe_unused]] const bool &state) { };
 };
 
 }

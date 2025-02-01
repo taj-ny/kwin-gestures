@@ -28,11 +28,8 @@ public:
     KWinInput();
     ~KWinInput() override;
 
-    void keyboardPress(const uint32_t &key) override;
-    void keyboardRelease(const uint32_t &key) override;
-private:
-    void sendKey(const uint32_t &key, const KWin::InputRedirection::KeyboardKeyState &state) const;
+    void keyboardKey(const uint32_t &key, const bool &state) override;
 
-    Qt::KeyboardModifiers m_modifiers;
+private:
     std::unique_ptr<InputDevice> m_device;
 };
