@@ -43,14 +43,16 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
   actions:
     # Firefox
     - on: begin
-      keyboard: [ leftctrl+leftbrace ]
+      input:
+        - keyboard: [ leftctrl+leftbrace ]
 
       conditions:
         - window_class: firefox
 
     # Dolphin
     - on: begin
-      keyboard: [ backspace ]
+      input:
+        - keyboard: [ backspace ]
 
       conditions:
         - window_class: dolphin
@@ -63,14 +65,16 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
   actions:
     # Firefox
     - on: begin
-      keyboard: [ leftctrl+rightbrace ]
+      input:
+        - keyboard: [ leftctrl+rightbrace ]
 
       conditions:
         - window_class: firefox
 
     # Dolphin
     - on: begin
-      keyboard: [ leftalt+right ]
+      input:
+        - keyboard: [ leftalt+right ]
 
       conditions:
         - window_class: dolphin
@@ -187,18 +191,22 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: [ +leftalt, tab ]
+      input:
+        - keyboard: [ +leftalt, tab ]
 
     - on: update
       interval: -75
-      keyboard: [ leftshift+tab ]
+      input:
+        - keyboard: [ leftshift+tab ]
 
     - on: update
       interval: 75
-      keyboard: [ tab ]
+      input:
+        - keyboard: [ tab ]
 
     - on: end_cancel
-      keyboard: [ -leftalt ]
+      input:
+        - keyboard: [ -leftalt ]
 
 # Quick window switching (left)
 - type: swipe
@@ -208,7 +216,8 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: [ leftalt+leftshift+tab ]
+      input:
+        - keyboard: [ leftalt+leftshift+tab ]
 
 # Quick window switching (right)
 - type: swipe
@@ -218,7 +227,8 @@ Stop all audio before trying this, as the threshold may be too small for some de
 
   actions:
     - on: begin
-      keyboard: [ leftalt+tab ]
+      input:
+        - keyboard: [ leftalt+tab ]
 ```
 
 ## KRunner
