@@ -5,13 +5,9 @@
 
 class InputDevice : public KWin::InputDevice
 {
-public:
-    QString sysName() const override;
     QString name() const override;
     bool isEnabled() const override;
     void setEnabled(bool enabled) override;
-    KWin::LEDs leds() const override;
-    void setLeds(KWin::LEDs leds) override;
     bool isKeyboard() const override;
     bool isPointer() const override;
     bool isTouchpad() const override;
@@ -20,6 +16,12 @@ public:
     bool isTabletPad() const override;
     bool isTabletModeSwitch() const override;
     bool isLidSwitch() const override;
+
+#ifndef KWIN_6_3_OR_GREATER
+    QString sysName() const override;
+    KWin::LEDs leds() const override;
+    void setLeds(KWin::LEDs leds) override;
+#endif
 };
 
 class KWinInput : public libgestures::Input
