@@ -1,15 +1,22 @@
+#include "kwininput.h"
+
 #include "input_event.h"
 #include "input_event_spy.h"
 #include "keyboard_input.h"
-#include "kwininput.h"
-#include <linux/input-event-codes.h>
+#include "pointer_input.h"
 #include "wayland/keyboard.h"
+#include "wayland-server.h"
+#include "wayland_server.h"
+#include "wayland/seat.h"
 #include "xkb.h"
+#include <linux/input-event-codes.h>
 
 KWinInput::KWinInput()
     : m_device(std::make_unique<InputDevice>())
 {
     KWin::input()->addInputDevice(m_device.get());
+    m_pointer = KWin::input()->pointer();
+    m_keyboard = KWin::input()->keyboard();
 }
 
 KWinInput::~KWinInput()
@@ -21,16 +28,48 @@ KWinInput::~KWinInput()
 
 void KWinInput::keyboardKey(const uint32_t &key, const bool &state)
 {
-    KWin::input()->keyboard()->processKey(
+    m_keyboard->processKey(
         key,
 #ifdef KWIN_6_3_OR_GREATER
         state ? KWin::KeyboardKeyState::Pressed : KWin::KeyboardKeyState::Released,
 #else
         state ? KWin::InputRedirection::KeyboardKeyPressed : KWin::InputRedirection::KeyboardKeyReleased,
 #endif
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()),
+        timestamp(),
         m_device.get()
     );
+}
+
+void KWinInput::mouseButton(const uint32_t &button, const bool &state)
+{
+    m_pointer->processButton(
+        button,
+#ifdef KWIN_6_3_OR_GREATER
+        state ? KWin::PointerButtonState::Pressed : KWin::PointerButtonState::Released,
+#else
+        state ? KWin::InputRedirection::PointerButtonPressed : KWin::InputRedirection::PointerButtonReleased,
+#endif
+        timestamp(),
+        m_device.get()
+    );
+    m_pointer->processFrame(m_device.get());
+}
+
+void KWinInput::mouseMoveAbsolute(const QPointF &pos)
+{
+    m_pointer->processMotionAbsolute(pos, timestamp(), m_device.get());
+    m_pointer->processFrame(m_device.get());
+}
+
+void KWinInput::mouseMoveRelative(const QPointF &pos)
+{
+    m_pointer->processMotion(pos, pos, timestamp(), m_device.get());
+    m_pointer->processFrame(m_device.get());
+}
+
+std::chrono::microseconds KWinInput::timestamp()
+{
+    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
 QString InputDevice::name() const
@@ -55,7 +94,7 @@ bool InputDevice::isKeyboard() const
 
 bool InputDevice::isPointer() const
 {
-    return false;
+    return true;
 }
 
 bool InputDevice::isTouchpad() const
