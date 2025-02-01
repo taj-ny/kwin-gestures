@@ -21,9 +21,9 @@ bool KeySequenceGestureAction::tryExecute()
             }
 
             if (action == '+')
-                libgestures::input()->keyboardPress(s_keyMap.at(key));
+                libgestures::input()->keyboardKey(s_keyMap.at(key), true);
             else if (action == '-')
-                libgestures::input()->keyboardRelease(s_keyMap.at(key));
+                libgestures::input()->keyboardKey(s_keyMap.at(key), false);
         } else {
             std::stack<uint32_t> keys;
             for (const auto &keyRaw : command.split("+")) {
@@ -32,12 +32,12 @@ bool KeySequenceGestureAction::tryExecute()
 
                 const auto key = s_keyMap.at(keyRaw);
                 keys.push(key);
-                libgestures::input()->keyboardPress(key);
+                libgestures::input()->keyboardKey(key, true);
             }
 
             while (!keys.empty()) {
                 const auto key = keys.top();
-                libgestures::input()->keyboardRelease(key);
+                libgestures::input()->keyboardKey(key, false);
                 keys.pop();
             }
         }
