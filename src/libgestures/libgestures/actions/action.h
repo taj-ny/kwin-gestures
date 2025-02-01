@@ -2,8 +2,6 @@
 
 #include "libgestures/condition.h"
 
-#include <QPointF>
-
 namespace libgestures
 {
 
@@ -76,14 +74,14 @@ signals:
     /**
      * Emitted when the gesture this action belongs to has been updated.
      */
-    void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &actionExecuted);
+    void gestureUpdated(const qreal &delta, const qreal &deltaMultiplied, bool &actionExecuted);
 protected:
-    QPointF m_currentDeltaPointMultiplied;
+    qreal m_currentDeltaMultiplied = 0;
 private slots:
     void onGestureCancelled(bool &actionExecuted);
     void onGestureEnded(bool &actionExecuted);
     void onGestureStarted(bool &actionExecuted);
-    void onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &actionExecuted);
+    void onGestureUpdated(const qreal &delta, const qreal &deltaMultiplied, bool &actionExecuted);
 private:
     /**
      * @return Whether the action satisfies at least one condition specified by the user, @c true when no conditions

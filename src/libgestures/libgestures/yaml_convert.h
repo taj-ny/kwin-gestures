@@ -813,8 +813,6 @@ struct convert<libgestures::SwipeDirection>
             direction = libgestures::SwipeDirection::Down;
         } else if (directionRaw == "up_down") {
             direction = libgestures::SwipeDirection::UpDown;
-        } else if (directionRaw == "any") {
-            direction = libgestures::SwipeDirection::Any;
         } else {
             throw Exception(node.Mark(), "Invalid swipe direction");
         }

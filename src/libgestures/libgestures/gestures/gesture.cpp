@@ -61,7 +61,7 @@ void Gesture::onStarted()
     }
 }
 
-void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely)
+void Gesture::onUpdated(const qreal &delta, const qreal &deltaMultiplied, bool &endedPrematurely)
 {
     m_absoluteAccumulatedDelta += std::abs(delta);
     if (!thresholdReached())
@@ -76,7 +76,7 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
     for (const auto &action : m_actions)
     {
         bool actionExecuted = false;
-        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied, actionExecuted);
+        Q_EMIT action->gestureUpdated(delta, deltaMultiplied, actionExecuted);
         if (actionExecuted && action->blocksOtherActions())
         {
             endedPrematurely = true;
