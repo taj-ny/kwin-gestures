@@ -42,7 +42,7 @@ bool GestureAction::tryExecute()
 
 bool GestureAction::canExecute() const
 {
-    return (m_repeatInterval != 0 || !m_triggered) && satisfiesConditions();
+    return satisfiesConditions();
 }
 
 bool GestureAction::blocksOtherActions() const
@@ -80,8 +80,9 @@ void GestureAction::onGestureStarted(bool &actionExecuted)
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
+void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &actionExecuted)
 {
+    m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0))
     {
         // Direction changed, reset delta
@@ -96,7 +97,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
     if (m_on != On::Update)
         return;
 
-    if (repeat())
+    if (m_repeatInterval != 0)
     {
         while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
         {
