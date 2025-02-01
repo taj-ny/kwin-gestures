@@ -1,15 +1,7 @@
 #include "kwininput.h"
 
-#include "input_event.h"
-#include "input_event_spy.h"
 #include "keyboard_input.h"
 #include "pointer_input.h"
-#include "wayland/keyboard.h"
-#include "wayland-server.h"
-#include "wayland_server.h"
-#include "wayland/seat.h"
-#include "xkb.h"
-#include <linux/input-event-codes.h>
 
 KWinInput::KWinInput()
     : m_device(std::make_unique<InputDevice>())
