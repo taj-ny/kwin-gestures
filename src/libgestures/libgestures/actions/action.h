@@ -37,8 +37,6 @@ public:
      */
     [[nodiscard]] bool canExecute() const;
 
-    [[nodiscard]] bool repeat() const { return m_repeatInterval != 0; };
-
     /**
      * @return Whether any other actions belonging to a gesture should not be executed. @c true if the action has been
      * executed and blockOtherActions has been set to @c true, @c false otherwise.

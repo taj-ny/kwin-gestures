@@ -97,9 +97,9 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     if (m_on != On::Update)
         return;
 
-    if (repeat())
+    if (m_repeatInterval != 0)
     {
-        while (m_repeatInterval != 0 && ((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
+        while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
         {
             if (tryExecute())
                 actionExecuted = true;
