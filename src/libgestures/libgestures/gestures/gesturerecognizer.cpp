@@ -41,16 +41,11 @@ void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
     m_pinchOutFastThreshold = threshold;
 }
 
-void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
-{
-    m_deltaMultiplier = deltaMultiplier;
-}
-
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
 {
     for (const auto &holdGesture : m_activeHoldGestures)
     {
-        Q_EMIT holdGesture->updated(delta, QPointF(), endedPrematurely);
+        Q_EMIT holdGesture->updated(delta, endedPrematurely);
         if (endedPrematurely)
             return;
     }
@@ -94,7 +89,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
             continue;
         }
 
-        Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
+        Q_EMIT gesture->updated(pinchDelta, endedPrematurely);
         if (endedPrematurely)
             return true;
 
@@ -166,7 +161,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
               || (gesture->direction() == SwipeDirection::UpDown
                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
-            && (gesture->direction() != SwipeDirection::Any && gesture->direction() != direction))
+            && gesture->direction() != direction)
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
         {
             gesture->cancelled();
@@ -174,7 +169,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             continue;
         }
 
-        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier, endedPrematurely);
+        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), endedPrematurely);
         if (endedPrematurely)
             return true;
 

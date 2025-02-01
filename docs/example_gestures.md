@@ -3,32 +3,6 @@ All gestures provided here are instant - actions trigger immediately when the ge
 
 Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
 
-## Window drag
-Swipe 3 fingers to drag the window. Swipe gestures have a different acceleration profile. You can change *Device.delta_multiplier* to make the gesture faster or slower.
-
-```yaml
-- type: swipe
-  direction: any
-  fingers: 3
-
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ +leftmeta ]
-        - mouse: [ +left ]
-
-    - on: update
-      input:
-        - mouse: [ move_by_delta ]
-
-    - on: end_cancel
-      input:
-        - keyboard: [ -leftmeta ]
-        - mouse: [ -left ]
-
-```
-
-
 ## Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
 - Swipe 3 fingers left - Go back

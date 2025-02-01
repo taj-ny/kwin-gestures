@@ -7,7 +7,6 @@ namespace libgestures
 
 enum class SwipeDirection
 {
-    Any,
     Left,
     Right,
     Down,
