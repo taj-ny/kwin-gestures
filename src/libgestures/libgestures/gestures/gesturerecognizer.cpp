@@ -41,11 +41,16 @@ void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
     m_pinchOutFastThreshold = threshold;
 }
 
+void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
+{
+    m_deltaMultiplier = deltaMultiplier;
+}
+
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
 {
     for (const auto &holdGesture : m_activeHoldGestures)
     {
-        Q_EMIT holdGesture->updated(delta, endedPrematurely);
+        Q_EMIT holdGesture->updated(delta, delta, endedPrematurely);
         if (endedPrematurely)
             return;
     }
@@ -89,7 +94,7 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
             continue;
         }
 
-        Q_EMIT gesture->updated(pinchDelta, endedPrematurely);
+        Q_EMIT gesture->updated(pinchDelta, pinchDelta, endedPrematurely);
         if (endedPrematurely)
             return true;
 
@@ -169,7 +174,8 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             continue;
         }
 
-        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), endedPrematurely);
+        const auto deltaSingle = swipeAxis == Axis::Vertical ? delta.y() : delta.x();
+        Q_EMIT gesture->updated(deltaSingle, deltaSingle * m_deltaMultiplier, endedPrematurely);
         if (endedPrematurely)
             return true;
 

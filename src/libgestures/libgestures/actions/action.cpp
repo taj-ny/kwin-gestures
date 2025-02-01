@@ -80,8 +80,9 @@ void GestureAction::onGestureStarted(bool &actionExecuted)
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta, bool &actionExecuted)
+void GestureAction::onGestureUpdated(const qreal &delta, const qreal &deltaMultiplied, bool &actionExecuted)
 {
+    m_currentDeltaMultiplied = deltaMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0))
     {
         // Direction changed, reset delta

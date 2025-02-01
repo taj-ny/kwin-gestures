@@ -31,7 +31,14 @@ public:
     ~KWinInput() override;
 
     void keyboardKey(const uint32_t &key, const bool &state) override;
+    void mouseButton(const uint32_t &button, const bool &state) override;
+    void mouseMoveAbsolute(const QPointF &pos) override;
+    void mouseMoveRelative(const QPointF &pos) override;
 
 private:
+    static std::chrono::microseconds timestamp();
+
+    KWin::PointerInputRedirection *m_pointer;
+    KWin::KeyboardInputRedirection *m_keyboard;
     std::unique_ptr<InputDevice> m_device;
 };

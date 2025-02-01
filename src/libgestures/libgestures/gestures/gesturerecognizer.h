@@ -42,6 +42,8 @@ public:
     void setPinchInFastThreshold(const qreal &threshold);
     void setPinchOutFastThreshold(const qreal &threshold);
 
+    void setDeltaMultiplier(const qreal &multiplier);
+
     /**
      * @param fingerCount Amount of fingers currently on the input device.
      */
@@ -126,6 +128,8 @@ private:
     bool m_isDeterminingSpeed = false;
     uint8_t m_sampledInputEvents = 0;
     qreal m_accumulatedAbsoluteSampledDelta = 0;
+
+    qreal m_deltaMultiplier = 1.0;
 
     friend struct YAML::convert<std::shared_ptr<GestureRecognizer>>;
     friend class TestGestureRecognizer;
