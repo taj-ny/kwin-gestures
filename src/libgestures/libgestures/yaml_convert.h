@@ -789,6 +789,8 @@ struct convert<libgestures::PinchDirection>
             direction = libgestures::PinchDirection::In;
         } else if (directionRaw == "out") {
             direction = libgestures::PinchDirection::Out;
+        } else if (directionRaw == "any") {
+            direction = libgestures::PinchDirection::Any;
         } else {
             throw Exception(node.Mark(), "Invalid pinch direction");
         }
