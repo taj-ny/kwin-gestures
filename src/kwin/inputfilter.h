@@ -2,6 +2,7 @@
 
 #include "input.h"
 #include "libgestures/gestures/gesturerecognizer.h"
+#include <QIntegerForSize>
 #include <QTimer>
 
 /**
@@ -22,6 +23,7 @@ public:
     GestureInputEventFilter();
 
     void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
+    void setTouchscreenGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     void holdGestureUpdate(const qreal &delta);
@@ -38,6 +40,10 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
+    bool touchDown(qint32 id, const QPointF &pos, std::chrono::microseconds time) override;
+    bool touchMotion(qint32 id, const QPointF &pos, std::chrono::microseconds time) override;
+    bool touchUp(qint32 id, std::chrono::microseconds time) override;
+
 private:
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
     /**
@@ -45,4 +51,11 @@ private:
      */
     uint8_t m_touchpadGestureFingerCount = 0;
     QTimer m_touchpadHoldGestureTimer;
+
+    std::shared_ptr<libgestures::GestureRecognizer> m_touchscreenGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
+    std::chrono::microseconds m_lastTouchDownTime = std::chrono::microseconds::zero();
+    QMap<int32_t, QPointF> m_touchPoints;
+
+    bool m_touchscreenSwipeGestureCancelled = false;
+    bool m_hasTouchscreenSwipeGesture = false;
 };
