@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include <QPointF>
 
 namespace libgestures
@@ -25,6 +27,15 @@ public:
     virtual void mouseButton([[maybe_unused]] const uint32_t &button, [[maybe_unused]] const bool &state) { };
     virtual void mouseMoveAbsolute([[maybe_unused]] const QPointF &pos) { };
     virtual void mouseMoveRelative([[maybe_unused]] const QPointF &pos) { };
+
+    static Input *implementation()
+    {
+        return s_implementation.get();
+    }
+    static void setImplementation(Input *implementation);
+
+private:
+    static std::unique_ptr<Input> s_implementation;
 };
 
 }
