@@ -31,7 +31,7 @@ Bolded properties must be set.
 | touchpad    | ``Device`` | See <a href="#device">*Device*</a> below.                                  |         |
 
 ## Device
-The only device supported at the time is *touchpad*.
+Supported devices are *touchpad* and *touchscreen*. Touchscreen gestures are currently experimental. 
 
 The device is the root element in the configuration file:
 ```yaml
@@ -61,7 +61,7 @@ See [example_gestures.md](example_gestures.md) for examples.
 
 | Property      | Type                                                                                                                        | Description                                                                                                                                                                                                                                           | Default |
 |---------------|-----------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| **type**      | ``enum(hold, pinch, swipe)``                                                                                                | For *pinch in* gestures, the scale ranges from 1.0 to 0.0. For *pinch out*, the scale is larger than 1.0.                                                                                                                                             | *none*  |
+| **type**      | ``enum(hold, pinch, swipe)``                                                                                                | For *pinch in* gestures, the scale ranges from 1.0 to 0.0. For *pinch out*, the scale is larger than 1.0.<br><br>**Touchscreens only support swipe gestures at the moment.**                                                                          | *none*  |
 | **direction** | For pinch gestures: ``enum(in, out, any)``<br>For swipe gestures: ``enum(left, right, up, down, left_right, up_down, any)`` | *any*, *left_right* and *up_down* are bi-directional gestures. The direction can be changed during the gesture.                                                                                                                                       | *none*  |
 | **fingers**   | ``uint`` (exact amount) or ``range(uint)``                                                                                  | The exact amount or range of fingers required to trigger this gesture.<br><br>Minimum value: *1* for *hold* gestures, *2* for *pinch* gestures, *3* for *swipe*.<br>Maximum value: Depends on how many fingers the device can detect.                 | *none*  |
 | speed         | ``enum(any, fast, slow)``                                                                                                   | The speed at which the gesture must be performed.<br><br>If a value other than *any* is specified, this gesture will cause all other gestures of the same device and type to be delayed by *Speed.events* input events until the speed is determined. | *any*   |

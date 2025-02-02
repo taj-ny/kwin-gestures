@@ -10,6 +10,7 @@ https://github.com/user-attachments/assets/2c16790a-869b-44f3-a760-590137293759
 # Features
 - Gestures: hold, pinch, swipe
 - Actions: run command, input (keyboard keys, mouse buttons, relative and absolute mouse movement, full control over when keys/buttons are pressed/released), invoke global shortcut
+- Touchscreen support (experimental)
 - Override/block built-in Plasma gestures
 - Application-specific gestures
 - Trigger actions before fingers are lifted for a more responsive feel
