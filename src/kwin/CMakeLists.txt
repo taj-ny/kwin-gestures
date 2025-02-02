@@ -13,6 +13,9 @@ find_package(XKB REQUIRED)
 if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.1.90)
     add_compile_definitions(KWIN_6_2_OR_GREATER)
 endif()
+if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.2.90)
+    add_compile_definitions(KWIN_6_3_OR_GREATER)
+endif()
 
 set(kwin_gestures_SOURCES
     impl/kwininput.cpp

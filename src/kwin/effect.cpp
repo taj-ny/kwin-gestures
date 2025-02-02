@@ -23,6 +23,7 @@ Effect::Effect()
 
     if (!QFile::exists(configFile)) {
         QFile(configFile).open(QIODevice::WriteOnly);
+        configureWatcher();
     }
 
     connect(&m_configFileWatcher, &QFileSystemWatcher::directoryChanged, this, &Effect::slotConfigDirectoryChanged);
@@ -70,9 +71,14 @@ void Effect::reconfigure(ReconfigureFlags flags)
     }
 
     if (m_autoReload) {
-        m_configFileWatcher.addPath(configFile);
-        m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+        configureWatcher();
     } else {
         m_configFileWatcher.removePaths(m_configFileWatcher.files() + m_configFileWatcher.directories());
     }
+}
+
+void Effect::configureWatcher()
+{
+    m_configFileWatcher.addPath(configFile);
+    m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
 }
