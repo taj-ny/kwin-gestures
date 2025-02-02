@@ -1,12 +1,11 @@
 #include "condition.h"
-#include "libgestures/libgestures.h"
 
 namespace libgestures
 {
 
 bool Condition::isSatisfied() const
 {
-    const auto windowData = libgestures::windowInfoProvider()->activeWindow();
+    const auto windowData = WindowInfoProvider::implementation()->activeWindow();
     if (!windowData)
         return false;
 
