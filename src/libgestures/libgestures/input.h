@@ -19,14 +19,14 @@ public:
     /**
      * @param state True to press, false to release.
      */
-    virtual void keyboardKey([[maybe_unused]] const uint32_t &key, [[maybe_unused]] const bool &state) { };
+    virtual void keyboardKey(const uint32_t &key, const bool &state) { };
 
     /**
      * @param state True to press, false to release.
      */
-    virtual void mouseButton([[maybe_unused]] const uint32_t &button, [[maybe_unused]] const bool &state) { };
-    virtual void mouseMoveAbsolute([[maybe_unused]] const QPointF &pos) { };
-    virtual void mouseMoveRelative([[maybe_unused]] const QPointF &pos) { };
+    virtual void mouseButton(const uint32_t &button, const bool &state) { };
+    virtual void mouseMoveAbsolute(const QPointF &pos) { };
+    virtual void mouseMoveRelative(const QPointF &pos) { };
 
     static Input *implementation()
     {

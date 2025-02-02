@@ -55,22 +55,13 @@ public:
     /**
      * @return Whether the action satisfies at least one condition, or no conditions have been added.
      */
-    [[nodiscard]] bool satisfiesConditions() const;
+    bool satisfiesConditions() const;
 
     /**
-     * Whether this action can be executed during a gesture, not necessarily right now.
-     * @remark @c execute() calls this method.
-     * @remark This method doesn't check whether the threshold has been reached.
-     * @return @c true if repeat interval is set or the action hasn't been triggered during a gesture, @c false
-     * otherwise or when none of the specified conditions have been satisfied.
+     * @return Whether this action should block all other actions, including actions belonging to other custom and
+     * built-in gestures, from being executed during the gesture, if the action is executed.
      */
-    [[nodiscard]] bool canExecute() const;
-
-    /**
-     * @return Whether any other actions belonging to a gesture should not be executed. @c true if the action has been
-     * executed and blockOtherActions has been set to @c true, @c false otherwise.
-     */
-    [[nodiscard]] bool blocksOtherActions() const;
+    bool blocksOtherActions() const;
 
     /**
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
@@ -93,13 +84,13 @@ public:
 
     /**
      * Sets how far the gesture needs to progress in order for the action to be executed. Thresholds are always
-     * positive no matter the direction. 0 is no threshold.
+     * positive no matter the direction. 0 - no threshold.
      * @remark Begin actions can't have thresholds. Set the threshold on the gesture instead.
      */
     void setThresholds(const qreal &minimum, const qreal &maximum);
 
     /**
-     * @param on At which point during the gesture the action should be executed.
+     * @param on The point during the gesture at which the action should be executed.
      */
     void setOn(const On &on);
 signals:
@@ -119,8 +110,8 @@ signals:
     void gestureEnded();
 
     /**
-     * Emitted when the gesture this action belongs to has ended has been updated, its threshold reached and
-     * the action's conditions satisfied.
+     * Emitted when the gesture this action belongs has began, its threshold reached and the action's conditions
+     * satisfied.
      */
     void gestureStarted();
 
@@ -144,36 +135,30 @@ private:
     /**
      * @return Whether the accumulated delta fits within the specified range.
      */
-    [[nodiscard]] bool thresholdReached() const;
-
-    qreal m_repeatInterval = 0;
-
-    bool m_blockOtherActions = false;
-    qreal m_minimumThreshold = 0;
-    qreal m_maximumThreshold = 0;
+    bool thresholdReached() const;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
     /**
-     * The sum of deltas from each update event.
-     *
-     * Reset when the direction changes, the gesture begins, ends or is cancelled.
+     * The sum of deltas from each update event. Reset when the direction changes, the gesture begins, ends or is
+     * cancelled.
      */
     qreal m_accumulatedDelta = 0;
     /**
-     * The sum of absolute deltas from each update event. Used for thresholds.
-     *
-     * Reset when the gesture begins, ends or is cancelled.
+     * The sum of absolute deltas from each update event. Used for thresholds. Reset when the gesture begins, ends or
+     * is cancelled.
      */
     qreal m_absoluteAccumulatedDelta = 0;
 
     /**
-     * Whether the action has been executed during the gesture.
-     *
-     * Reset when the gesture begins, ends or is cancelled.
+     * Whether the action has been executed during the gesture. Reset when the gesture begins, ends or is cancelled.
      */
     bool m_executed = false;
 
+    qreal m_repeatInterval = 0;
+    bool m_blockOtherActions = false;
+    qreal m_minimumThreshold = 0;
+    qreal m_maximumThreshold = 0;
     On m_on = On::Update;
 
     friend class TestGestureRecognizer;

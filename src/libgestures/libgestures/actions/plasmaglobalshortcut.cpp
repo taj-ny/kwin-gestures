@@ -1,10 +1,10 @@
-#include "kdeglobalshortcut.h"
+#include "plasmaglobalshortcut.h"
 #include <QDBusInterface>
 
 namespace libgestures
 {
 
-bool KDEGlobalShortcutGestureAction::tryExecute()
+bool PlasmaGlobalShortcutGestureAction::tryExecute()
 {
     if (!GestureAction::tryExecute()) {
         return false;
@@ -15,12 +15,12 @@ bool KDEGlobalShortcutGestureAction::tryExecute()
     return true;
 }
 
-void KDEGlobalShortcutGestureAction::setComponent(const QString &component)
+void PlasmaGlobalShortcutGestureAction::setComponent(const QString &component)
 {
     m_path = "/component/" + component;
 }
 
-void KDEGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
+void PlasmaGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
 {
     m_shortcut = shortcut;
 }

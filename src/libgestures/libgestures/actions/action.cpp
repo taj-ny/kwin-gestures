@@ -80,7 +80,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
 {
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
-        // Direction changed, reset delta
+        // Direction changed
         m_accumulatedDelta = 0;
     } else {
         m_accumulatedDelta += delta;
@@ -90,17 +90,17 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     if (m_on != On::Update) {
         return;
     }
-
-    if (m_repeatInterval != 0) {
-        while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0))
-               && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
-            tryExecute();
-            m_accumulatedDelta -= m_repeatInterval;
-        }
+    if (m_repeatInterval == 0) {
+        tryExecute();
         return;
     }
 
-    tryExecute();
+    // Keep executing action until accumulated delta no longer exceeds the interval
+    while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0))
+           && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
+        tryExecute();
+        m_accumulatedDelta -= m_repeatInterval;
+    }
 }
 
 void GestureAction::setBlockOtherActions(const bool &blockOtherActions)

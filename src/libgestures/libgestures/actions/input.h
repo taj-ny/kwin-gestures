@@ -7,6 +7,9 @@
 namespace libgestures
 {
 
+/**
+ * Input actions are performed in order as defined in the struct.
+ */
 struct InputAction
 {
     std::vector<uint32_t> keyboardPress;
@@ -14,6 +17,7 @@ struct InputAction
 
     std::vector<uint32_t> mousePress;
     std::vector<uint32_t> mouseRelease;
+
     QPointF mouseMoveAbsolute;
     QPointF mouseMoveRelative;
     bool mouseMoveRelativeByDelta = false;

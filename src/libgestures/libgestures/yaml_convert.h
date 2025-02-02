@@ -2,7 +2,7 @@
 
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
-#include "libgestures/actions/kdeglobalshortcut.h"
+#include "libgestures/actions/plasmaglobalshortcut.h"
 #include "libgestures/gestures/gesturerecognizer.h"
 
 #include <QRegularExpression>
@@ -642,7 +642,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         }
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
-        range threshold(-1, -1);
+        range threshold(0, 0);
         if (thresholdRaw.contains("-")) {
             const auto split = thresholdRaw.split("-");
             threshold.min = split[0].toFloat();
@@ -689,7 +689,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             inputAction->setSequence(inputNode.as<std::vector<libgestures::InputAction>>());
             action.reset(inputAction);
         } else if (node["plasma_shortcut"].IsDefined()) {
-            auto plasmaShortcutAction = new libgestures::KDEGlobalShortcutGestureAction;
+            auto plasmaShortcutAction = new libgestures::PlasmaGlobalShortcutGestureAction;
             const auto split = node["plasma_shortcut"].as<QString>().split(",");
             plasmaShortcutAction->setComponent(split[0]);
             plasmaShortcutAction->setShortcut(split[1]);
@@ -699,7 +699,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
         }
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
-        range threshold(-1, -1);
+        range threshold(0, 0);
         if (!thresholdRaw.isEmpty()) {
             if (thresholdRaw.contains("-")) {
                 const auto split = thresholdRaw.split("-");
@@ -710,7 +710,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             }
         }
         const auto on = node["on"].as<libgestures::On>(libgestures::On::End);
-        if (on == libgestures::On::Begin && (threshold.min != -1 || threshold.max != -1)) {
+        if (on == libgestures::On::Begin && (threshold.min != 0 || threshold.max != 0)) {
             throw Exception(node.Mark(), "Begin actions can't have thresholds");
         }
 
