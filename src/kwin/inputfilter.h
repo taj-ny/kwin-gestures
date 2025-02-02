@@ -9,8 +9,8 @@
  * the user has been recognized and handled.
  *
  * @remark If KWin version <=6.1.90, this filter is installed as the first one. For this reason, all methods that
- * process events must not do that if the session is locked. On later versions, it's installed right before
- * GlobalShortcutFilter
+ * process events must not do anything if the session is locked and must pass the event to the next filter. On later
+ * versions, it's installed right before GlobalShortcutFilter.
  *
  * @returns All methods that process events should return @c true to stop further event processing, @c false to pass to
  * next filter.

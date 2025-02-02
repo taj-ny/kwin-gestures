@@ -22,9 +22,8 @@ void Gesture::onCancelled()
 
     for (const auto &action : m_actions)
     {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureCancelled(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+        Q_EMIT action->gestureCancelled();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -40,9 +39,8 @@ void Gesture::onEnded()
 
     for (const auto &action : m_actions)
     {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureEnded(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+        Q_EMIT action->gestureEnded();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -54,9 +52,8 @@ void Gesture::onStarted()
 
     for (const auto &action : m_actions)
     {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureStarted(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+        Q_EMIT action->gestureStarted();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -75,9 +72,8 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
 
     for (const auto &action : m_actions)
     {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied, actionExecuted);
-        if (actionExecuted && action->blocksOtherActions())
+        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied);
+        if (action->blocksOtherActions())
         {
             endedPrematurely = true;
             Q_EMIT ended();
@@ -100,7 +96,7 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
 
     const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction)
     {
-        return triggerAction->canExecute();
+        return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
 }

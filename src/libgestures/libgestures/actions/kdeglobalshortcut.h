@@ -6,6 +6,9 @@
 namespace libgestures
 {
 
+/**
+ * Invokes a Plasma global shortcut.
+ */
 class KDEGlobalShortcutGestureAction : public GestureAction
 {
 public:
@@ -13,9 +16,10 @@ public:
 
     void setComponent(const QString &component);
     void setShortcut(const QString &shortcut);
+
 private:
-    QString m_component;
+    QString m_path;
     QString m_shortcut;
 };
 
-} // namespace libgestuers
+}

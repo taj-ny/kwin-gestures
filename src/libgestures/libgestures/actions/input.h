@@ -20,6 +20,8 @@ struct InputAction
 };
 
 /**
+ * Sends input.
+ *
  * @remark Requires Input::keyboardKey, Input::mouseButton, Input::mouseMoveAbsolute and Input::mouseMoveRelative to be
  * implemented.
  */
@@ -27,8 +29,8 @@ class InputGestureAction : public GestureAction
 {
 public:
     bool tryExecute() override;
-
     void setSequence(const std::vector<InputAction> &sequence);
+
 private:
     std::vector<InputAction> m_sequence;
 };

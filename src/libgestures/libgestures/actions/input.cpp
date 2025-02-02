@@ -6,8 +6,9 @@ namespace libgestures
 
 bool InputGestureAction::tryExecute()
 {
-    if (!GestureAction::tryExecute())
+    if (!GestureAction::tryExecute()) {
         return false;
+    }
 
     const auto input = libgestures::input();
     for (const auto &action : m_sequence) {
