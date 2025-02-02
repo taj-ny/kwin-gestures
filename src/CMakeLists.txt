@@ -1,7 +1,7 @@
 set(libgestures_SRCS
     libgestures/libgestures/actions/action.cpp
     libgestures/libgestures/actions/command.cpp
-    libgestures/libgestures/actions/kdeglobalshortcut.cpp
+    libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
     libgestures/libgestures/gestures/gesture.cpp
     libgestures/libgestures/gestures/gesturerecognizer.cpp

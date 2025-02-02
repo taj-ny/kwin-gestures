@@ -6,8 +6,7 @@
 namespace libgestures
 {
 
-enum class PinchDirection
-{
+enum class PinchDirection {
     Any,
     In,
     Out
@@ -16,9 +15,13 @@ enum class PinchDirection
 class PinchGesture : public Gesture
 {
 public:
-    PinchDirection direction() const { return m_direction; }
+    PinchDirection direction() const
+    {
+        return m_direction;
+    }
 
     void setDirection(const PinchDirection &direction);
+
 private:
     PinchDirection m_direction = PinchDirection::Any;
 };

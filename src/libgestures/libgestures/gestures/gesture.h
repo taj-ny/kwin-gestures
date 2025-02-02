@@ -7,8 +7,7 @@
 namespace libgestures
 {
 
-enum GestureSpeed
-{
+enum GestureSpeed {
     Any,
     Slow,
     Fast
@@ -24,7 +23,7 @@ public:
      * @returns Whether the amount of fingers fits within the specified range, all (if any) conditions are
      * satisfied, and there is at least one action (if any) that satisfies conditions.
      */
-    [[nodiscard]] bool satisfiesConditions(const uint8_t &fingerCount) const;
+    bool satisfiesConditions(const uint8_t &fingerCount) const;
 
     GestureSpeed speed() const;
 
@@ -63,16 +62,17 @@ private slots:
     void onEnded();
     void onStarted();
     void onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
+
 private:
     /**
      * @return Whether the accumulated delta fits within the specified range.
      */
-    [[nodiscard]] bool thresholdReached() const;
+    bool thresholdReached() const;
 
     uint8_t m_minimumFingers = 0;
     uint8_t m_maximumFingers = 0;
-    qreal m_minimumThreshold = -1;
-    qreal m_maximumThreshold = -1;
+    qreal m_minimumThreshold = 0;
+    qreal m_maximumThreshold = 0;
     GestureSpeed m_speed = GestureSpeed::Any;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;

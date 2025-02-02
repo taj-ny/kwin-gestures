@@ -1,5 +1,5 @@
-#include "effect/effecthandler.h"
 #include "kwinwindowinfoprovider.h"
+#include "effect/effecthandler.h"
 #include "window.h"
 
 std::optional<const libgestures::WindowInfo> KWinWindowInfoProvider::activeWindow() const

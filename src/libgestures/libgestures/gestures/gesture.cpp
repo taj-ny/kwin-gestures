@@ -20,11 +20,9 @@ void Gesture::onCancelled()
 
     m_hasStarted = false;
 
-    for (const auto &action : m_actions)
-    {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureCancelled(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+    for (const auto &action : m_actions) {
+        Q_EMIT action->gestureCancelled();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -38,11 +36,9 @@ void Gesture::onEnded()
 
     m_hasStarted = false;
 
-    for (const auto &action : m_actions)
-    {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureEnded(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+    for (const auto &action : m_actions) {
+        Q_EMIT action->gestureEnded();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -52,11 +48,9 @@ void Gesture::onStarted()
     if (!m_hasStarted)
         return;
 
-    for (const auto &action : m_actions)
-    {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureStarted(actionExecuted);
-        if (action->blocksOtherActions() && actionExecuted)
+    for (const auto &action : m_actions) {
+        Q_EMIT action->gestureStarted();
+        if (action->blocksOtherActions())
             break;
     }
 }
@@ -67,18 +61,14 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
     if (!thresholdReached())
         return;
 
-    if (!m_hasStarted)
-    {
+    if (!m_hasStarted) {
         m_hasStarted = true;
         Q_EMIT started();
     }
 
-    for (const auto &action : m_actions)
-    {
-        bool actionExecuted = false;
-        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied, actionExecuted);
-        if (actionExecuted && action->blocksOtherActions())
-        {
+    for (const auto &action : m_actions) {
+        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied);
+        if (action->blocksOtherActions()) {
             endedPrematurely = true;
             Q_EMIT ended();
             return;
@@ -91,16 +81,14 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount)
         return false;
 
-    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition)
-    {
+    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
         return condition->isSatisfied();
     }) != m_conditions.end();
     if (!m_conditions.empty() && !satisfiesConditions)
         return false;
 
-    const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction)
-    {
-        return triggerAction->canExecute();
+    const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction) {
+        return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
 }
@@ -129,8 +117,8 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 
 bool Gesture::thresholdReached() const
 {
-    return ((m_minimumThreshold == -1 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
-        && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
+    return ((m_minimumThreshold == 0 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
+            && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
 }
 
 void Gesture::setSpeed(const libgestures::GestureSpeed &speed)

@@ -5,8 +5,7 @@
 namespace libgestures
 {
 
-enum class SwipeDirection
-{
+enum class SwipeDirection {
     Any,
     Left,
     Right,
@@ -19,9 +18,13 @@ enum class SwipeDirection
 class SwipeGesture : public Gesture
 {
 public:
-    SwipeDirection direction() const { return m_direction; }
+    SwipeDirection direction() const
+    {
+        return m_direction;
+    }
 
     void setDirection(const SwipeDirection &direction);
+
 private:
     SwipeDirection m_direction = SwipeDirection::Left;
 };

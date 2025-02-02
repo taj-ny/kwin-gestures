@@ -1,13 +1,12 @@
 #pragma once
 
-#include <QString>
 #include "yaml-cpp/yaml.h"
+#include <QString>
 
 namespace libgestures
 {
 
-enum WindowState
-{
+enum WindowState {
     Maximized = 1u << 0,
     Fullscreen = 1u << 1,
     All = 0u - 1
@@ -22,10 +21,22 @@ class WindowInfo
 public:
     WindowInfo(QString title, QString resourceClass, QString resourceName, WindowStates state);
 
-    QString title() const { return m_title; };
-    QString resourceClass() const { return m_resourceClass; };
-    QString resourceName() const { return m_resourceName; };
-    WindowStates state() const { return m_state; };
+    QString title() const
+    {
+        return m_title;
+    };
+    QString resourceClass() const
+    {
+        return m_resourceClass;
+    };
+    QString resourceName() const
+    {
+        return m_resourceName;
+    };
+    WindowStates state() const
+    {
+        return m_state;
+    };
 
 private:
     const QString m_title;
@@ -44,9 +55,10 @@ public:
     virtual ~WindowInfoProvider() = default;
 
     /**
-     * @return The window information, or @c std::nullopt if no window is currently active.
+     * @return The window information of the currently active window, or @c std::nullopt if no window is currently
+     * active.
      */
-    [[nodiscard]] virtual std::optional<const WindowInfo> activeWindow() const
+    virtual std::optional<const WindowInfo> activeWindow() const
     {
         return std::nullopt;
     };

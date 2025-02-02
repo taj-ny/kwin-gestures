@@ -18,98 +18,88 @@ void GestureAction::addCondition(const std::shared_ptr<const Condition> &conditi
 
 bool GestureAction::satisfiesConditions() const
 {
-    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition)
-    {
+    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
         return condition->isSatisfied();
     }) != m_conditions.end();
 }
 
 bool GestureAction::thresholdReached() const
 {
-    return (m_minimumThreshold == -1 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
-        && (m_maximumThreshold == -1 || m_absoluteAccumulatedDelta <= m_maximumThreshold);
+    return (m_minimumThreshold == 0 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
+        && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold);
 }
 
 bool GestureAction::tryExecute()
 {
-    if (!canExecute() || !thresholdReached())
+    if (!satisfiesConditions() || !thresholdReached()) {
         return false;
+    }
 
-    m_triggered = true;
+    m_executed = true;
     Q_EMIT executed();
     return true;
 }
 
-bool GestureAction::canExecute() const
-{
-    return satisfiesConditions();
-}
-
 bool GestureAction::blocksOtherActions() const
 {
-    return m_triggered && m_blockOtherActions;
+    return m_executed && m_blockOtherActions;
 }
 
-void GestureAction::onGestureCancelled(bool &actionExecuted)
+void GestureAction::onGestureCancelled()
 {
-    if ((m_on == On::Cancel || m_on == On::EndOrCancel) && tryExecute())
-        actionExecuted = true;
+    if (m_on == On::Cancel || m_on == On::EndOrCancel) {
+        tryExecute();
+    }
 
-    m_triggered = false;
     m_accumulatedDelta = 0;
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureEnded(bool &actionExecuted)
+void GestureAction::onGestureEnded()
 {
-    if ((m_on == On::End || m_on == On::EndOrCancel) && tryExecute())
-        actionExecuted = true;
+    if (m_on == On::End || m_on == On::EndOrCancel) {
+        tryExecute();
+    }
 
-    m_triggered = false;
     m_accumulatedDelta = 0;
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureStarted(bool &actionExecuted)
+void GestureAction::onGestureStarted()
 {
-    if (m_on == On::Begin && tryExecute())
-        actionExecuted = true;
+    m_executed = false;
+    if (m_on == On::Begin) {
+        tryExecute();
+    }
 
-    m_triggered = false;
     m_accumulatedDelta = 0;
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &actionExecuted)
+void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
-    if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0))
-    {
-        // Direction changed, reset delta
+    if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
+        // Direction changed
         m_accumulatedDelta = 0;
-    }
-    else
-    {
+    } else {
         m_accumulatedDelta += delta;
         m_absoluteAccumulatedDelta += std::abs(delta);
     }
 
-    if (m_on != On::Update)
+    if (m_on != On::Update) {
         return;
-
-    if (m_repeatInterval != 0)
-    {
-        while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0)) && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1)
-        {
-            if (tryExecute())
-                actionExecuted = true;
-            m_accumulatedDelta -= m_repeatInterval;
-        }
+    }
+    if (m_repeatInterval == 0) {
+        tryExecute();
         return;
     }
 
-    if (tryExecute()) {
-        actionExecuted = true;
+    // Keep executing action until accumulated delta no longer exceeds the interval
+    while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0))
+           && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
+        tryExecute();
+        m_accumulatedDelta -= m_repeatInterval;
     }
 }
 
