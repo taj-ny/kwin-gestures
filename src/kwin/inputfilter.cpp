@@ -1,16 +1,15 @@
-#include "input_event_spy.h"
 #include "inputfilter.h"
+#include "input_event_spy.h"
 
-#include <utility>
 #include "wayland_server.h"
+#include <utility>
 
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
-    connect(&m_touchpadHoldGestureTimer, &QTimer::timeout, this, [this]()
-    {
+    connect(&m_touchpadHoldGestureTimer, &QTimer::timeout, this, [this]() {
         holdGestureUpdate(1);
     });
 }
@@ -62,14 +61,11 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->holdGestureEnd())
-    {
-        KWin::input()->processSpies([&time](auto &&spy)
-        {
+    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->holdGestureEnd()) {
+        KWin::input()->processSpies([&time](auto &&spy) {
             spy->holdGestureCancelled(time);
         });
-        KWin::input()->processFilters([&time](auto &&filter)
-        {
+        KWin::input()->processFilters([&time](auto &&filter) {
             return filter->holdGestureCancelled(time);
         });
         return true;
@@ -126,8 +122,7 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
 
     auto endedPrematurely = false;
     const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, endedPrematurely);
-    if (endedPrematurely)
-    {
+    if (endedPrematurely) {
         swipeGestureEnd(time);
         return true;
     }
@@ -144,14 +139,11 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->swipeGestureEnd())
-    {
-        KWin::input()->processSpies([&time](auto &&spy)
-        {
+    if (m_touchpadGestureFingerCount >= 3 && m_touchpadGestureRecognizer->swipeGestureEnd()) {
+        KWin::input()->processSpies([&time](auto &&spy) {
             spy->swipeGestureCancelled(time);
         });
-        KWin::input()->processFilters([&time](auto &&filter)
-        {
+        KWin::input()->processFilters([&time](auto &&filter) {
             return filter->swipeGestureCancelled(time);
         });
         return true;
@@ -206,8 +198,7 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
 
     auto endedPrematurely = false;
     const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, endedPrematurely);
-    if (endedPrematurely)
-    {
+    if (endedPrematurely) {
         pinchGestureEnd(time);
         return true;
     }
@@ -224,14 +215,11 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
-    if (m_touchpadGestureFingerCount >= 2 && m_touchpadGestureRecognizer->pinchGestureEnd())
-    {
-        KWin::input()->processSpies([&time](auto &&spy)
-        {
+    if (m_touchpadGestureFingerCount >= 2 && m_touchpadGestureRecognizer->pinchGestureEnd()) {
+        KWin::input()->processSpies([&time](auto &&spy) {
             spy->pinchGestureCancelled(time);
         });
-        KWin::input()->processFilters([&time](auto &&filter)
-        {
+        KWin::input()->processFilters([&time](auto &&filter) {
             return filter->pinchGestureCancelled(time);
         });
         return true;

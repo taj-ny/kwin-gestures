@@ -1,8 +1,8 @@
 #include "action.h"
-#include <linux/input-event-codes.h>
 #include "libgestures/input.h"
-#include <map>
 #include <QString>
+#include <linux/input-event-codes.h>
+#include <map>
 
 namespace libgestures
 {

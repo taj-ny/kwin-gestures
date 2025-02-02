@@ -28,8 +28,7 @@ void KWinInput::keyboardKey(const uint32_t &key, const bool &state)
         state ? KWin::InputRedirection::KeyboardKeyPressed : KWin::InputRedirection::KeyboardKeyReleased,
 #endif
         timestamp(),
-        m_device.get()
-    );
+        m_device.get());
 }
 
 void KWinInput::mouseButton(const uint32_t &button, const bool &state)
@@ -42,8 +41,7 @@ void KWinInput::mouseButton(const uint32_t &button, const bool &state)
         state ? KWin::InputRedirection::PointerButtonPressed : KWin::InputRedirection::PointerButtonReleased,
 #endif
         timestamp(),
-        m_device.get()
-    );
+        m_device.get());
     m_pointer->processFrame(m_device.get());
 }
 

@@ -1,13 +1,12 @@
 #pragma once
 
-#include <QString>
 #include "yaml-cpp/yaml.h"
+#include <QString>
 
 namespace libgestures
 {
 
-enum WindowState
-{
+enum WindowState {
     Maximized = 1u << 0,
     Fullscreen = 1u << 1,
     All = 0u - 1
@@ -20,10 +19,22 @@ class WindowInfo
 public:
     WindowInfo(QString title, QString resourceClass, QString resourceName, WindowStates state);
 
-    QString title() const { return m_title; };
-    QString resourceClass() const { return m_resourceClass; };
-    QString resourceName() const { return m_resourceName; };
-    WindowStates state() const { return m_state; };
+    QString title() const
+    {
+        return m_title;
+    };
+    QString resourceClass() const
+    {
+        return m_resourceClass;
+    };
+    QString resourceName() const
+    {
+        return m_resourceName;
+    };
+    WindowStates state() const
+    {
+        return m_state;
+    };
 
 private:
     const QString m_title;

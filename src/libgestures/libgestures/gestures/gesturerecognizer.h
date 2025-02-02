@@ -10,8 +10,7 @@
 namespace libgestures
 {
 
-enum Axis
-{
+enum Axis {
     Horizontal,
     Vertical,
     None
@@ -98,12 +97,13 @@ public:
      */
     bool pinchGestureEnd();
     void pinchGestureCancel();
+
 private:
-    template <class TGesture>
+    template<class TGesture>
     void gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
-    template <class TGesture>
+    template<class TGesture>
     bool gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures);
-    template <class TGesture>
+    template<class TGesture>
     void gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures);
 
     void resetMembers();

@@ -22,7 +22,7 @@ bool Condition::isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) 
 
     return ((*m_windowClass).match(data.resourceClass()).hasMatch()
             || (*m_windowClass).match(data.resourceName()).hasMatch())
-            == !m_negateWindowClass;
+        == !m_negateWindowClass;
 }
 
 bool Condition::isWindowStateSubConditionSatisfied(const WindowInfo &data) const

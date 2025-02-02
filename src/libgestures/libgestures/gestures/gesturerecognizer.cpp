@@ -3,10 +3,10 @@
 namespace libgestures
 {
 
-#define TEMPLATES(TGesture) \
-template void GestureRecognizer::gestureBegin<TGesture>(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures); \
-template bool GestureRecognizer::gestureEnd<TGesture>(std::vector<std::shared_ptr<TGesture>> &activeGestures); \
-template void GestureRecognizer::gestureCancel<TGesture>(std::vector<std::shared_ptr<TGesture>> &activeGestures);
+#define TEMPLATES(TGesture)                                                                                                                      \
+    template void GestureRecognizer::gestureBegin<TGesture>(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures); \
+    template bool GestureRecognizer::gestureEnd<TGesture>(std::vector<std::shared_ptr<TGesture>> & activeGestures);                              \
+    template void GestureRecognizer::gestureCancel<TGesture>(std::vector<std::shared_ptr<TGesture>> & activeGestures);
 TEMPLATES(HoldGesture)
 TEMPLATES(PinchGesture)
 TEMPLATES(SwipeGesture)
@@ -48,8 +48,7 @@ void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
 
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
 {
-    for (const auto &holdGesture : m_activeHoldGestures)
-    {
+    for (const auto &holdGesture : m_activeHoldGestures) {
         Q_EMIT holdGesture->updated(delta, QPointF(), endedPrematurely);
         if (endedPrematurely)
             return;
@@ -67,10 +66,8 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
     // Determine the direction of the swipe
     PinchDirection direction = scale < 1 ? PinchDirection::In : PinchDirection::Out;
 
-    if (m_isDeterminingSpeed)
-    {
-        if (m_sampledInputEvents++ != m_inputEventsToSample)
-        {
+    if (m_isDeterminingSpeed) {
+        if (m_sampledInputEvents++ != m_inputEventsToSample) {
             m_accumulatedAbsoluteSampledDelta += std::abs(pinchDelta);
             return true;
         }
@@ -83,12 +80,10 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
         m_isDeterminingSpeed = false;
     }
 
-    for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();)
-    {
+    for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();) {
         const auto &gesture = *it;
         if ((gesture->direction() != PinchDirection::Any && gesture->direction() != direction)
-            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
-        {
+            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed)) {
             gesture->cancelled();
             it = m_activePinchGestures.erase(it);
             continue;
@@ -108,10 +103,8 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
 {
     m_currentSwipeDelta += delta;
 
-    if (m_isDeterminingSpeed)
-    {
-        if (m_sampledInputEvents++ != m_inputEventsToSample)
-        {
+    if (m_isDeterminingSpeed) {
+        if (m_sampledInputEvents++ != m_inputEventsToSample) {
             m_accumulatedAbsoluteSampledDelta += std::abs(delta.x()) + std::abs(delta.y());
             return true;
         }
@@ -128,47 +121,41 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
     Axis swipeAxis;
 
     // Pick an axis for gestures so horizontal ones don't change to vertical ones without lifting fingers
-    if (m_currentSwipeAxis == Axis::None)
-    {
+    if (m_currentSwipeAxis == Axis::None) {
         if (std::abs(m_currentSwipeDelta.x()) >= std::abs(m_currentSwipeDelta.y()))
             swipeAxis = Axis::Horizontal;
         else
             swipeAxis = Axis::Vertical;
 
-        if (std::abs(m_currentSwipeDelta.x()) >= 5 || std::abs(m_currentSwipeDelta.y()) >= 5)
-        {
+        if (std::abs(m_currentSwipeDelta.x()) >= 5 || std::abs(m_currentSwipeDelta.y()) >= 5) {
             // only lock in a direction if the delta is big enough
             // to prevent accidentally choosing the wrong direction
             m_currentSwipeAxis = swipeAxis;
         }
-    }
-    else
+    } else
         swipeAxis = m_currentSwipeAxis;
 
     // Find the current swipe direction
-    switch (swipeAxis)
-    {
-        case Axis::Vertical:
-            direction = m_currentSwipeDelta.y() < 0 ? SwipeDirection::Up : SwipeDirection::Down;
-            break;
-        case Axis::Horizontal:
-            direction = m_currentSwipeDelta.x() < 0 ? SwipeDirection::Left : SwipeDirection::Right;
-            break;
-        default:
-            Q_UNREACHABLE();
+    switch (swipeAxis) {
+    case Axis::Vertical:
+        direction = m_currentSwipeDelta.y() < 0 ? SwipeDirection::Up : SwipeDirection::Down;
+        break;
+    case Axis::Horizontal:
+        direction = m_currentSwipeDelta.x() < 0 ? SwipeDirection::Left : SwipeDirection::Right;
+        break;
+    default:
+        Q_UNREACHABLE();
     }
 
-    for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();)
-    {
+    for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();) {
         const auto gesture = *it;
 
         if ((!((gesture->direction() == SwipeDirection::LeftRight
-               && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
-              || (gesture->direction() == SwipeDirection::UpDown
-                  && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
-            && (gesture->direction() != SwipeDirection::Any && gesture->direction() != direction))
-            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed))
-        {
+                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
+               || (gesture->direction() == SwipeDirection::UpDown
+                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
+             && (gesture->direction() != SwipeDirection::Any && gesture->direction() != direction))
+            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed)) {
             gesture->cancelled();
             it = m_activeSwipeGestures.erase(it);
             continue;
@@ -229,14 +216,13 @@ bool GestureRecognizer::pinchGestureEnd()
     return gestureEnd(m_activePinchGestures);
 }
 
-template <class TGesture>
+template<class TGesture>
 void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures)
 {
     if (!activeGestures.empty())
         return;
 
-    for (const std::shared_ptr<Gesture> &gesture : m_gestures)
-    {
+    for (const std::shared_ptr<Gesture> &gesture : m_gestures) {
         std::shared_ptr<TGesture> castedGesture = std::dynamic_pointer_cast<TGesture>(gesture);
         if (!castedGesture || !gesture->satisfiesConditions(fingerCount))
             continue;
@@ -248,7 +234,7 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
     }
 }
 
-template <class TGesture>
+template<class TGesture>
 bool GestureRecognizer::gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures)
 {
     bool hadActiveGestures = !activeGestures.empty();
@@ -261,7 +247,7 @@ bool GestureRecognizer::gestureEnd(std::vector<std::shared_ptr<TGesture>> &activ
     return hadActiveGestures;
 }
 
-template <class TGesture>
+template<class TGesture>
 void GestureRecognizer::gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures)
 {
     for (const auto &gesture : activeGestures)

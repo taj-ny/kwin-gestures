@@ -10,8 +10,7 @@ namespace libgestures
 /**
  * At which point during the gesture the action should be executed.
  */
-enum On
-{
+enum On {
     /**
      * The gesture has ended.
      */
@@ -129,6 +128,7 @@ signals:
      * Emitted when the gesture this action belongs to has been updated.
      */
     void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+
 protected:
     GestureAction();
 
@@ -139,6 +139,7 @@ private slots:
     void onGestureEnded();
     void onGestureStarted();
     void onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+
 private:
     /**
      * @return Whether the accumulated delta fits within the specified range.

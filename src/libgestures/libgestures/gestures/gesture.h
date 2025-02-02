@@ -7,8 +7,7 @@
 namespace libgestures
 {
 
-enum GestureSpeed
-{
+enum GestureSpeed {
     Any,
     Slow,
     Fast
@@ -63,6 +62,7 @@ private slots:
     void onEnded();
     void onStarted();
     void onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
+
 private:
     /**
      * @return Whether the accumulated delta fits within the specified range.

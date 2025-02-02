@@ -13,8 +13,14 @@ public:
     Effect();
     ~Effect() override;
 
-    static bool supported() { return true; };
-    static bool enabledByDefault() { return false; };
+    static bool supported()
+    {
+        return true;
+    };
+    static bool enabledByDefault()
+    {
+        return false;
+    };
 
     void reconfigure(ReconfigureFlags flags) override;
 

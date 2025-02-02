@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QRegularExpression>
 #include "windowinfoprovider.h"
+#include <QRegularExpression>
 
 namespace libgestures
 {
@@ -27,6 +27,7 @@ public:
 
     void setNegateWindowClass(const bool &negate);
     void setNegateWindowState(const bool &negate);
+
 private:
     [[nodiscard]] bool isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const;
     [[nodiscard]] bool isWindowStateSubConditionSatisfied(const WindowInfo &data) const;

@@ -65,9 +65,8 @@ void Effect::reconfigure(ReconfigureFlags flags)
         auto gestureRecognizer = config["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();
         m_inputEventFilter->setTouchpadGestureRecognizer(gestureRecognizer);
     } catch (const YAML::Exception &e) {
-        qCritical(KWIN_GESTURES).noquote() <<
-            QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
-            + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
+        qCritical(KWIN_GESTURES).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
+                + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
         return;
     }
 

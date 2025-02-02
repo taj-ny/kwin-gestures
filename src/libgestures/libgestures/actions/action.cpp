@@ -18,8 +18,7 @@ void GestureAction::addCondition(const std::shared_ptr<const Condition> &conditi
 
 bool GestureAction::satisfiesConditions() const
 {
-    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition)
-    {
+    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
         return condition->isSatisfied();
     }) != m_conditions.end();
 }
@@ -94,7 +93,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
 
     if (m_repeatInterval != 0) {
         while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0))
-            && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
+               && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
             tryExecute();
             m_accumulatedDelta -= m_repeatInterval;
         }
