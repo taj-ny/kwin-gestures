@@ -87,15 +87,15 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
     if (!m_conditions.empty() && !satisfiesConditions)
         return false;
 
-    const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction) {
+    const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::unique_ptr<GestureAction> &triggerAction) {
         return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
 }
 
-void Gesture::addAction(const std::shared_ptr<GestureAction> &action)
+void Gesture::addAction(std::unique_ptr<GestureAction> action)
 {
-    m_actions.push_back(action);
+    m_actions.push_back(std::move(action));
 }
 
 void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)

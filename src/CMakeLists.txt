@@ -1,4 +1,5 @@
 set(libgestures_SRCS
+    libgestures/libgestures/actions/actioncollection.cpp
     libgestures/libgestures/actions/action.cpp
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp

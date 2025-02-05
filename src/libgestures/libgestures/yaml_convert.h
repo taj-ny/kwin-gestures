@@ -1,5 +1,6 @@
 #pragma once
 
+#include "libgestures/actions/actioncollection.h"
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
 #include "libgestures/actions/plasmaglobalshortcut.h"
@@ -658,8 +659,25 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         for (const auto &conditionNode : node["conditions"]) {
             gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
         }
-        for (const auto &actionNode : node["actions"]) {
-            gesture->addAction(actionNode.as<std::shared_ptr<libgestures::GestureAction>>());
+
+        const auto builtinNode = node["builtin"];
+        if (builtinNode.IsDefined()) {
+            const auto id = builtinNode["id"].as<QString>("");
+            const auto &collections = libgestures::ActionCollection::registeredCollections();
+
+            if (!collections.contains(id)) {
+                throw Exception(node.Mark(), ("Invalid built-in gesture ('" + id + "')").toStdString());
+            }
+
+            libgestures::GestureConfiguration config;
+            config.isInstant = builtinNode["instant"].as<bool>(false);
+            for (auto &action : collections.at(id)->actions(config)) {
+                gesture->addAction(std::move(action));
+            }
+        } else {
+            for (const auto &actionNode : node["actions"]) {
+                gesture->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
+            }
         }
 
         return true;
@@ -667,9 +685,9 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
 };
 
 template<>
-struct convert<std::shared_ptr<libgestures::GestureAction>>
+struct convert<std::unique_ptr<libgestures::GestureAction>>
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureAction> &action)
+    static bool decode(const Node &node, std::unique_ptr<libgestures::GestureAction> &action)
     {
         if (node["command"].IsDefined()) {
             auto commandAction = new libgestures::CommandGestureAction();
