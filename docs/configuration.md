@@ -2,7 +2,7 @@
 > [!IMPORTANT]
 > Until v1.0.0 is released, breaking changes may be introduced at any time.
 
-There is currently no configuration UI. The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the plugin is loaded. The plugin should be reconfigured when the file changes. If it doesn't, disable and enable it manually or run ``qdbus org.kde.KWin /plugins org.kde.kwin.plugins.reconfigureplugin kwin_gestures``.
+There is currently no configuration UI. The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the plugin is loaded. The plugin should be reconfigured when the file changes. If it doesn't, disable and enable it manually or run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures``.
 
 When the configuration fails to load, the error will be logged. To see it, run ``journalctl --boot=0 -g "kwin_gestures:" -n 5``. The message should contain the approximate position of where the error has occurred.
 ```
