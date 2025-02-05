@@ -12,6 +12,7 @@ Effect::Effect()
 {
     libgestures::Input::setImplementation(new KWinInput);
     libgestures::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
+    registerBuiltinActions();
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());
@@ -80,4 +81,18 @@ void Effect::configureWatcher()
 {
     m_configFileWatcher.addPath(configFile);
     m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
+}
+
+void Effect::registerBuiltinActions()
+{
+    auto windowMaximize = std::make_unique<libgestures::ActionCollection>();
+    windowMaximize->setGestureTypes(libgestures::GestureType::Swipe);
+    windowMaximize->setActionFactory([](auto &actions, auto &config) {
+        auto action = std::make_unique<libgestures::PlasmaGlobalShortcutGestureAction>();
+        action->setOn(config.isInstant ? libgestures::On::Begin : libgestures::On::End);
+        action->setComponent("kwin");
+        action->setShortcut("Window Maximize");
+        actions.push_back(std::move(action));
+    });
+    libgestures::ActionCollection::registerCollection("maximize", std::move(windowMaximize));
 }

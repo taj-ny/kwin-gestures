@@ -27,7 +27,7 @@ public:
 
     GestureSpeed speed() const;
 
-    void addAction(const std::shared_ptr<GestureAction> &action);
+    void addAction(std::unique_ptr<GestureAction> action);
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
     void setSpeed(const GestureSpeed &speed);
@@ -77,7 +77,7 @@ private:
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
-    std::vector<std::shared_ptr<GestureAction>> m_actions;
+    std::vector<std::unique_ptr<GestureAction>> m_actions;
 
     qreal m_absoluteAccumulatedDelta = 0;
     bool m_hasStarted = false;
