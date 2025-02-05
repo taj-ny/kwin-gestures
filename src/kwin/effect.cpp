@@ -85,14 +85,43 @@ void Effect::configureWatcher()
 
 void Effect::registerBuiltinActions()
 {
-    auto windowMaximize = std::make_unique<libgestures::ActionCollection>();
-    windowMaximize->setGestureTypes(libgestures::GestureType::Swipe);
-    windowMaximize->setActionFactory([](auto &actions, auto &config) {
+    auto collection = std::make_unique<libgestures::ActionCollection>();
+    collection->setGestureTypes(libgestures::GestureType::Swipe);
+    collection->setActionFactory([](auto &actions, auto &config) {
         auto action = std::make_unique<libgestures::PlasmaGlobalShortcutGestureAction>();
         action->setOn(config.isInstant ? libgestures::On::Begin : libgestures::On::End);
         action->setComponent("kwin");
         action->setShortcut("Window Maximize");
         actions.push_back(std::move(action));
     });
-    libgestures::ActionCollection::registerCollection("maximize", std::move(windowMaximize));
+    libgestures::ActionCollection::registerCollection("maximize", std::move(collection));
+
+    collection = std::make_unique<libgestures::ActionCollection>();
+    collection->setGestureTypes(libgestures::GestureType::Swipe);
+    collection->setActionFactory([](auto &actions, auto &config) {
+        libgestures::InputAction input;
+
+        auto action = std::make_unique<libgestures::InputGestureAction>();
+        action->setOn(libgestures::On::Begin);
+        input.keyboardPress.push_back(KEY_LEFTMETA);
+        input.mousePress.push_back(BTN_LEFT);
+        action->setSequence({input});
+        actions.push_back(std::move(action));
+
+        input = {};
+        action = std::make_unique<libgestures::InputGestureAction>();
+        action->setOn(libgestures::On::Update);
+        input.mouseMoveRelativeByDelta = true;
+        action->setSequence({input});
+        actions.push_back(std::move(action));
+
+        input = {};
+        action = std::make_unique<libgestures::InputGestureAction>();
+        action->setOn(libgestures::On::EndOrCancel);
+        input.keyboardRelease.push_back(KEY_LEFTMETA);
+        input.mouseRelease.push_back(BTN_LEFT);
+        action->setSequence({input});
+        actions.push_back(std::move(action));
+    });
+    libgestures::ActionCollection::registerCollection("drag_window", std::move(collection));
 }
