@@ -13,8 +13,8 @@ class PlasmaGlobalShortcutGestureAction : public GestureAction
 {
 public:
     bool tryExecute() override;
-    void setComponent(const QString &component);
-    void setShortcut(const QString &shortcut);
+    PlasmaGlobalShortcutGestureAction &setComponent(const QString &component);
+    PlasmaGlobalShortcutGestureAction &setShortcut(const QString &shortcut);
 
 private:
     QString m_path;

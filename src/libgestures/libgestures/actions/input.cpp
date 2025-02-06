@@ -39,9 +39,10 @@ bool InputGestureAction::tryExecute()
     return true;
 }
 
-void InputGestureAction::setSequence(const std::vector<InputAction> &sequence)
+InputGestureAction &InputGestureAction::setSequence(const std::vector<InputAction> &sequence)
 {
     m_sequence = sequence;
+    return *this;
 }
 
 }

@@ -33,7 +33,7 @@ class InputGestureAction : public GestureAction
 {
 public:
     bool tryExecute() override;
-    void setSequence(const std::vector<InputAction> &sequence);
+    InputGestureAction &setSequence(const std::vector<InputAction> &sequence);
 
 private:
     std::vector<InputAction> m_sequence;

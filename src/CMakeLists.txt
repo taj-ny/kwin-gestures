@@ -1,5 +1,6 @@
 set(libgestures_SRCS
     libgestures/libgestures/actions/action.cpp
+    libgestures/libgestures/actions/callback.cpp
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp

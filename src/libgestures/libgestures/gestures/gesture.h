@@ -27,12 +27,13 @@ public:
 
     GestureSpeed speed() const;
 
-    void addAction(std::unique_ptr<GestureAction> action);
-    void addCondition(const std::shared_ptr<const Condition> &condition);
+    Gesture &addAction(std::unique_ptr<GestureAction> action);
 
-    void setSpeed(const GestureSpeed &speed);
-    void setThresholds(const qreal &minimum, const qreal &maximum);
-    void setFingers(const uint8_t &minimum, const uint8_t &maximum);
+    Gesture &addCondition(const std::shared_ptr<const Condition> &condition);
+
+    Gesture &setSpeed(const GestureSpeed &speed);
+    Gesture &setThresholds(const qreal &minimum, const qreal &maximum);
+    Gesture &setFingers(const uint8_t &minimum, const uint8_t &maximum);
 signals:
     /**
      * Emitted when the gesture has been cancelled.

@@ -36,12 +36,12 @@ public:
      */
     void unregisterGestures();
 
-    void setInputEventsToSample(const uint8_t &events);
-    void setSwipeFastThreshold(const qreal &threshold);
-    void setPinchInFastThreshold(const qreal &threshold);
-    void setPinchOutFastThreshold(const qreal &threshold);
+    GestureRecognizer &setInputEventsToSample(const uint8_t &events);
+    GestureRecognizer &setSwipeFastThreshold(const qreal &threshold);
+    GestureRecognizer &setPinchInFastThreshold(const qreal &threshold);
+    GestureRecognizer &setPinchOutFastThreshold(const qreal &threshold);
 
-    void setDeltaMultiplier(const qreal &multiplier);
+    GestureRecognizer &setDeltaMultiplier(const qreal &multiplier);
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.

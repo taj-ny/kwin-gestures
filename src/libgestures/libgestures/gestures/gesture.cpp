@@ -93,26 +93,30 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
     return m_actions.empty() || actionSatisfiesConditions;
 }
 
-void Gesture::addAction(std::unique_ptr<GestureAction> action)
+Gesture &Gesture::addAction(std::unique_ptr<GestureAction> action)
 {
     m_actions.push_back(std::move(action));
+    return *this;
 }
 
-void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
+Gesture &Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
+    return *this;
 }
 
-void Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
+Gesture &Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
 {
     m_minimumThreshold = minimum;
     m_maximumThreshold = maximum;
+    return *this;
 }
 
-void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
+Gesture &Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 {
     m_minimumFingers = minimum;
     m_maximumFingers = maximum;
+    return *this;
 }
 
 bool Gesture::thresholdReached() const
@@ -121,9 +125,10 @@ bool Gesture::thresholdReached() const
             && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
 }
 
-void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
+Gesture &Gesture::setSpeed(const libgestures::GestureSpeed &speed)
 {
     m_speed = speed;
+    return *this;
 }
 
 GestureSpeed Gesture::speed() const

@@ -13,9 +13,10 @@ bool CallbackGestureAction::tryExecute()
     return true;
 }
 
-void CallbackGestureAction::setCallback(const std::function<void()> &callback)
+CallbackGestureAction &CallbackGestureAction::setCallback(const std::function<void()> &callback)
 {
     m_callback = callback;
+    return *this;
 }
 
 }

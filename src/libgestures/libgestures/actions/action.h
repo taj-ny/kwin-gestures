@@ -66,13 +66,13 @@ public:
     /**
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
      */
-    void addCondition(const std::shared_ptr<const Condition> &condition);
+    GestureAction &addCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
      * @param blockOtherActions Whether this action should block all other actions, including actions belonging to
      * other custom and built-in gestures, from being executed during the gesture, if the action is executed.
      */
-    void setBlockOtherActions(const bool &blockOtherActions);
+    GestureAction &setBlockOtherActions(const bool &blockOtherActions);
 
     /**
      * @param interval How often an update action should repeat.
@@ -80,19 +80,19 @@ public:
      * If not 0, the action will only be executed when the accumulated delta reaches this interval, and will keep
      * being executed until the delta is smaller than the interval.
      */
-    void setRepeatInterval(const qreal &interval);
+    GestureAction &setRepeatInterval(const qreal &interval);
 
     /**
      * Sets how far the gesture needs to progress in order for the action to be executed. Thresholds are always
      * positive no matter the direction. 0 - no threshold.
      * @remark Begin actions can't have thresholds. Set the threshold on the gesture instead.
      */
-    void setThresholds(const qreal &minimum, const qreal &maximum);
+    GestureAction &setThresholds(const qreal &minimum, const qreal &maximum);
 
     /**
      * @param on The point during the gesture at which the action should be executed.
      */
-    void setOn(const On &on);
+    GestureAction &setOn(const On &on);
 signals:
     /**
      * Emitted when the action has been executed.

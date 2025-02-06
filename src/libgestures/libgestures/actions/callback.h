@@ -13,7 +13,7 @@ class CallbackGestureAction : public GestureAction
 {
 public:
     bool tryExecute() override;
-    void setCallback(const std::function<void()> &callback);
+    CallbackGestureAction &setCallback(const std::function<void()> &callback);
 
 private:
     std::function<void()> m_callback;

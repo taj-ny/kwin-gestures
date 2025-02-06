@@ -1,4 +1,9 @@
 #include "effect.h"
+
+#include "effect/effecthandler.h"
+#include "window.h"
+
+#include "libgestures/actions/callback.h"
 #include "libgestures/yaml_convert.h"
 
 #include <QDir>
@@ -85,43 +90,70 @@ void Effect::configureWatcher()
 
 void Effect::registerBuiltinGestures()
 {
-    auto builtinGesture = std::make_unique<libgestures::BuiltinGesture>();
-    builtinGesture->setCompatibleGestureTypes(libgestures::GestureType::Swipe);
-    builtinGesture->setAssigner([](auto gesture, auto &config) {
-        auto action = std::make_unique<libgestures::PlasmaGlobalShortcutGestureAction>();
-        action->setOn(config.isInstant ? libgestures::On::Begin : libgestures::On::End);
-        action->setComponent("kwin");
-        action->setShortcut("Window Maximize");
-        gesture->addAction(std::move(action));
-    });
-    libgestures::BuiltinGesture::registerGesture("maximize", std::move(builtinGesture));
+    libgestures::BuiltinGesture::registerGesture("drag", std::unique_ptr<libgestures::BuiltinGesture>(&(new libgestures::BuiltinGesture)
+        ->setCompatibleGestureTypes(libgestures::GestureType::Swipe)
+        .setAssigner([](auto gesture, auto &) {
+            libgestures::InputAction input;
 
-    builtinGesture = std::make_unique<libgestures::BuiltinGesture>();
-    builtinGesture->setCompatibleGestureTypes(libgestures::GestureType::Swipe);
-    builtinGesture->setAssigner([](auto gesture, auto) {
-        libgestures::InputAction input;
+            input.mousePress.push_back(BTN_LEFT);
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction())
+                ->setSequence({input})
+                .setOn(libgestures::On::Begin)
+            ));
 
-        auto action = std::make_unique<libgestures::InputGestureAction>();
-        action->setOn(libgestures::On::Begin);
-        input.keyboardPress.push_back(KEY_LEFTMETA);
-        input.mousePress.push_back(BTN_LEFT);
-        action->setSequence({input});
-        gesture->addAction(std::move(action));
+            input = {};
+            input.mouseMoveRelativeByDelta = true;
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction)
+                ->setSequence({input})
+                .setOn(libgestures::On::Update)
+            ));
 
-        input = {};
-        action = std::make_unique<libgestures::InputGestureAction>();
-        action->setOn(libgestures::On::Update);
-        input.mouseMoveRelativeByDelta = true;
-        action->setSequence({input});
-        gesture->addAction(std::move(action));
+            input = {};
+            input.mouseRelease.push_back(BTN_LEFT);
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction)
+                ->setSequence({input})
+                .setOn(libgestures::On::EndOrCancel)
+            ));
+        })
+    ));
 
-        input = {};
-        action = std::make_unique<libgestures::InputGestureAction>();
-        action->setOn(libgestures::On::EndOrCancel);
-        input.keyboardRelease.push_back(KEY_LEFTMETA);
-        input.mouseRelease.push_back(BTN_LEFT);
-        action->setSequence({input});
-        gesture->addAction(std::move(action));
-    });
-    libgestures::BuiltinGesture::registerGesture("drag_window", std::move(builtinGesture));
+    libgestures::BuiltinGesture::registerGesture("window_drag", std::unique_ptr<libgestures::BuiltinGesture>(&(new libgestures::BuiltinGesture)
+        ->setCompatibleGestureTypes(libgestures::GestureType::Swipe)
+        .setAssigner([](auto gesture, auto &) {
+            libgestures::InputAction input;
+
+            input.keyboardPress.push_back(KEY_LEFTMETA);
+            input.mousePress.push_back(BTN_LEFT);
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction())
+                ->setSequence({input})
+                .setOn(libgestures::On::Begin)
+            ));
+
+            input = {};
+            input.mouseMoveRelativeByDelta = true;
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction)
+                ->setSequence({input})
+                .setOn(libgestures::On::Update)
+            ));
+
+            input = {};
+            input.keyboardRelease.push_back(KEY_LEFTMETA);
+            input.mouseRelease.push_back(BTN_LEFT);
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::InputGestureAction)
+                ->setSequence({input})
+                .setOn(libgestures::On::EndOrCancel)
+            ));
+        })
+    ));
+
+    libgestures::BuiltinGesture::registerGesture("window_maximize", std::unique_ptr<libgestures::BuiltinGesture>(&(new libgestures::BuiltinGesture)
+        ->setCompatibleGestureTypes(libgestures::GestureType::Swipe)
+        .setAssigner([](auto gesture, auto &config) {
+            gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::PlasmaGlobalShortcutGestureAction)
+                ->setComponent("kwin")
+                .setShortcut("Window Maximize")
+                .setOn(config.isInstant ? libgestures::On::Begin : libgestures::On::End)
+            ));
+        })
+    ));
 }

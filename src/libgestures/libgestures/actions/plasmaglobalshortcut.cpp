@@ -15,14 +15,16 @@ bool PlasmaGlobalShortcutGestureAction::tryExecute()
     return true;
 }
 
-void PlasmaGlobalShortcutGestureAction::setComponent(const QString &component)
+PlasmaGlobalShortcutGestureAction &PlasmaGlobalShortcutGestureAction::setComponent(const QString &component)
 {
     m_path = "/component/" + component;
+    return *this;
 }
 
-void PlasmaGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
+PlasmaGlobalShortcutGestureAction &PlasmaGlobalShortcutGestureAction::setShortcut(const QString &shortcut)
 {
     m_shortcut = shortcut;
+    return *this;
 }
 
 }

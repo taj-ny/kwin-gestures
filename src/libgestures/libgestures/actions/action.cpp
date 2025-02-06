@@ -11,9 +11,10 @@ GestureAction::GestureAction()
     connect(this, &GestureAction::gestureUpdated, this, &GestureAction::onGestureUpdated);
 }
 
-void GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
+GestureAction &GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
+    return *this;
 }
 
 bool GestureAction::satisfiesConditions() const
@@ -103,25 +104,29 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     }
 }
 
-void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
+GestureAction &GestureAction::setBlockOtherActions(const bool &blockOtherActions)
 {
     m_blockOtherActions = blockOtherActions;
+    return *this;
 }
 
-void GestureAction::setRepeatInterval(const qreal &interval)
+GestureAction &GestureAction::setRepeatInterval(const qreal &interval)
 {
     m_repeatInterval = interval;
+    return *this;
 }
 
-void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
+GestureAction &GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
 {
     m_minimumThreshold = minimum;
     m_maximumThreshold = maximum;
+    return *this;
 }
 
-void GestureAction::setOn(const libgestures::On &on)
+GestureAction &GestureAction::setOn(const libgestures::On &on)
 {
     m_on = on;
+    return *this;
 }
 
 }

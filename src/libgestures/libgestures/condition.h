@@ -19,15 +19,15 @@ public:
      * @param windowClassRegex If empty, the subcondition will always be satisfied.
      * @remark Requires @c libgestures::WindowInfoProvider to be implemented.
      */
-    void setWindowClass(const QRegularExpression &windowClassRegex);
+    Condition &setWindowClass(const QRegularExpression &windowClassRegex);
 
     /**
      * @remark Requires @c libgestures::WindowInfoProvider to be implemented.
      */
-    void setWindowState(const WindowStates &windowState);
+    Condition &setWindowState(const WindowStates &windowState);
 
-    void setNegateWindowClass(const bool &negate);
-    void setNegateWindowState(const bool &negate);
+    Condition &setNegateWindowClass(const bool &negate);
+    Condition &setNegateWindowState(const bool &negate);
 
 private:
     bool isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const;

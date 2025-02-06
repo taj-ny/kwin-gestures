@@ -21,29 +21,34 @@ void GestureRecognizer::unregisterGestures()
     m_gestures.clear();
 }
 
-void GestureRecognizer::setInputEventsToSample(const uint8_t &events)
+GestureRecognizer &GestureRecognizer::setInputEventsToSample(const uint8_t &events)
 {
     m_inputEventsToSample = events;
+    return *this;
 }
 
-void GestureRecognizer::setSwipeFastThreshold(const qreal &threshold)
+GestureRecognizer &GestureRecognizer::setSwipeFastThreshold(const qreal &threshold)
 {
     m_swipeGestureFastThreshold = threshold;
+    return *this;
 }
 
-void GestureRecognizer::setPinchInFastThreshold(const qreal &threshold)
+GestureRecognizer &GestureRecognizer::setPinchInFastThreshold(const qreal &threshold)
 {
     m_pinchInFastThreshold = threshold;
+    return *this;
 }
 
-void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
+GestureRecognizer &GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
 {
     m_pinchOutFastThreshold = threshold;
+    return *this;
 }
 
-void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
+GestureRecognizer &GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
 {
     m_deltaMultiplier = deltaMultiplier;
+    return *this;
 }
 
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)

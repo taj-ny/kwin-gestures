@@ -35,24 +35,28 @@ bool Condition::isWindowStateSubConditionSatisfied(const WindowInfo &data) const
     return m_negateWindowState == !satisfied;
 }
 
-void Condition::setWindowClass(const QRegularExpression &windowClassRegex)
+Condition &Condition::setWindowClass(const QRegularExpression &windowClassRegex)
 {
     m_windowClass = windowClassRegex;
+    return *this;
 }
 
-void Condition::setWindowState(const WindowStates &windowState)
+Condition &Condition::setWindowState(const WindowStates &windowState)
 {
     m_windowState = windowState;
+    return *this;
 }
 
-void Condition::setNegateWindowClass(const bool &negate)
+Condition &Condition::setNegateWindowClass(const bool &negate)
 {
     m_negateWindowClass = negate;
+    return *this;
 }
 
-void Condition::setNegateWindowState(const bool &negate)
+Condition &Condition::setNegateWindowState(const bool &negate)
 {
     m_negateWindowState = negate;
+    return *this;
 }
 
 }

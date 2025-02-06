@@ -36,12 +36,12 @@ public:
     /**
      * @param assigner The function that will assign the built-in gesture.
      */
-    void setAssigner(std::function<void(Gesture *, const GestureConfiguration &)> assigner);
+    BuiltinGesture &setAssigner(std::function<void(Gesture *, const GestureConfiguration &)> assigner);
 
     /**
      * @param types The gestures this action can be assigned to.
      */
-    void setCompatibleGestureTypes(const GestureTypes &types);
+    BuiltinGesture &setCompatibleGestureTypes(const GestureTypes &types);
 
     static void registerGesture(const QString &id, std::unique_ptr<BuiltinGesture> gesture);
     static const std::unordered_map<QString, std::unique_ptr<BuiltinGesture>> &registeredGestures();
