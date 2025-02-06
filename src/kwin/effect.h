@@ -31,7 +31,7 @@ private slots:
 private:
     void configureWatcher();
 
-    void registerBuiltinActions();
+    void registerBuiltinGestures();
 
     bool m_autoReload = true;
     std::unique_ptr<GestureInputEventFilter> m_inputEventFilter = std::make_unique<GestureInputEventFilter>();

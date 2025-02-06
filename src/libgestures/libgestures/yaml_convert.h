@@ -1,9 +1,9 @@
 #pragma once
 
-#include "libgestures/actions/actioncollection.h"
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
 #include "libgestures/actions/plasmaglobalshortcut.h"
+#include "libgestures/gestures/builtingesture.h"
 #include "libgestures/gestures/gesturerecognizer.h"
 
 #include <QRegularExpression>
@@ -659,25 +659,27 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         for (const auto &conditionNode : node["conditions"]) {
             gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
         }
+        for (const auto &actionNode : node["actions"]) {
+            gesture->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
+        }
 
         const auto builtinNode = node["builtin"];
         if (builtinNode.IsDefined()) {
             const auto id = builtinNode["id"].as<QString>("");
-            const auto &collections = libgestures::ActionCollection::registeredCollections();
+            const auto &builtinGestures = libgestures::BuiltinGesture::registeredGestures();
 
-            if (!collections.contains(id)) {
+            if (!builtinGestures.contains(id)) {
                 throw Exception(node.Mark(), ("Invalid built-in gesture ('" + id + "')").toStdString());
+            }
+
+            const auto &builtinGesture = builtinGestures.at(id);
+            if (!builtinGesture->isCompatibleWith(gesture.get())) {
+                throw Exception(node.Mark(), ("Built-in gesture '" + id + "' isn't compatible with the specified gesture").toStdString());
             }
 
             libgestures::GestureConfiguration config;
             config.isInstant = builtinNode["instant"].as<bool>(false);
-            for (auto &action : collections.at(id)->actions(config)) {
-                gesture->addAction(std::move(action));
-            }
-        } else {
-            for (const auto &actionNode : node["actions"]) {
-                gesture->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
-            }
+            builtinGestures.at(id)->assignTo(gesture.get(), config);
         }
 
         return true;
