@@ -146,12 +146,18 @@ void Effect::registerBuiltinGestures()
         })
     ));
 
-    libgestures::BuiltinGesture::registerGesture("window_maximize", std::unique_ptr<libgestures::BuiltinGesture>(&(new libgestures::BuiltinGesture)
-        ->setCompatibleGestureTypes(libgestures::GestureType::Swipe)
-        .setAssigner([](auto gesture, auto &config) {
+    registerSimpleShortcutBuiltinGesture("window_close", "kwin", "Window Close");
+    registerSimpleShortcutBuiltinGesture("window_maximize", "kwin", "Window Maximize");
+    registerSimpleShortcutBuiltinGesture("window_minimize", "kwin", "Window Minimize");
+}
+
+void Effect::registerSimpleShortcutBuiltinGesture(const QString &id, const QString &component, const QString &shortcut)
+{
+    libgestures::BuiltinGesture::registerGesture(id, std::unique_ptr<libgestures::BuiltinGesture>(&(new libgestures::BuiltinGesture)
+        ->setAssigner([component, shortcut](auto gesture, auto &config) {
             gesture->addAction(std::unique_ptr<libgestures::GestureAction>(&(new libgestures::PlasmaGlobalShortcutGestureAction)
-                ->setComponent("kwin")
-                .setShortcut("Window Maximize")
+                ->setComponent(component)
+                .setShortcut(shortcut)
                 .setOn(config.isInstant ? libgestures::On::Begin : libgestures::On::End)
             ));
         })

@@ -20,16 +20,16 @@ bool BuiltinGesture::isCompatibleWith(Gesture *gesture)
              || (dynamic_cast<SwipeGesture *>(gesture) && !(m_types & GestureType::Swipe)));
 }
 
-BuiltinGesture *BuiltinGesture::setAssigner(std::function<void(Gesture *, const GestureConfiguration &)> assigner)
+BuiltinGesture &BuiltinGesture::setAssigner(std::function<void(Gesture *, const GestureConfiguration &)> assigner)
 {
     m_assigner = assigner;
-    return this;
+    return *this;
 }
 
-BuiltinGesture *BuiltinGesture::setCompatibleGestureTypes(const GestureTypes &types)
+BuiltinGesture &BuiltinGesture::setCompatibleGestureTypes(const GestureTypes &types)
 {
     m_types = types;
-    return this;
+    return *this;
 }
 
 void BuiltinGesture::registerGesture(const QString &id, std::unique_ptr<BuiltinGesture> gesture)
