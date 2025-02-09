@@ -118,15 +118,13 @@ The properties below apply to all actions. For individual actions, see the *Comm
 |-----------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | plasma_shortcut | ``string`` | Invoke a KDE Plasma global shortcut. Format: ``component,shortcut``.<br><br>Run ``qdbus org.kde.kglobalaccel \| grep /component`` for the list of components. Don't put the */component/* prefix in this file.<br>Run ``qdbus org.kde.kglobalaccel /component/$component org.kde.kglobalaccel.Component.shortcutNames`` for the list of shortcuts.<br><br>Example: ``kwin,Window Minimize`` | *none*  |
 
-## Built-in actions
-Built-in actions have built-in conditions to ensure they don't conflict with each other. It's safe to create multiple gestures with the same type, direction and finger count that use built-in actions.
-
-A gesture may have only one built-in action for now.
+### Built-in actions
+Built-in actions have built-in conditions to ensure they don't conflict with each other. Gestures can have multiple built-in actions, but only one will trigger during a gesture, therefore the order matters.
 
 | Property  | Type                                                                                                                                  | Description                                                                                                                                                                                                                                                                             | Default   |
 |-----------|---------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|
 | builtin   | ``enum(drag, window_drag, window_fullscreen, window_maximize, window_minimize, window_restore, window_tile_left, window_tile_right)`` | *drag* - Drag anything (press meta to drag windows too). Can only be assigned to a ``direction: any`` swipe gesture.<br>*drag_window* - Like *drag* but left meta is also pressed.<br>*window_restore* - Restore the previous window position after a tile, fullscreen or maximization. | *none*    |
-| animation | ``enum(none, overlay)``                                                                                                               | Whether this gesture should be animated. Not compatible with instant gestures.<br><br>Supported by: *window_close*, *window_fullscreen*, *window_maximize*, *window_minimize*, *window_restore*, *window_tile_left*, *window_tile_right*                                                | *overlay* |
+| animation | ``enum(none, overlay)``                                                                                                               | Whether and how this gesture should be animated. Not compatible with instant gestures.<br><br>Supported by: *window_close*, *window_fullscreen*, *window_maximize*, *window_minimize*, *window_restore*, *window_tile_left*, *window_tile_right*                                        | *overlay* |
 | instant   | ``bool``                                                                                                                              | Whether this gesture should execute immediately, or only after fingers are lifted. Not compatible with animated gestures.<br><br>Supported by: *window_close*, *window_fullscreen*, *window_maximize*, *window_minimize*, *window_restore*, *window_tile_left*, *window_tile_right*     | *false*   | 
 
 # Example
@@ -149,13 +147,8 @@ touchpad:
 
       actions:
         - builtin: window_maximize
-          animation: none
-          instant: true
+        # animation: none
+        # instant: true
 
-    - type: swipe
-      fingers: 3
-      direction: up
-
-      actions:
         - builtin: window_fullscreen
 ```

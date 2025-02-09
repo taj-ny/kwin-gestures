@@ -792,8 +792,26 @@ struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
         }
 
         gestureRecognizer = std::make_unique<libgestures::GestureRecognizer>();
-        for (const auto gestureNode : gesturesNode) {
-            gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
+        for (const auto &gestureNode : gesturesNode) {
+            // The code architecture makes it difficult for a gesture to have multiple built-in actions.
+            // This is a hack to allow it in the configuration file. A new gesture is created for every built-in action.
+            bool hasBuiltinActions = false;
+            if (gestureNode["actions"].IsDefined()) {
+                for (const auto &actionNode : gestureNode["actions"]) {
+                    if (actionNode["builtin"].IsDefined()) {
+                        auto modifiedGestureNode = Clone(gestureNode);
+                        modifiedGestureNode["actions"] = Node();
+                        modifiedGestureNode["actions"].push_back(Clone(actionNode));
+
+                        gestureRecognizer->registerGesture(modifiedGestureNode.as<std::shared_ptr<libgestures::Gesture>>());
+                        hasBuiltinActions = true;
+                    }
+                }
+            }
+
+            if (!hasBuiltinActions) {
+                gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
+            }
         }
 
         gestureRecognizer->setDeltaMultiplier(node["delta_multiplier"].as<qreal>(gestureRecognizer->m_deltaMultiplier));
