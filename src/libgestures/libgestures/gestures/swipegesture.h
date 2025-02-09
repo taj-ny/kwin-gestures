@@ -25,6 +25,8 @@ public:
 
     void setDirection(const SwipeDirection &direction);
 
+    qreal getRealDelta(const QPointF &delta) const override;
+
 private:
     SwipeDirection m_direction = SwipeDirection::Left;
 };

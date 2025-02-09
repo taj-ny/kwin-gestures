@@ -13,7 +13,20 @@ TEMPLATES(SwipeGesture)
 
 void GestureRecognizer::registerGesture(std::shared_ptr<Gesture> gesture)
 {
+    auto removeBlock = [this](Gesture *gesture) {
+        if (m_blockingGesture == gesture) {
+            m_blockingGesture = nullptr;
+        }
+    };
+    connect(gesture.get(), &Gesture::ended, this, [gesture, removeBlock]() {
+        removeBlock(gesture.get());
+    });
+    connect(gesture.get(), &Gesture::cancelled, this, [gesture, removeBlock]() {
+        removeBlock(gesture.get());
+    });
+
     m_gestures.push_back(gesture);
+
 }
 
 void GestureRecognizer::unregisterGestures()
@@ -21,40 +34,35 @@ void GestureRecognizer::unregisterGestures()
     m_gestures.clear();
 }
 
-GestureRecognizer &GestureRecognizer::setInputEventsToSample(const uint8_t &events)
+void GestureRecognizer::setInputEventsToSample(const uint8_t &events)
 {
     m_inputEventsToSample = events;
-    return *this;
 }
 
-GestureRecognizer &GestureRecognizer::setSwipeFastThreshold(const qreal &threshold)
+void GestureRecognizer::setSwipeFastThreshold(const qreal &threshold)
 {
     m_swipeGestureFastThreshold = threshold;
-    return *this;
 }
 
-GestureRecognizer &GestureRecognizer::setPinchInFastThreshold(const qreal &threshold)
+void GestureRecognizer::setPinchInFastThreshold(const qreal &threshold)
 {
     m_pinchInFastThreshold = threshold;
-    return *this;
 }
 
-GestureRecognizer &GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
+void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
 {
     m_pinchOutFastThreshold = threshold;
-    return *this;
 }
 
-GestureRecognizer &GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
+void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
 {
     m_deltaMultiplier = deltaMultiplier;
-    return *this;
 }
 
 void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
 {
     for (const auto &holdGesture : m_activeHoldGestures) {
-        Q_EMIT holdGesture->updated(delta, QPointF(), endedPrematurely);
+        Q_EMIT holdGesture->updated(QPointF(delta, delta), QPointF(), endedPrematurely);
         if (endedPrematurely)
             return;
     }
@@ -87,6 +95,10 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
 
     for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();) {
         const auto &gesture = *it;
+        if (gesture->blocksOthers() && !m_blockingGesture) {
+            m_blockingGesture = gesture.get();
+        }
+
         if ((gesture->direction() != PinchDirection::Any && gesture->direction() != direction)
             || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed)) {
             gesture->cancelled();
@@ -94,7 +106,12 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
             continue;
         }
 
-        Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
+        if (m_blockingGesture && m_blockingGesture != gesture.get()) {
+            it++;
+            continue;
+        }
+
+        Q_EMIT gesture->updated(QPointF(pinchDelta, pinchDelta), QPointF(), endedPrematurely);
         if (endedPrematurely)
             return true;
 
@@ -154,6 +171,9 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
 
     for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();) {
         const auto gesture = *it;
+        if (gesture->blocksOthers() && !m_blockingGesture) {
+            m_blockingGesture = gesture.get();
+        }
 
         if ((!((gesture->direction() == SwipeDirection::LeftRight
                 && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
@@ -166,7 +186,12 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
             continue;
         }
 
-        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier, endedPrematurely);
+        if (m_blockingGesture && m_blockingGesture != gesture.get()) {
+            it++;
+            continue;
+        }
+
+        Q_EMIT gesture->updated(delta, delta * m_deltaMultiplier, endedPrematurely);
         if (endedPrematurely)
             return true;
 

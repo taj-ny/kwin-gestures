@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libgestures/condition.h"
+#include "libgestures/libgestures/conditions/condition.h"
 
 #include <QPointF>
 
@@ -66,13 +66,13 @@ public:
     /**
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
      */
-    GestureAction &addCondition(const std::shared_ptr<const Condition> &condition);
+    void addCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
      * @param blockOtherActions Whether this action should block all other actions, including actions belonging to
      * other custom and built-in gestures, from being executed during the gesture, if the action is executed.
      */
-    GestureAction &setBlockOtherActions(const bool &blockOtherActions);
+    void setBlockOtherActions(const bool &blockOtherActions);
 
     /**
      * @param interval How often an update action should repeat.
@@ -80,19 +80,19 @@ public:
      * If not 0, the action will only be executed when the accumulated delta reaches this interval, and will keep
      * being executed until the delta is smaller than the interval.
      */
-    GestureAction &setRepeatInterval(const qreal &interval);
+    void setRepeatInterval(const qreal &interval);
 
     /**
      * Sets how far the gesture needs to progress in order for the action to be executed. Thresholds are always
      * positive no matter the direction. 0 - no threshold.
      * @remark Begin actions can't have thresholds. Set the threshold on the gesture instead.
      */
-    GestureAction &setThresholds(const qreal &minimum, const qreal &maximum);
+    void setThresholds(const qreal &minimum, const qreal &maximum);
 
     /**
      * @param on The point during the gesture at which the action should be executed.
      */
-    GestureAction &setOn(const On &on);
+    void setOn(const On &on);
 signals:
     /**
      * Emitted when the action has been executed.
@@ -118,18 +118,19 @@ signals:
     /**
      * Emitted when the gesture this action belongs to has been updated.
      */
-    void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    void gestureUpdated(const qreal &delta, const qreal &progress, const QPointF &deltaPointMultiplied);
 
 protected:
     GestureAction();
 
     // This is just a quick way to get directionless swipe gestures working
     QPointF m_currentDeltaPointMultiplied;
+    qreal m_currentProgress;
 private slots:
     void onGestureCancelled();
     void onGestureEnded();
     void onGestureStarted();
-    void onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    void onGestureUpdated(const qreal &delta, const qreal &progress, const QPointF &deltaPointMultiplied);
 
 private:
     /**

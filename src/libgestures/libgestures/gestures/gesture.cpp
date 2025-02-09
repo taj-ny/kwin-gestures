@@ -14,6 +14,7 @@ Gesture::Gesture()
 void Gesture::onCancelled()
 {
     m_absoluteAccumulatedDelta = 0;
+    m_accumulatedDelta = 0;
 
     if (!m_hasStarted)
         return;
@@ -29,11 +30,17 @@ void Gesture::onCancelled()
 
 void Gesture::onEnded()
 {
+    const auto oldDelta = m_accumulatedDelta;
     m_absoluteAccumulatedDelta = 0;
+    m_accumulatedDelta = 0;
 
     if (!m_hasStarted)
         return;
 
+    if ((m_minimumDelta != 0) && oldDelta < m_minimumDelta) {
+        Q_EMIT cancelled();
+        return;
+    }
     m_hasStarted = false;
 
     for (const auto &action : m_actions) {
@@ -55,9 +62,11 @@ void Gesture::onStarted()
     }
 }
 
-void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely)
+void Gesture::onUpdated(const QPointF &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely)
 {
-    m_absoluteAccumulatedDelta += std::abs(delta);
+    const auto realDelta = getRealDelta(delta);
+    m_absoluteAccumulatedDelta += std::abs(realDelta);
+    m_accumulatedDelta += realDelta;
     if (!thresholdReached())
         return;
 
@@ -66,8 +75,17 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
         Q_EMIT started();
     }
 
+    if (m_maximumDelta != 0 && (m_accumulatedDelta - m_minimumThreshold >= m_maximumDelta)) {
+        endedPrematurely = true;
+        Q_EMIT ended();
+        return;
+    }
+
+    const auto progress = m_maximumDelta == 0
+        ? 1.0
+        : std::clamp((m_accumulatedDelta - m_minimumThreshold) / m_maximumDelta, 0.0, 1.0);
     for (const auto &action : m_actions) {
-        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied);
+        Q_EMIT action->gestureUpdated(realDelta, progress, deltaPointMultiplied);
         if (action->blocksOtherActions()) {
             endedPrematurely = true;
             Q_EMIT ended();
@@ -78,14 +96,25 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
 
 bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
 {
-    if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount)
+    if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount) {
         return false;
+    }
 
-    const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
-        return condition->isSatisfied();
-    }) != m_conditions.end();
-    if (!m_conditions.empty() && !satisfiesConditions)
-        return false;
+    if (!m_conditions.empty()) {
+        bool satisfies = false;
+        for (const auto &condition: m_conditions) {
+            const bool satisfied = condition->isSatisfied();
+            if (condition->required() && !satisfied) {
+                return false;
+            }
+
+            satisfies |= satisfied;
+        }
+
+        if (!satisfies) {
+            return false;
+        }
+    }
 
     const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::unique_ptr<GestureAction> &triggerAction) {
         return triggerAction->satisfiesConditions();
@@ -93,30 +122,36 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
     return m_actions.empty() || actionSatisfiesConditions;
 }
 
-Gesture &Gesture::addAction(std::unique_ptr<GestureAction> action)
+void Gesture::addAction(std::unique_ptr<GestureAction> action)
 {
     m_actions.push_back(std::move(action));
-    return *this;
 }
 
-Gesture &Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
+void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
-    return *this;
 }
 
-Gesture &Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
+void Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
 {
     m_minimumThreshold = minimum;
     m_maximumThreshold = maximum;
-    return *this;
 }
 
-Gesture &Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
+void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 {
     m_minimumFingers = minimum;
     m_maximumFingers = maximum;
-    return *this;
+}
+
+void Gesture::setMinimumDelta(const qreal &delta)
+{
+    m_minimumDelta = delta;
+}
+
+void Gesture::setMaximumDelta(const qreal &delta)
+{
+    m_maximumDelta = delta;
 }
 
 bool Gesture::thresholdReached() const
@@ -125,15 +160,29 @@ bool Gesture::thresholdReached() const
             && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
 }
 
-Gesture &Gesture::setSpeed(const libgestures::GestureSpeed &speed)
+void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
 {
     m_speed = speed;
-    return *this;
+}
+
+void Gesture::setBlocksOthers(const bool &blocksOthers)
+{
+    m_blocksOthers = blocksOthers;
+}
+
+const bool &Gesture::blocksOthers() const
+{
+    return m_blocksOthers;
 }
 
 GestureSpeed Gesture::speed() const
 {
     return m_speed;
+}
+
+qreal Gesture::getRealDelta(const QPointF &delta) const
+{
+    return delta.x();
 }
 
 }

@@ -3,6 +3,11 @@
 namespace libgestures
 {
 
+InputGestureAction::InputGestureAction(const std::vector<InputAction> &sequence)
+    : m_sequence(sequence)
+{
+}
+
 bool InputGestureAction::tryExecute()
 {
     if (!GestureAction::tryExecute()) {
@@ -37,12 +42,6 @@ bool InputGestureAction::tryExecute()
     }
 
     return true;
-}
-
-InputGestureAction &InputGestureAction::setSequence(const std::vector<InputAction> &sequence)
-{
-    m_sequence = sequence;
-    return *this;
 }
 
 }

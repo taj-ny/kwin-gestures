@@ -1,3 +1,5 @@
+#pragma once
+
 #include "action.h"
 #include "libgestures/input.h"
 #include <QString>
@@ -32,11 +34,11 @@ struct InputAction
 class InputGestureAction : public GestureAction
 {
 public:
+    explicit InputGestureAction(const std::vector<InputAction> &sequence);
     bool tryExecute() override;
-    InputGestureAction &setSequence(const std::vector<InputAction> &sequence);
 
 private:
-    std::vector<InputAction> m_sequence;
+    const std::vector<InputAction> m_sequence;
 };
 
 }

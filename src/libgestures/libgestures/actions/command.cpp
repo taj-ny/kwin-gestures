@@ -3,6 +3,11 @@
 namespace libgestures
 {
 
+CommandGestureAction::CommandGestureAction(const QString &command)
+    : m_command((command + " &").toStdString())
+{
+}
+
 bool CommandGestureAction::tryExecute()
 {
     if (!GestureAction::tryExecute()) {
@@ -11,11 +16,6 @@ bool CommandGestureAction::tryExecute()
 
     std::ignore = std::system(m_command.c_str());
     return true;
-}
-
-void CommandGestureAction::setCommand(const QString &command)
-{
-    m_command = (command + " &").toStdString();
 }
 
 }

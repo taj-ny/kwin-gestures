@@ -11,17 +11,28 @@ GestureAction::GestureAction()
     connect(this, &GestureAction::gestureUpdated, this, &GestureAction::onGestureUpdated);
 }
 
-GestureAction &GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
+void GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
-    return *this;
 }
 
 bool GestureAction::satisfiesConditions() const
 {
-    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
-        return condition->isSatisfied();
-    }) != m_conditions.end();
+    if (m_conditions.empty()) {
+        return true;
+    }
+
+    bool satisfies = false;
+    for (const auto &condition : m_conditions) {
+        const bool satisfied = condition->isSatisfied();
+        if (condition->required() && !satisfied) {
+            return false;
+        }
+
+        satisfies |= satisfied;
+    }
+
+    return satisfies;
 }
 
 bool GestureAction::thresholdReached() const
@@ -77,8 +88,9 @@ void GestureAction::onGestureStarted()
     m_absoluteAccumulatedDelta = 0;
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
+void GestureAction::onGestureUpdated(const qreal &delta, const qreal &progress, const QPointF &deltaPointMultiplied)
 {
+    m_currentProgress = progress;
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
         // Direction changed
@@ -104,29 +116,25 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     }
 }
 
-GestureAction &GestureAction::setBlockOtherActions(const bool &blockOtherActions)
+void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
 {
     m_blockOtherActions = blockOtherActions;
-    return *this;
 }
 
-GestureAction &GestureAction::setRepeatInterval(const qreal &interval)
+void GestureAction::setRepeatInterval(const qreal &interval)
 {
     m_repeatInterval = interval;
-    return *this;
 }
 
-GestureAction &GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
+void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
 {
     m_minimumThreshold = minimum;
     m_maximumThreshold = maximum;
-    return *this;
 }
 
-GestureAction &GestureAction::setOn(const libgestures::On &on)
+void GestureAction::setOn(const libgestures::On &on)
 {
     m_on = on;
-    return *this;
 }
 
 }

@@ -36,12 +36,12 @@ public:
      */
     void unregisterGestures();
 
-    GestureRecognizer &setInputEventsToSample(const uint8_t &events);
-    GestureRecognizer &setSwipeFastThreshold(const qreal &threshold);
-    GestureRecognizer &setPinchInFastThreshold(const qreal &threshold);
-    GestureRecognizer &setPinchOutFastThreshold(const qreal &threshold);
+    void setInputEventsToSample(const uint8_t &events);
+    void setSwipeFastThreshold(const qreal &threshold);
+    void setPinchInFastThreshold(const qreal &threshold);
+    void setPinchOutFastThreshold(const qreal &threshold);
 
-    GestureRecognizer &setDeltaMultiplier(const qreal &multiplier);
+    void setDeltaMultiplier(const qreal &multiplier);
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
@@ -130,6 +130,8 @@ private:
     qreal m_accumulatedAbsoluteSampledDelta = 0;
 
     qreal m_deltaMultiplier = 1.0;
+
+    Gesture *m_blockingGesture = nullptr;
 
     friend struct YAML::convert<std::shared_ptr<GestureRecognizer>>;
     friend class TestGestureRecognizer;

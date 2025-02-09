@@ -1,6 +1,6 @@
 #pragma once
 
-#include "windowinfoprovider.h"
+#include "libgestures/libgestures/windowinfoprovider.h"
 #include <QRegularExpression>
 
 namespace libgestures
@@ -13,21 +13,29 @@ public:
      * @return @c false if no window is currently active. @c true if all specified subconditions are satisfied or if
      * none were specified.
      */
-    bool isSatisfied() const;
+    virtual bool isSatisfied() const;
+
+    void setRequired(const bool &required);
+
+    /**
+     * @param required Whether this condition is required. All required conditions must be met. If there are any
+     * non-required conditions, at least one must be met as well.
+     */
+    const bool &required() const;
 
     /**
      * @param windowClassRegex If empty, the subcondition will always be satisfied.
      * @remark Requires @c libgestures::WindowInfoProvider to be implemented.
      */
-    Condition &setWindowClass(const QRegularExpression &windowClassRegex);
+    void setWindowClass(const QRegularExpression &windowClassRegex);
 
     /**
      * @remark Requires @c libgestures::WindowInfoProvider to be implemented.
      */
-    Condition &setWindowState(const WindowStates &windowState);
+    void setWindowState(const WindowStates &windowState);
 
-    Condition &setNegateWindowClass(const bool &negate);
-    Condition &setNegateWindowState(const bool &negate);
+    void setNegateWindowClass(const bool &negate);
+    void setNegateWindowState(const bool &negate);
 
 private:
     bool isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const;
@@ -38,6 +46,8 @@ private:
 
     WindowStates m_windowState = WindowState::All;
     bool m_negateWindowState = false;
+
+    bool m_required = false;
 
     friend class TestCondition;
 };

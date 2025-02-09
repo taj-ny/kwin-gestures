@@ -544,6 +544,49 @@ static const std::unordered_map<QString, uint32_t> s_mouse = {
     {"EXTRA13", 0x11f},
 };
 
+static const std::unordered_map<QString, QEasingCurve> s_easingCurves = {
+    {"linear", QEasingCurve::Linear},
+    {"in_quad", QEasingCurve::InQuad},
+    {"out_quad", QEasingCurve::OutQuad},
+    {"in_out_quad", QEasingCurve::InOutQuad},
+    {"out_in_quad", QEasingCurve::OutInQuad },
+    {"in_cubic", QEasingCurve::InCubic},
+    {"out_cubic", QEasingCurve::OutCubic},
+    {"in_out_cubic", QEasingCurve::InOutCubic},
+    {"out_in_cubic", QEasingCurve::OutInCubic},
+    {"in_quart", QEasingCurve::InQuart},
+    {"out_quart", QEasingCurve::OutQuart},
+    {"in_out_quart", QEasingCurve::InOutQuart},
+    {"out_in_quart", QEasingCurve::OutInQuart},
+    {"in_quint", QEasingCurve::InQuint},
+    {"out_quint", QEasingCurve::OutQuint},
+    {"in_out_quint", QEasingCurve::InOutQuint},
+    {"out_in_quint", QEasingCurve::OutInQuint},
+    {"in_sine", QEasingCurve::InSine},
+    {"out_sine", QEasingCurve::OutSine},
+    {"in_out_sine", QEasingCurve::InOutSine},
+    {"out_in_sine", QEasingCurve::OutInSine},
+    {"in_expo", QEasingCurve::InExpo},
+    {"out_expo", QEasingCurve::OutExpo},
+    {"in_out_expo", QEasingCurve::InOutExpo},
+    {"out_in_expo", QEasingCurve::OutInExpo},
+    {"in_circ", QEasingCurve::InCirc},
+    {"out_circ", QEasingCurve::OutCirc},
+    {"in_out_circ", QEasingCurve::InOutCirc},
+    {"out_in_circ", QEasingCurve::OutInCirc},
+    {"in_elastic", QEasingCurve::InElastic},
+    {"out_elastic", QEasingCurve::OutElastic},
+    {"out_in_elastic", QEasingCurve::OutInElastic},
+    {"in_back", QEasingCurve::InBack},
+    {"out_back", QEasingCurve::OutBack},
+    {"in_out_back", QEasingCurve::InOutBack},
+    {"out_in_back", QEasingCurve::OutInBack},
+    {"in_bounce", QEasingCurve::InBounce},
+    {"out_bounce", QEasingCurve::OutBounce},
+    {"in_out_bounce", QEasingCurve::InOutBounce},
+    {"out_in_bounce", QEasingCurve::OutInBounce},
+};
+
 namespace YAML
 {
 
@@ -660,26 +703,27 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
         }
         for (const auto &actionNode : node["actions"]) {
-            gesture->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
-        }
+            const auto builtinId = actionNode["builtin"].as<QString>(QString());
+            if (builtinId.isEmpty()) {
+                gesture->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
+                continue;
+            }
 
-        const auto builtinNode = node["builtin"];
-        if (builtinNode.IsDefined()) {
-            const auto id = builtinNode["id"].as<QString>("");
             const auto &builtinGestures = libgestures::BuiltinGesture::registeredGestures();
 
-            if (!builtinGestures.contains(id)) {
-                throw Exception(node.Mark(), ("Invalid built-in gesture ('" + id + "')").toStdString());
+            if (!builtinGestures.contains(builtinId)) {
+                throw Exception(node.Mark(), ("Invalid built-in action ('" + builtinId + "')").toStdString());
             }
 
-            const auto &builtinGesture = builtinGestures.at(id);
+            const auto &builtinGesture = builtinGestures.at(builtinId);
             if (!builtinGesture->isCompatibleWith(gesture.get())) {
-                throw Exception(node.Mark(), ("Built-in gesture '" + id + "' isn't compatible with the specified gesture").toStdString());
+                throw Exception(node.Mark(), ("Built-in action '" + builtinId + "' isn't compatible with the specified gesture").toStdString());
             }
 
-            libgestures::GestureConfiguration config;
-            config.isInstant = builtinNode["instant"].as<bool>(false);
-            builtinGestures.at(id)->assignTo(gesture.get(), config);
+
+            const auto animation = actionNode["animation"].as<libgestures::GestureAnimation>(libgestures::GestureAnimation::Overlay);
+            const auto instant = actionNode["instant"].as<bool>(false);
+            builtinGestures.at(builtinId)->assignTo(gesture.get(), animation, instant);
         }
 
         return true;
@@ -692,28 +736,19 @@ struct convert<std::unique_ptr<libgestures::GestureAction>>
     static bool decode(const Node &node, std::unique_ptr<libgestures::GestureAction> &action)
     {
         if (node["command"].IsDefined()) {
-            auto commandAction = new libgestures::CommandGestureAction();
-            commandAction->setCommand(node["command"].as<QString>());
-            action.reset(commandAction);
+            action = std::make_unique<libgestures::CommandGestureAction>(node["command"].as<QString>());
         } else if (node["input"].IsDefined()) {
-            auto inputAction = new libgestures::InputGestureAction;
-            inputAction->setSequence(node["input"].as<std::vector<libgestures::InputAction>>());
-            action.reset(inputAction);
+            action = std::make_unique<libgestures::InputGestureAction>(node["input"].as<std::vector<libgestures::InputAction>>());
         } else if (node["keyboard"].IsDefined()) {
             Node keyboardNode;
             keyboardNode["keyboard"] = node["keyboard"];
             Node inputNode;
             inputNode.push_back(keyboardNode);
 
-            auto inputAction = new libgestures::InputGestureAction;
-            inputAction->setSequence(inputNode.as<std::vector<libgestures::InputAction>>());
-            action.reset(inputAction);
+            action = std::make_unique<libgestures::InputGestureAction>(inputNode.as<std::vector<libgestures::InputAction>>());
         } else if (node["plasma_shortcut"].IsDefined()) {
-            auto plasmaShortcutAction = new libgestures::PlasmaGlobalShortcutGestureAction;
-            const auto split = node["plasma_shortcut"].as<QString>().split(",");
-            plasmaShortcutAction->setComponent(split[0]);
-            plasmaShortcutAction->setShortcut(split[1]);
-            action.reset(plasmaShortcutAction);
+            const auto raw = node["plasma_shortcut"].as<QString>().split(",");
+            action = std::make_unique<libgestures::PlasmaGlobalShortcutGestureAction>(raw[0], raw[1]);
         } else {
             throw Exception(node.Mark(), "Action has no valid action property");
         }
@@ -891,6 +926,24 @@ struct convert<libgestures::On>
 };
 
 template<>
+struct convert<libgestures::GestureAnimation>
+{
+    static bool decode(const Node &node, libgestures::GestureAnimation &animation)
+    {
+        const auto raw = node.as<QString>();
+        if (raw == "none") {
+            animation = libgestures::GestureAnimation::None;
+        } else if (raw == "overlay") {
+            animation = libgestures::GestureAnimation::Overlay;
+        } else {
+            throw Exception(node.Mark(), "Invalid gesture animation type");
+        }
+
+        return true;
+    }
+};
+
+template<>
 struct convert<std::vector<libgestures::InputAction>>
 {
     static bool decode(const Node &node, std::vector<libgestures::InputAction> &actions)
@@ -968,6 +1021,37 @@ struct convert<std::vector<libgestures::InputAction>>
 };
 
 template<>
+struct convert<QColor>
+{
+    static bool decode(const Node &node, QColor &color)
+    {
+        const auto raw = node.as<QString>();
+        const auto split = raw.split(",");
+        if (split.count() != 3) {
+            throw Exception(node.Mark(), "Invalid color");
+        }
+
+        color = QColor(qRgb(split[0].toUInt(), split[1].toUInt(), split[2].toUInt()));
+        return true;
+    }
+};
+
+template<>
+struct convert<QEasingCurve>
+{
+    static bool decode(const Node &node, QEasingCurve &curve)
+    {
+        const auto curveRaw = node.as<QString>();
+        if (!s_easingCurves.contains(curveRaw)) {
+            throw Exception(node.Mark(), "Invalid easing curve");
+        }
+
+        curve = s_easingCurves.at(curveRaw);
+        return true;
+    }
+};
+
+template<>
 struct convert<QString>
 {
     static bool decode(const Node &node, QString &s)
@@ -995,6 +1079,16 @@ struct convert<QRegularExpression>
     static bool decode(const Node &node, QRegularExpression &regex)
     {
         regex = QRegularExpression(node.as<QString>());
+        return true;
+    }
+};
+
+template<>
+struct convert<std::chrono::milliseconds>
+{
+    static bool decode(const Node &node, std::chrono::milliseconds &ms)
+    {
+        ms = std::chrono::milliseconds(node.as<uint64_t>());
         return true;
     }
 };

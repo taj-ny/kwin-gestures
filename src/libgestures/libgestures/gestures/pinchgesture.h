@@ -22,6 +22,8 @@ public:
 
     void setDirection(const PinchDirection &direction);
 
+    qreal getRealDelta(const QPointF &delta) const override;
+
 private:
     PinchDirection m_direction = PinchDirection::Any;
 };

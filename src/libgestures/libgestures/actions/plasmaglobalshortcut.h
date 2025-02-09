@@ -12,13 +12,12 @@ namespace libgestures
 class PlasmaGlobalShortcutGestureAction : public GestureAction
 {
 public:
+    PlasmaGlobalShortcutGestureAction(const QString &component, const QString &shortcut);
     bool tryExecute() override;
-    PlasmaGlobalShortcutGestureAction &setComponent(const QString &component);
-    PlasmaGlobalShortcutGestureAction &setShortcut(const QString &shortcut);
 
 private:
-    QString m_path;
-    QString m_shortcut;
+    const QString m_path;
+    const QString m_shortcut;
 };
 
 }
