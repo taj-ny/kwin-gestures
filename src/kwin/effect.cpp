@@ -206,7 +206,7 @@ void Effect::registerBuiltinGestures()
     });
     builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
         createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            to = clientArea(KWin::FullScreenArea);
+            to = clientArea(w, KWin::FullScreenArea);
         });
     });
     libgestures::BuiltinGesture::registerGesture("window_fullscreen", std::move(builtin));
@@ -223,8 +223,8 @@ void Effect::registerBuiltinGestures()
         });
     });
     builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [](auto *w, auto &from, auto &to) {
-            to = KWin::effects->clientArea(KWin::MaximizeArea, KWin::effects->activeScreen(), KWin::effects->currentDesktop());
+        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
+            to = clientArea(w, KWin::MaximizeArea);
         });
     });
     libgestures::BuiltinGesture::registerGesture("window_maximize", std::move(builtin));
@@ -286,7 +286,7 @@ void Effect::registerBuiltinGestures()
     });
     builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
         createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            auto rect = clientArea(KWin::PlacementArea);
+            auto rect = clientArea(w, KWin::PlacementArea);
             rect.setWidth(rect.width() / 2);
             to = rect;
         });
@@ -306,7 +306,7 @@ void Effect::registerBuiltinGestures()
     });
     builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
         createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            auto rect = clientArea(KWin::PlacementArea);
+            auto rect = clientArea(w, KWin::PlacementArea);
             rect.setX(rect.x() + rect.width() / 2);
             to = rect;
         });
@@ -388,9 +388,9 @@ void Effect::set(const QRectF &rect, const qreal &opacity)
     m_currentOpacity = opacity;
 }
 
-QRectF Effect::clientArea(const KWin::clientAreaOption &area) const
+QRectF Effect::clientArea(const KWin::EffectWindow *w, const KWin::clientAreaOption &area) const
 {
-    return KWin::effects->clientArea(area, KWin::effects->activeScreen(), KWin::effects->currentDesktop());
+    return KWin::effects->clientArea(area, w->window()->output(), KWin::effects->currentDesktop());
 }
 
 QRectF Effect::geometryRestore(const KWin::EffectWindow *w) const
@@ -404,7 +404,7 @@ QRectF Effect::geometryRestore(const KWin::EffectWindow *w) const
 
 bool Effect::isMaximized(const KWin::EffectWindow *w) const
 {
-    return w->frameGeometry() == clientArea(KWin::MaximizeArea);
+    return w->frameGeometry() == clientArea(w, KWin::MaximizeArea);
 }
 
 void Effect::prePaintScreen(KWin::ScreenPrePaintData &data, std::chrono::milliseconds presentTime)

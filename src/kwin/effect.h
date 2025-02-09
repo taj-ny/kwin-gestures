@@ -56,7 +56,7 @@ private:
         const std::function<void(KWin::EffectWindow *w, QRectF &from, QRectF &to)> &animation
     );
 
-    QRectF clientArea(const KWin::clientAreaOption &area) const;
+    QRectF clientArea(const KWin::EffectWindow *w, const KWin::clientAreaOption &area) const;
     QRectF geometryRestore(const KWin::EffectWindow *w) const;
     bool isMaximized(const KWin::EffectWindow *w) const;
 
