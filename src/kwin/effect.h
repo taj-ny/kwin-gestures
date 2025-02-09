@@ -29,7 +29,6 @@ public:
 
     void prePaintScreen(KWin::ScreenPrePaintData &data, std::chrono::milliseconds presentTime) override;
     void paintScreen(const KWin::RenderTarget &renderTarget, const KWin::RenderViewport &viewport, int mask, const QRegion &region, KWin::Output *screen) override;
-    void postPaintScreen() override;
 
 private slots:
     void slotConfigFileChanged();
@@ -67,7 +66,6 @@ private:
 
     std::chrono::milliseconds m_animationStart;
     bool m_hasAnimation = false;
-    bool m_needsRepaints = false;
     qreal m_fromOpacity;
     qreal m_toOpacity;
 

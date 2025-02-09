@@ -377,15 +377,15 @@ void Effect::animateOpacity(const qreal &from, const qreal &to)
     m_toOpacity = to;
 
     m_hasAnimation = true;
-    m_needsRepaints = true;
-    KWin::effects->addRepaintFull();
+    KWin::effects->addRepaint(m_currentRect);
 }
 
 void Effect::set(const QRectF &rect, const qreal &opacity)
 {
+    KWin::effects->addRepaint(m_currentRect);
+    KWin::effects->addRepaint(rect);
     m_currentRect = rect;
     m_currentOpacity = opacity;
-    KWin::effects->addRepaintFull();
 }
 
 QRectF Effect::clientArea(const KWin::clientAreaOption &area) const
@@ -409,12 +409,19 @@ bool Effect::isMaximized(const KWin::EffectWindow *w) const
 
 void Effect::prePaintScreen(KWin::ScreenPrePaintData &data, std::chrono::milliseconds presentTime)
 {
+    if (m_hasAnimation || m_currentRect.isValid()) {
+        data.paint += m_currentRect.toRect();
+    }
     if (m_hasAnimation) {
         const qreal progress = std::clamp((presentTime.count() - m_animationStart.count()) / (qreal)m_animationDuration.count(), 0.0, 1.0);
         m_currentOpacity = interpolate(m_fromOpacity, m_toOpacity, progress);
+        KWin::effects->addRepaint(m_currentRect);
 
         if (qFuzzyCompare(progress, 1.0)) {
             m_hasAnimation = false;
+            if (qFuzzyCompare(m_toOpacity, 0.0)) {
+                m_currentRect = {};
+            }
         }
     }
 
@@ -515,19 +522,6 @@ void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::Ren
         glDisable(GL_BLEND);
     }
     vbo->unbindArrays();
-}
-
-void Effect::postPaintScreen()
-{
-    if (m_hasAnimation || m_needsRepaints) {
-        KWin::effects->addRepaintFull();
-    }
-
-    if (!m_hasAnimation) {
-        m_needsRepaints = false;
-    }
-
-    KWin::effects->postPaintScreen();
 }
 
 KWin::EffectWindow *Effect::activeWindow()
