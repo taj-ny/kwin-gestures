@@ -1,6 +1,7 @@
 #include "effect.h"
 
 #include "core/pixelgrid.h"
+#include "core/rendertarget.h"
 #include "core/renderviewport.h"
 #include "effect/effecthandler.h"
 #include "opengl/glshader.h"
@@ -494,17 +495,25 @@ void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::Ren
 
     vbo->bindArrays();
 
-    KWin::ShaderBinder binder(KWin::ShaderTrait::UniformColor);
+    KWin::ShaderBinder binder(KWin::ShaderTrait::UniformColor | KWin::ShaderTrait::TransformColorspace);
     binder.shader()->setUniform(KWin::GLShader::Mat4Uniform::ModelViewProjectionMatrix, viewport.projectionMatrix());
+    binder.shader()->setColorspaceUniforms(KWin::ColorDescription::sRGB, renderTarget.colorDescription(), KWin::RenderingIntent::Perceptual);
     QColor color = m_overlayColor.isValid() ? m_overlayColor : QApplication::palette().color(QPalette::Highlight);
-    color.setAlphaF(m_currentOpacity * m_overlayOpacity);
+    color.setAlphaF(1.0);
     binder.shader()->setUniform(KWin::GLShader::ColorUniform::Color, color);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    vbo->draw(GL_TRIANGLES, 0, vertexCount);
-    glDisable(GL_BLEND);
+    const auto opacity = m_currentOpacity * m_overlayOpacity;
+    if (opacity < 1.0) {
+        glEnable(GL_BLEND);
+        glBlendColor(0, 0, 0, opacity);
+        glBlendFunc(GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA);
+    }
 
+    vbo->draw(GL_TRIANGLES, 0, vertexCount);
+
+    if (opacity < 1.0) {
+        glDisable(GL_BLEND);
+    }
     vbo->unbindArrays();
 }
 
