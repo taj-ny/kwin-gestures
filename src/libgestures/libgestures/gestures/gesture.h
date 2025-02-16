@@ -1,8 +1,8 @@
 #pragma once
 
 #include "libgestures/actions/action.h"
-#include <QRegularExpression>
-#include <vector>
+
+#include <QTimer>
 
 namespace libgestures
 {
@@ -38,6 +38,8 @@ public:
     void setThresholds(const qreal &minimum, const qreal &maximum);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
 
+    void setInertiaFriction(const qreal &friction);
+
     /**
      * @param minimumDelta The point at which a 1:1 gesture should be ended, instead of cancelled, when fingers are
      * lifted.
@@ -72,6 +74,7 @@ signals:
      * triggered.
      */
     void updated(const QPointF &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
+
 protected:
     /**
      * @return The delta for the specified input event's delta.
@@ -87,6 +90,7 @@ private slots:
     void onEnded();
     void onStarted();
     void onUpdated(const QPointF &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
+    void onUpdatedInertia();
 
 private:
     /**
@@ -111,6 +115,12 @@ private:
     qreal m_absoluteAccumulatedDelta = 0;
     qreal m_accumulatedDelta = 0;
     bool m_hasStarted = false;
+
+    bool m_inertial = true;
+    QPointF m_velocity;
+    QTimer m_inertiaTimer;
+    uint32_t m_inertiaEvents = 0;
+    qreal m_inertiaFriction = 0.9;
 
     friend class BuiltinGesture;
 };

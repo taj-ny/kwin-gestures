@@ -10,6 +10,7 @@
 #include "window.h"
 
 #include "libgestures/actions/callback.h"
+#include "libgestures/animations/animation.h"
 #include "libgestures/conditions/callback.h"
 #include "libgestures/yaml_convert.h"
 
@@ -23,15 +24,19 @@ const QString configFile = QStandardPaths::writableLocation(QStandardPaths::Conf
 
 Effect::Effect()
 {
+    libgestures::AnimationHandler::setImplementation(m_animationHandler);
     libgestures::Input::setImplementation(new KWinInput);
     libgestures::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
     registerBuiltinGestures();
+
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());
 #else
     KWin::input()->prependInputEventFilter(m_inputEventFilter.get());
 #endif
+
+    m_animationHandler->setAnimationDuration(animationTime(std::chrono::milliseconds(250)));
 
     reconfigure(ReconfigureAll);
 
@@ -79,9 +84,8 @@ void Effect::reconfigure(ReconfigureFlags flags)
 
         const auto animationsNode = config["animations"];
         if (animationsNode.IsDefined()) {
-            m_animationDuration = animationsNode["duration"].as<std::chrono::milliseconds>(m_animationDuration);
-            m_curve = animationsNode["curve"].as<QEasingCurve>(m_curve);
-            m_curveProgress = animationsNode["curve_progress"].as<QEasingCurve>(m_curveProgress);
+            m_animationHandler->setCurve(animationsNode["curve"].as<QEasingCurve>(QEasingCurve::InOutQuad));
+            m_animationHandler->setProgressCurve(animationsNode["curve_progress"].as<QEasingCurve>(QEasingCurve::Linear));
             m_overlayColor = animationsNode["overlay_color"].as<QColor>(QColor());
             m_overlayOpacity = animationsNode["overlay_opacity"].as<qreal>(m_overlayOpacity);
         }
@@ -121,27 +125,18 @@ void Effect::registerBuiltinGestures()
     // for that.
     auto builtin = std::make_unique<libgestures::BuiltinGesture>();
     builtin->setCompatibleGestureTypes(libgestures::GestureType::Swipe);
-    builtin->addRequiredCondition(hasActiveWindowCondition);
-    builtin->setOneToOneActionFactory([](auto &actions) {
+    builtin->addAction(libgestures::On::Begin, [](auto &) {
+        libgestures::Input::implementation()->mouseButton(BTN_LEFT, true);
+    });
+    builtin->addActions([](auto &actions) {
         std::vector<libgestures::InputAction> inputActions{libgestures::InputAction()};
-        auto &input = inputActions[0];
-
-        input.mousePress.push_back(BTN_LEFT);
+        inputActions[0].mouseMoveRelativeByDelta = true;
         auto action = std::make_unique<libgestures::InputGestureAction>(inputActions);
-        action->setOn(libgestures::On::Begin);
-        actions.push_back(std::move(action));
-
-        input = {};
-        input.mouseMoveRelativeByDelta = true;
-        action = std::make_unique<libgestures::InputGestureAction>(inputActions);
         action->setOn(libgestures::On::Update);
         actions.push_back(std::move(action));
-
-        input = {};
-        input.mouseRelease.push_back(BTN_LEFT);
-        action = std::make_unique<libgestures::InputGestureAction>(inputActions);
-        action->setOn(libgestures::On::EndOrCancel);
-        actions.push_back(std::move(action));
+    });
+    builtin->addAction(libgestures::On::EndOrCancel, [](auto &) {
+        libgestures::Input::implementation()->mouseButton(BTN_LEFT, false);
     });
     libgestures::BuiltinGesture::registerGesture("drag", std::move(builtin));
 
@@ -151,28 +146,20 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return activeWindow()->isMovable();
     });
-    builtin->setOneToOneActionFactory([](auto &actions) {
+    builtin->addAction(libgestures::On::Begin, [](auto &) {
+        libgestures::Input::implementation()->keyboardKey(KEY_LEFTMETA, true);
+        libgestures::Input::implementation()->mouseButton(BTN_LEFT, true);
+    });
+    builtin->addActions([](auto &actions) {
         std::vector<libgestures::InputAction> inputActions{libgestures::InputAction()};
-        auto &input = inputActions[0];
-
-        input.keyboardPress.push_back(KEY_LEFTMETA);
-        input.mousePress.push_back(BTN_LEFT);
+        inputActions[0].mouseMoveRelativeByDelta = true;
         auto action = std::make_unique<libgestures::InputGestureAction>(inputActions);
-        action->setOn(libgestures::On::Begin);
-        actions.push_back(std::move(action));
-
-        input = {};
-        input.mouseMoveRelativeByDelta = true;
-        action = std::make_unique<libgestures::InputGestureAction>(inputActions);
         action->setOn(libgestures::On::Update);
         actions.push_back(std::move(action));
-
-        input = {};
-        input.keyboardRelease.push_back(KEY_LEFTMETA);
-        input.mouseRelease.push_back(BTN_LEFT);
-        action = std::make_unique<libgestures::InputGestureAction>(inputActions);
-        action->setOn(libgestures::On::EndOrCancel);
-        actions.push_back(std::move(action));
+    });
+    builtin->addAction(libgestures::On::EndOrCancel, [](auto &) {
+        libgestures::Input::implementation()->keyboardKey(KEY_LEFTMETA, false);
+        libgestures::Input::implementation()->mouseButton(BTN_LEFT, false);
     });
     libgestures::BuiltinGesture::registerGesture("window_drag", std::move(builtin));
 
@@ -181,16 +168,13 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return activeWindow()->window()->isCloseable();
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->closeWindow();
-        });
+    builtin->setAction([this]() {
+        activeWindow()->closeWindow();
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [](auto *w, auto &from, auto &to) {
-            to = QRectF(from.x() + from.width() / 2, from.y() + from.height() / 2, 0, 0);
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        const auto geometry = activeWindow()->frameGeometry();
+        return QRectF(geometry.x() + geometry.width() / 2, geometry.y() + geometry.height() / 2, 0, 0);
+    }, false, true, true);
     libgestures::BuiltinGesture::registerGesture("window_close", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -199,16 +183,12 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return !activeWindow()->isFullScreen();
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->window()->setFullScreen(true);
-        });
+    builtin->setAction([this]() {
+        activeWindow()->window()->setFullScreen(true);
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            to = clientArea(w, KWin::FullScreenArea);
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        return clientArea(activeWindow(), KWin::FullScreenArea);
+    }, true);
     libgestures::BuiltinGesture::registerGesture("window_fullscreen", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -217,16 +197,12 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return !isMaximized(activeWindow());
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->window()->maximize(KWin::MaximizeFull);
-        });
+    builtin->setAction([this]() {
+        activeWindow()->window()->maximize(KWin::MaximizeFull);
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            to = clientArea(w, KWin::MaximizeArea);
-        });
-    });
+    builtin->addGeometryAnimation([this] {
+        return clientArea(activeWindow(), KWin::MaximizeArea);
+    }, true);
     libgestures::BuiltinGesture::registerGesture("window_maximize", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -234,18 +210,16 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return activeWindow()->window()->isMinimizable();
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->minimize();
-        });
+    builtin->setAction([this]() {
+        activeWindow()->minimize();
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [](auto *w, auto &from, auto &to) {
-            to = w->iconGeometry().isValid()
-                ? w->iconGeometry()
-                : QRectF(from.x() + from.width() / 2, from.y() + from.height() / 2, 0, 0);
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        const auto w = activeWindow();
+        const auto geometry = w->frameGeometry();
+        return w->iconGeometry().isValid()
+               ? w->iconGeometry()
+               : QRectF(geometry.x() + geometry.width() / 2, geometry.y() + geometry.height() / 2, 0, 0);
+    }, false, true, true);
     libgestures::BuiltinGesture::registerGesture("window_minimize", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -254,23 +228,19 @@ void Effect::registerBuiltinGestures()
         return geometryRestore(activeWindow()).isValid()
             && (activeWindow()->isFullScreen() || isMaximized(activeWindow()) || activeWindow()->window()->quickTileMode() != KWin::QuickTileFlag::None);
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            const auto w = activeWindow();
-            if (w->isFullScreen()) {
-                w->window()->setFullScreen(false);
-            } else if (isMaximized(w)) {
-                w->window()->maximize(KWin::MaximizeRestore);
-            } else {
-                w->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::None);
-            }
-        });
+    builtin->setAction([this]() {
+        const auto w = activeWindow();
+        if (w->isFullScreen()) {
+            w->window()->setFullScreen(false);
+        } else if (w->window()->maximizeMode() != KWin::MaximizeRestore) {
+            w->window()->maximize(KWin::MaximizeRestore);
+        } else {
+            w->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::None);
+        }
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            to = geometryRestore(w);
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        return geometryRestore(activeWindow());
+    }, true);
     libgestures::BuiltinGesture::registerGesture("window_restore", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -279,18 +249,14 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return activeWindow()->window()->quickTileMode() != KWin::QuickTileFlag::Left;
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::Left);
-        });
+    builtin->setAction([this]() {
+        activeWindow()->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::Left);
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            auto rect = clientArea(w, KWin::PlacementArea);
-            rect.setWidth(rect.width() / 2);
-            to = rect;
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        auto rect = clientArea(activeWindow(), KWin::PlacementArea);
+        rect.setWidth(rect.width() / 2);
+        return rect;
+    }, true);
     libgestures::BuiltinGesture::registerGesture("window_tile_left", std::move(builtin));
 
     builtin = std::make_unique<libgestures::BuiltinGesture>();
@@ -299,94 +265,17 @@ void Effect::registerBuiltinGestures()
     builtin->addRequiredCondition([this]() {
         return activeWindow()->window()->quickTileMode() != KWin::QuickTileFlag::Right;
     });
-    builtin->setSingleActionFactory([this]() {
-        return std::make_unique<libgestures::CallbackGestureAction>([this](const qreal &) {
-            activeWindow()->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::Right);
-        });
+    builtin->setAction([this]() {
+        activeWindow()->window()->setQuickTileModeAtCurrentPosition(KWin::QuickTileFlag::Right);
     });
-    builtin->setAnimationFactory(libgestures::GestureAnimation::Overlay, [this](auto &actions) {
-        createRectangleOverlayAnimation(actions, [this](auto *w, auto &from, auto &to) {
-            auto rect = clientArea(w, KWin::PlacementArea);
-            rect.setX(rect.x() + rect.width() / 2);
-            to = rect;
-        });
-    });
+    builtin->addGeometryAnimation([this]() {
+        auto rect = clientArea(activeWindow(), KWin::PlacementArea);
+        rect.setX(rect.x() + rect.width() / 2);
+        return rect;
+    }, true);
     libgestures::BuiltinGesture::registerGesture("window_tile_right", std::move(builtin));
 }
 
-void Effect::createRectangleOverlayAnimation(
-    std::vector<std::unique_ptr<libgestures::GestureAction>> &actions,
-    const std::function<void(KWin::EffectWindow *w, QRectF &from, QRectF &to)> &animation
-)
-{
-    auto action = std::make_unique<libgestures::CallbackGestureAction>([this, animation](const auto &) {
-        const auto w = activeWindow();
-        m_from = w->frameGeometry();
-        animation(activeWindow(), m_from, m_to);
-        set(m_from, 0.0);
-        animateOpacity(0.0, 1.0);
-    });
-    action->setOn(libgestures::On::Begin);
-    actions.push_back(std::move(action));
-
-    action = std::make_unique<libgestures::CallbackGestureAction>([this](const auto &progress) {
-        set(interpolate(m_from, m_to, progress), m_currentOpacity);
-    });
-    action->setOn(libgestures::On::Update);
-    actions.push_back(std::move(action));
-
-    action = std::make_unique<libgestures::CallbackGestureAction>([this](const auto &progress) {
-        if (progress >= 0.8) {
-            // If a gesture is performed very quickly, the rectangle may not each the end of the animation.
-            set(m_to, m_currentOpacity);
-        }
-        animateOpacity(1.0, 0.0);
-    });
-    action->setOn(libgestures::On::End);
-    actions.push_back(std::move(action));
-
-    action = std::make_unique<libgestures::CallbackGestureAction>([this](const auto &) {
-        animateOpacity(1.0, 0.0);
-    });
-    action->setOn(libgestures::On::Cancel);
-    actions.push_back(std::move(action));
-}
-
-QRectF Effect::interpolate(const QRectF &from, const QRectF &to, qreal progress)
-{
-    progress = m_curveProgress.valueForProgress(progress);
-    qreal x = from.x() + (to.x() - from.x()) * progress;
-    qreal y = from.y() + (to.y() - from.y()) * progress;
-    qreal width = from.width() + (to.width() - from.width()) * progress;
-    qreal height = from.height() + (to.height() - from.height()) * progress;
-
-    return {x, y, width, height};
-}
-
-qreal Effect::interpolate(const qreal &from, const qreal &to, qreal progress)
-{
-    progress = m_curve.valueForProgress(progress);
-    return from + (to - from) * progress;
-}
-
-void Effect::animateOpacity(const qreal &from, const qreal &to)
-{
-    m_animationStart = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch());
-
-    m_fromOpacity = from;
-    m_toOpacity = to;
-
-    m_hasAnimation = true;
-    KWin::effects->addRepaint(m_currentRect);
-}
-
-void Effect::set(const QRectF &rect, const qreal &opacity)
-{
-    KWin::effects->addRepaint(m_currentRect);
-    KWin::effects->addRepaint(rect);
-    m_currentRect = rect;
-    m_currentOpacity = opacity;
-}
 
 QRectF Effect::clientArea(const KWin::EffectWindow *w, const KWin::clientAreaOption &area) const
 {
@@ -409,20 +298,19 @@ bool Effect::isMaximized(const KWin::EffectWindow *w) const
 
 void Effect::prePaintScreen(KWin::ScreenPrePaintData &data, std::chrono::milliseconds presentTime)
 {
-    if (m_hasAnimation || m_currentRect.isValid()) {
-        data.paint += m_currentRect.toRect();
-    }
-    if (m_hasAnimation) {
-        const qreal progress = std::clamp((presentTime.count() - m_animationStart.count()) / (qreal)m_animationDuration.count(), 0.0, 1.0);
-        m_currentOpacity = interpolate(m_fromOpacity, m_toOpacity, progress);
-        KWin::effects->addRepaint(m_currentRect);
-
-        if (qFuzzyCompare(progress, 1.0)) {
-            m_hasAnimation = false;
-            if (qFuzzyCompare(m_toOpacity, 0.0)) {
-                m_currentRect = {};
-            }
+    m_screenPresentTime = presentTime;
+    m_previousRect = m_currentRect;
+    if (m_animationHandler->type() != libgestures::GestureAnimation::None && m_animationHandler->geometryAnimation().isActive(presentTime)) {
+        m_currentRect = m_animationHandler->geometryAnimation().value(presentTime).toRect();
+        QRegion repaint(*m_currentRect);
+        if (m_previousRect) {
+            repaint += *m_previousRect;
         }
+
+        data.paint += repaint;
+        KWin::effects->addRepaint(repaint);
+    } else {
+        m_currentRect = {};
     }
 
     KWin::effects->prePaintScreen(data, presentTime);
@@ -431,7 +319,7 @@ void Effect::prePaintScreen(KWin::ScreenPrePaintData &data, std::chrono::millise
 void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::RenderViewport &viewport, int mask, const QRegion &region, KWin::Output *screen)
 {
     KWin::effects->paintScreen(renderTarget, viewport, mask, region, screen);
-    if (qFuzzyCompare(m_currentOpacity, 0.0)) {
+    if (m_animationHandler->type() != libgestures::GestureAnimation::Overlay || !m_currentRect) {
         return;
     }
 
@@ -439,7 +327,7 @@ void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::Ren
     const auto screenSize = (screen->pixelSize() * scale);
 
     QRegion effectiveRegion;
-    for (const auto &dirtyRect : (region & m_currentRect.toRect())) {
+    for (const auto &dirtyRect : (region & *m_currentRect)) {
         effectiveRegion += KWin::snapToPixelGrid(KWin::scaledRect(dirtyRect, scale));
     }
 
@@ -509,7 +397,7 @@ void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::Ren
     color.setAlphaF(1.0);
     binder.shader()->setUniform(KWin::GLShader::ColorUniform::Color, color);
 
-    const auto opacity = m_currentOpacity * m_overlayOpacity;
+    const auto opacity = m_animationHandler->geometryOpacityAnimation().value(m_screenPresentTime) * m_overlayOpacity;
     if (opacity < 1.0) {
         glEnable(GL_BLEND);
         glBlendColor(0, 0, 0, opacity);
@@ -527,4 +415,62 @@ void Effect::paintScreen(const KWin::RenderTarget &renderTarget, const KWin::Ren
 KWin::EffectWindow *Effect::activeWindow()
 {
     return KWin::effects->activeWindow();
+}
+
+void Effect::prePaintWindow(KWin::EffectWindow *w, KWin::WindowPrePaintData &data, std::chrono::milliseconds presentTime)
+{
+    if (m_animationHandler->window() == w) {
+        if (m_currentRect) {
+            data.paint += *m_currentRect;
+        }
+        if (m_previousRect) {
+            data.paint += *m_previousRect;
+        }
+
+        data.setTransformed();
+        m_animationHandler->repaint();
+    }
+
+    KWin::effects->prePaintWindow(w, data, presentTime);
+}
+
+void Effect::paintWindow(const KWin::RenderTarget &renderTarget, const KWin::RenderViewport &viewport, KWin::EffectWindow *w, int mask, QRegion region, KWin::WindowPaintData &data) {
+    if (m_animationHandler->suppressAnimations(w)) {
+        data.setXTranslation(0);
+        data.setYTranslation(0);
+        data.setZTranslation(0);
+        data.setScale(QVector3D(1, 1, 1));
+        data.setCrossFadeProgress(1);
+        data.setOpacity(1);
+    }
+
+    if (m_animationHandler->type() == libgestures::GestureAnimation::Window
+        && m_animationHandler->window() == w) {
+        if (m_animationHandler->geometryAnimation().isActive(m_screenPresentTime)) {
+            m_animationQuality = m_overlayOpacity;
+
+            // TODO The window jumps around by 1 px due to rounding
+            const auto from = w->frameGeometry();
+            const auto current = m_animationHandler->geometryAnimation().value(m_screenPresentTime);
+            if (m_animationHandler->resizesWindow()
+                && (
+                   (m_animationHandler->geometryAnimation().isCompleted(m_screenPresentTime) && from.size() != current.size())
+                    || (std::abs(from.width() - current.width()) >= m_animationQuality || std::abs(from.height() - current.height()) >= m_animationQuality)
+                )) {
+                w->window()->moveResize(current);
+            }
+
+            data.setXTranslation(current.x() - from.x());
+            data.setYTranslation(current.y() - from.y());
+            data.setXScale(current.width() / (qreal)from.width());
+            data.setYScale(current.height() / (qreal)from.height());
+
+        }
+
+        if (m_animationHandler->geometryOpacityAnimation().isActive(m_screenPresentTime)) {
+            data.setOpacity(m_animationHandler->geometryOpacityAnimation().value(m_screenPresentTime));
+        }
+    }
+
+    KWin::effects->paintWindow(renderTarget, viewport, w, mask, region, data);
 }

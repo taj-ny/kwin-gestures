@@ -3,16 +3,23 @@
 namespace libgestures
 {
 
+static const qreal s_inertiaTimerFrequency = 240.0; // Events per second
+static const uint32_t s_inertiaEventMultiplier = 5; // Split one event into multiple to make inertia smoother
+
 Gesture::Gesture()
 {
     connect(this, &Gesture::cancelled, this, &Gesture::onCancelled);
     connect(this, &Gesture::ended, this, &Gesture::onEnded);
     connect(this, &Gesture::started, this, &Gesture::onStarted);
     connect(this, &Gesture::updated, this, &Gesture::onUpdated);
+
+    m_inertiaTimer.setInterval(1000 / s_inertiaTimerFrequency);
+    connect(&m_inertiaTimer, &QTimer::timeout, this, &Gesture::onUpdatedInertia);
 }
 
 void Gesture::onCancelled()
 {
+
     m_absoluteAccumulatedDelta = 0;
     m_accumulatedDelta = 0;
 
@@ -30,12 +37,22 @@ void Gesture::onCancelled()
 
 void Gesture::onEnded()
 {
+    if (!m_hasStarted) {
+        return;
+    }
+
+    if (m_inertiaTimer.isActive()) {
+        m_inertiaTimer.stop();
+        m_velocity = {};
+        m_inertiaEvents = 0;
+    } else if (m_inertial && (std::abs(m_velocity.x()) >= 20 || std::abs(m_velocity.y()) >= 20)) {
+        m_inertiaTimer.start();
+        return;
+    }
+
     const auto oldDelta = m_accumulatedDelta;
     m_absoluteAccumulatedDelta = 0;
     m_accumulatedDelta = 0;
-
-    if (!m_hasStarted)
-        return;
 
     if ((m_minimumDelta != 0) && oldDelta < m_minimumDelta) {
         Q_EMIT cancelled();
@@ -67,18 +84,13 @@ void Gesture::onUpdated(const QPointF &delta, const QPointF &deltaPointMultiplie
     const auto realDelta = getRealDelta(delta);
     m_absoluteAccumulatedDelta += std::abs(realDelta);
     m_accumulatedDelta += realDelta;
+    m_velocity = delta;
     if (!thresholdReached())
         return;
 
     if (!m_hasStarted) {
         m_hasStarted = true;
         Q_EMIT started();
-    }
-
-    if (m_maximumDelta != 0 && (m_accumulatedDelta - m_minimumThreshold >= m_maximumDelta)) {
-        endedPrematurely = true;
-        Q_EMIT ended();
-        return;
     }
 
     const auto progress = m_maximumDelta == 0
@@ -91,6 +103,28 @@ void Gesture::onUpdated(const QPointF &delta, const QPointF &deltaPointMultiplie
             Q_EMIT ended();
             return;
         }
+    }
+
+    if (m_maximumDelta != 0 && (m_accumulatedDelta - m_minimumThreshold >= m_maximumDelta)) {
+        endedPrematurely = true;
+        Q_EMIT ended();
+        return;
+    }
+}
+
+void Gesture::onUpdatedInertia()
+{
+    bool endedPrematurely = false;
+    const auto velocity = m_velocity;
+    Q_EMIT updated(m_velocity / s_inertiaEventMultiplier, QPointF(), endedPrematurely);
+    m_velocity = velocity;
+
+    if (m_inertiaEvents++ % s_inertiaEventMultiplier == 0) {
+        m_velocity *= m_inertiaFriction;
+    }
+
+    if (endedPrematurely || std::abs(m_velocity.x()) + std::abs(m_velocity.y()) < 0.1) {
+        Q_EMIT ended();
     }
 }
 
@@ -142,6 +176,11 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 {
     m_minimumFingers = minimum;
     m_maximumFingers = maximum;
+}
+
+void Gesture::setInertiaFriction(const qreal &friction)
+{
+    m_inertiaFriction = friction;
 }
 
 void Gesture::setMinimumDelta(const qreal &delta)

@@ -721,7 +721,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             }
 
 
-            const auto animation = actionNode["animation"].as<libgestures::GestureAnimation>(libgestures::GestureAnimation::Overlay);
+            const auto animation = actionNode["animation"].as<libgestures::GestureAnimation>();
             const auto instant = actionNode["instant"].as<bool>(false);
             builtinGestures.at(builtinId)->assignTo(gesture.get(), animation, instant);
         }
@@ -953,6 +953,8 @@ struct convert<libgestures::GestureAnimation>
             animation = libgestures::GestureAnimation::None;
         } else if (raw == "overlay") {
             animation = libgestures::GestureAnimation::Overlay;
+        } else if (raw == "window") {
+            animation = libgestures::GestureAnimation::Window;
         } else {
             throw Exception(node.Mark(), "Invalid gesture animation type");
         }

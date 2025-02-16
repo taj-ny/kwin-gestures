@@ -18,6 +18,7 @@ if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.2.90)
 endif()
 
 set(kwin_gestures_SOURCES
+    impl/kwinanimationhandler.cpp
     impl/kwininput.cpp
     impl/kwinwindowinfoprovider.cpp
     effect.cpp

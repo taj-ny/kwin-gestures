@@ -1,7 +1,9 @@
 #pragma once
 
-#include "libgestures/libgestures/actions/action.h"
 #include "gesture.h"
+
+#include "libgestures/actions/action.h"
+#include "libgestures/animations/handler.h"
 
 namespace libgestures
 {
@@ -15,29 +17,36 @@ enum class GestureType : uint32_t {
 Q_DECLARE_FLAGS(GestureTypes, GestureType)
 Q_DECLARE_OPERATORS_FOR_FLAGS(GestureTypes)
 
-enum class GestureAnimation {
-    None,
-    Overlay
-};
-
 class BuiltinGesture
 {
 public:
+    BuiltinGesture() = default;
+
     /**
      * Assigns this built-in gesture to the specified gesture.
      */
     void assignTo(Gesture *gesture, const GestureAnimation &animation, const bool &instant) const;
 
-    void addRequiredCondition(const std::function<bool()> &callback);
+    void addRequiredCondition(const std::function<bool()> &condition);
 
     /**
      * @return Whether this built-in gesture can be assigned to the specified gesture.
      */
     bool isCompatibleWith(Gesture *gesture);
 
-    void setOneToOneActionFactory(std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)> factory);
-    void setAnimationFactory(const GestureAnimation &type, std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)> factory);
-    void setSingleActionFactory(std::function<std::unique_ptr<GestureAction>()> factory);
+    /**
+     * Sets the action to execute at the end of this gesture. It will also be executed after the animation, if set.
+     * For more complex gestures use @c setActionFactory.
+     */
+    void setAction(const std::function<void()> &action);
+    void addAction(const libgestures::On &on, const std::function<void(const qreal &progress)> &action);
+    void addActions(const std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)> &factory);
+
+
+    /**
+     * @param geometry Executed right before the animation starts.
+     */
+    void addGeometryAnimation(const std::function<QRectF()> &geometry, const bool &resizeDuring = false, const bool &keepLastFrame = false, const bool &fadeOut = false);
 
     /**
      * @param types The gestures this action can be assigned to.
@@ -54,9 +63,10 @@ public:
     static const std::unordered_map<QString, std::unique_ptr<BuiltinGesture>> &registeredGestures();
 
 private:
-    std::unordered_map<GestureAnimation, std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)>> m_animationFactories;
-    std::optional<std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)>> m_oneToOneActionFactory;
-    std::optional<std::function<std::unique_ptr<GestureAction>()>> m_singleActionFactory;
+    std::optional<std::function<void()>> m_singleAction;
+    std::vector<std::function<void(std::vector<std::unique_ptr<GestureAction>> &actions)>> m_actionFactories;
+    std::optional<std::function<void(const GestureAnimation &type, std::vector<std::unique_ptr<GestureAction>> &actions)>> m_animationFactory;
+
     GestureTypes m_types = GestureType::All;
     std::vector<std::shared_ptr<Condition>> m_conditions;
 

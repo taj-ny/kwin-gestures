@@ -1,6 +1,6 @@
 #pragma once
 
-#include "libgestures/condition.h"
+#include "libgestures/conditions/condition.h"
 #include "mockwindowinfoprovider.h"
 #include <QTest>
 

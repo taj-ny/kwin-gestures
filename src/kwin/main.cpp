@@ -1,4 +1,4 @@
-#include "effect.h"
+# include "effect.h"
 #include "effect/effect.h"
 
 KWIN_EFFECT_FACTORY_SUPPORTED_ENABLED(

@@ -1,5 +1,7 @@
 #include "gesturerecognizer.h"
 
+#include <QTimer>
+
 namespace libgestures
 {
 
@@ -26,7 +28,6 @@ void GestureRecognizer::registerGesture(std::shared_ptr<Gesture> gesture)
     });
 
     m_gestures.push_back(gesture);
-
 }
 
 void GestureRecognizer::unregisterGestures()
@@ -268,12 +269,13 @@ template<class TGesture>
 bool GestureRecognizer::gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures)
 {
     bool hadActiveGestures = !activeGestures.empty();
-    for (const auto &gesture : activeGestures)
+    bool hasKineticGestures = false;
+    for (const auto &gesture : activeGestures) {
         Q_EMIT gesture->ended();
+    }
     activeGestures.clear();
 
     resetMembers();
-
     return hadActiveGestures;
 }
 
