@@ -7,7 +7,7 @@
 namespace libgestures
 {
 
-enum GestureSpeed {
+enum class GestureSpeed {
     Any,
     Slow,
     Fast
@@ -25,7 +25,8 @@ public:
      */
     bool satisfiesConditions(const uint8_t &fingerCount) const;
 
-    GestureSpeed speed() const;
+    const GestureSpeed &speed() const;
+    const std::optional<Qt::KeyboardModifiers> &modifiers() const;
 
     void addAction(const std::shared_ptr<GestureAction> &action);
     void addCondition(const std::shared_ptr<const Condition> &condition);
@@ -33,6 +34,12 @@ public:
     void setSpeed(const GestureSpeed &speed);
     void setThresholds(const qreal &minimum, const qreal &maximum);
     void setFingers(const uint8_t &minimum, const uint8_t &maximum);
+
+    /**
+     * @param modifiers std::nullopt - ignore modifiers, Qt::KeyboardModifier::NoModifier - no modifiers, anything
+     * else - all specified modifiers must be active
+     */
+    void setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers);
 signals:
     /**
      * Emitted when the gesture has been cancelled.
@@ -74,6 +81,7 @@ private:
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;
     GestureSpeed m_speed = GestureSpeed::Any;
+    std::optional<Qt::KeyboardModifiers> m_modifiers = std::nullopt;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
