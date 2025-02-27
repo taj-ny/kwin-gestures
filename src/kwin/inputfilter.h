@@ -38,7 +38,14 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
+#ifdef KWIN_6_3_OR_GREATER
+    bool pointerAxis(KWin::PointerAxisEvent *event) override;
+#else
+    bool wheelEvent(KWin::WheelEvent *event) override;
+#endif
+
 private:
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
     QTimer m_touchpadHoldGestureTimer;
+    QTimer m_scrollTimer;
 };

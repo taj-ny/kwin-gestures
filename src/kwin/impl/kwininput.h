@@ -61,8 +61,6 @@ private slots:
     void slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state);
 
 private:
-    static std::chrono::microseconds timestamp();
-
     KWin::InputRedirection *m_input;
     KWin::PointerInputRedirection *m_pointer;
     KWin::KeyboardInputRedirection *m_keyboard;

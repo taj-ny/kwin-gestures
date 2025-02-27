@@ -1,5 +1,7 @@
 #include "kwininput.h"
 
+#include "utils.h"
+
 #include "keyboard_input.h"
 #include "pointer_input.h"
 
@@ -94,11 +96,6 @@ void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
     } else if (keyCode == KEY_LEFTSHIFT || keyCode == KEY_RIGHTSHIFT) {
         m_modifiers &= ~Qt::KeyboardModifier::ShiftModifier;
     }
-}
-
-std::chrono::microseconds KWinInput::timestamp()
-{
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch());
 }
 
 QString InputDevice::name() const

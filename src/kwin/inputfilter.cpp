@@ -1,16 +1,28 @@
 #include "inputfilter.h"
-#include "input_event_spy.h"
 
+#include "utils.h"
+
+#ifndef KWIN_6_3_OR_GREATER
+#include "core/inputdevice.h"
+#endif
+#include "input_event.h"
+#include "input_event_spy.h"
 #include "wayland_server.h"
-#include <utility>
+
+static uint32_t s_scrollTimeout = 100;
 
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
+    m_scrollTimer.setSingleShot(true);
+
     connect(&m_touchpadHoldGestureTimer, &QTimer::timeout, this, [this]() {
         holdGestureUpdate(1);
+    });
+    connect(&m_scrollTimer, &QTimer::timeout, this, [this]() {
+        swipeGestureEnd(timestamp());
     });
 }
 
@@ -45,8 +57,7 @@ void GestureInputEventFilter::holdGestureUpdate(const qreal &delta)
     if (!endedPrematurely)
         return;
 
-    // TODO proper time
-    holdGestureEnd(std::chrono::microseconds(0));
+    holdGestureEnd(timestamp());
 }
 
 bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
@@ -219,6 +230,45 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 #endif
 
     m_touchpadGestureRecognizer->pinchGestureCancel();
+    return false;
+}
+
+#ifdef KWIN_6_3_OR_GREATER
+bool GestureInputEventFilter::pointerAxis(KWin::PointerAxisEvent *event)
+{
+    const auto device = event->device;
+    const auto eventDelta = event->delta;
+    const auto orientation = event->orientation;
+    const auto inverted = event->inverted;
+#else
+bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
+{
+    const auto device = event->device();
+    const auto eventDelta = event->delta();
+    const auto orientation = event->orientation();
+    const auto inverted = event->inverted();
+#endif
+
+    if (!device->isTouchpad()) {
+        return false;
+    }
+
+    if (!m_scrollTimer.isActive()) {
+        swipeGestureBegin(2, timestamp());
+    }
+    m_scrollTimer.stop();
+    m_scrollTimer.start(s_scrollTimeout);
+
+    auto delta = orientation == Qt::Orientation::Horizontal
+        ? QPointF(eventDelta, 0)
+        : QPointF(0, eventDelta);
+    if (inverted) {
+        delta *= -1;
+    }
+    if (swipeGestureUpdate(delta, timestamp())) {
+        return true;
+    }
+
     return false;
 }
 
