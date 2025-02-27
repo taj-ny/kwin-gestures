@@ -40,9 +40,5 @@ public:
 
 private:
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
-    /**
-     * Amount of fingers currently on the touchpad.
-     */
-    uint8_t m_touchpadGestureFingerCount = 0;
     QTimer m_touchpadHoldGestureTimer;
 };
