@@ -22,6 +22,12 @@ public:
     virtual void keyboardKey(const uint32_t &key, const bool &state) { };
 
     /**
+     * @return Currently pressed modifier keys on the keyboard, or Qt::KeyboardModifier::NoModifier if not implemented.
+     */
+    virtual Qt::KeyboardModifiers keyboardModifiers() const;
+    virtual void keyboardClearModifiers() { };
+
+    /**
      * @param state True to press, false to release.
      */
     virtual void mouseButton(const uint32_t &button, const bool &state) { };

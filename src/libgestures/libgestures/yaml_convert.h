@@ -543,6 +543,13 @@ static const std::unordered_map<QString, uint32_t> s_mouse = {
     {"EXTRA13", 0x11f},
 };
 
+static const std::unordered_map<QString, Qt::KeyboardModifier> s_keyboardModifiers = {
+    {"alt", Qt::KeyboardModifier::AltModifier},
+    {"ctrl", Qt::KeyboardModifier::ControlModifier},
+    {"meta", Qt::KeyboardModifier::MetaModifier},
+    {"shift", Qt::KeyboardModifier::ShiftModifier},
+};
+
 namespace YAML
 {
 
@@ -654,6 +661,23 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         gesture->setFingers(fingers.min, fingers.max);
         gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
         gesture->setThresholds(threshold.min, threshold.max);
+
+        if (const auto modifiersNode = node["modifiers"]) {
+            if (modifiersNode.IsSequence()) {
+                if (const auto modifiers = modifiersNode.as<Qt::KeyboardModifiers>(Qt::KeyboardModifier::NoModifier)) {
+                    gesture->setKeyboardModifiers(modifiers);
+                }
+            } else {
+                const auto modifierMatchingMode = modifiersNode.as<QString>();
+                if (modifierMatchingMode == "any") {
+                    gesture->setKeyboardModifiers(std::nullopt);
+                } else if (modifierMatchingMode == "none") {
+                    gesture->setKeyboardModifiers(Qt::KeyboardModifier::NoModifier);
+                } else {
+                    throw Exception(node.Mark(), "Invalid modifiers");
+                }
+            }
+        }
 
         for (const auto &conditionNode : node["conditions"]) {
             gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
@@ -978,5 +1002,24 @@ struct convert<QRegularExpression>
         return true;
     }
 };
+
+template<>
+struct convert<Qt::KeyboardModifiers>
+{
+    static bool decode(const Node &node, Qt::KeyboardModifiers &modifiers)
+    {
+        for (const auto &modifierRaw : node.as<QStringList>()) {
+            if (s_keyboardModifiers.contains(modifierRaw)) {
+                modifiers |= s_keyboardModifiers.at(modifierRaw);
+            } else {
+                throw Exception(node.Mark(), "Invalid keyboard modifier");
+            }
+        }
+
+        return true;
+    }
+};
+
+
 
 }

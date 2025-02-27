@@ -1,5 +1,7 @@
 #include "gesturerecognizer.h"
 
+#include "libgestures/input.h"
+
 namespace libgestures
 {
 
@@ -222,6 +224,7 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
     if (!activeGestures.empty())
         return;
 
+    auto hasModifiers = false;
     for (const std::shared_ptr<Gesture> &gesture : m_gestures) {
         std::shared_ptr<TGesture> castedGesture = std::dynamic_pointer_cast<TGesture>(gesture);
         if (!castedGesture || !gesture->satisfiesConditions(fingerCount))
@@ -230,7 +233,15 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
         if (castedGesture->speed() != GestureSpeed::Any)
             m_isDeterminingSpeed = true;
 
+        if (castedGesture->modifiers() && *castedGesture->modifiers() != Qt::KeyboardModifier::NoModifier) {
+            hasModifiers = true;
+        }
+
         activeGestures.push_back(castedGesture);
+    }
+
+    if (hasModifiers) {
+        Input::implementation()->keyboardClearModifiers();
     }
 }
 

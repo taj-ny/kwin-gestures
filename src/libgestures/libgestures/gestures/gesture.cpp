@@ -1,5 +1,7 @@
 #include "gesture.h"
 
+#include "libgestures/input.h"
+
 namespace libgestures
 {
 
@@ -78,8 +80,15 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
 
 bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
 {
-    if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount)
+    const auto modifiers = Input::implementation()->keyboardModifiers();
+    if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount
+        || (m_modifiers
+            && (
+                (*m_modifiers == Qt::KeyboardModifier::NoModifier && modifiers != Qt::KeyboardModifier::NoModifier)
+                || (*m_modifiers != Qt::KeyboardModifier::NoModifier && (modifiers & *m_modifiers) != *m_modifiers)
+            ))) {
         return false;
+    }
 
     const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
         return condition->isSatisfied();
@@ -115,6 +124,11 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
     m_maximumFingers = maximum;
 }
 
+void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)
+{
+    m_modifiers = modifiers;
+}
+
 bool Gesture::thresholdReached() const
 {
     return ((m_minimumThreshold == 0 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
@@ -126,9 +140,14 @@ void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
     m_speed = speed;
 }
 
-GestureSpeed Gesture::speed() const
+const GestureSpeed &Gesture::speed() const
 {
     return m_speed;
+}
+
+const std::optional<Qt::KeyboardModifiers> &Gesture::modifiers() const
+{
+    return m_modifiers;
 }
 
 }
