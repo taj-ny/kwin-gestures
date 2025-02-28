@@ -175,6 +175,7 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
         return false;
 #endif
 
+    m_pinchGestureActive = true;
     m_touchpadGestureRecognizer->pinchGestureBegin(fingerCount);
     return false;
 }
@@ -187,6 +188,12 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
     if (KWin::waylandServer()->isScreenLocked())
         return false;
 #endif
+
+    // Two-finger pinch gestures may be at first incorrectly interpreted by libinput as scrolling. Libinput does
+    // eventually correctly determine the gesture after a few events, but it doesn't send the GESTURE_PINCH_BEGIN event.
+    if (!m_pinchGestureActive) {
+        pinchGestureBegin(2, time);
+    }
 
     auto endedPrematurely = false;
     const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, endedPrematurely);
@@ -207,6 +214,7 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
         return false;
 #endif
 
+    m_pinchGestureActive = false;
     if (m_touchpadGestureRecognizer->pinchGestureEnd()) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->pinchGestureCancelled(time);
@@ -229,6 +237,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
         return false;
 #endif
 
+    m_pinchGestureActive = false;
     m_touchpadGestureRecognizer->pinchGestureCancel();
     return false;
 }

@@ -48,4 +48,6 @@ private:
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
     QTimer m_touchpadHoldGestureTimer;
     QTimer m_scrollTimer;
+
+    bool m_pinchGestureActive = false;
 };
