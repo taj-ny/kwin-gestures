@@ -18,11 +18,12 @@ enum class SwipeDirection {
 class SwipeGesture : public Gesture
 {
 public:
+    bool satisfiesUpdateConditions(const GestureSpeed &speed, const SwipeDirection &direction) const;
+
     SwipeDirection direction() const
     {
         return m_direction;
     }
-
     void setDirection(const SwipeDirection &direction);
 
 private:
