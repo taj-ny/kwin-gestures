@@ -23,6 +23,7 @@ set(kwin_gestures_SOURCES
     effect.cpp
     inputfilter.cpp
     main.cpp
+    utils.h
 )
 
 add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})
