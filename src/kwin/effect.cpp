@@ -23,9 +23,9 @@ Effect::Effect()
 
     if (!QFile::exists(configFile)) {
         QFile(configFile).open(QIODevice::WriteOnly);
-        configureWatcher();
     }
-
+    m_configFileWatcher.addPath(configFile);
+    m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
     connect(&m_configFileWatcher, &QFileSystemWatcher::directoryChanged, this, &Effect::slotConfigDirectoryChanged);
     connect(&m_configFileWatcher, &QFileSystemWatcher::fileChanged, this, &Effect::slotConfigFileChanged);
 }
@@ -43,14 +43,18 @@ void Effect::slotConfigFileChanged()
         m_configFileWatcher.addPath(configFile);
     }
 
-    reconfigure(ReconfigureAll);
+    if (m_autoReload) {
+        reconfigure(ReconfigureAll);
+    }
 }
 
 void Effect::slotConfigDirectoryChanged()
 {
     if (!m_configFileWatcher.files().contains(configFile) && QFile::exists(configFile)) {
         m_configFileWatcher.addPath(configFile);
-        reconfigure(ReconfigureAll);
+        if (m_autoReload) {
+            reconfigure(ReconfigureAll);
+        }
     }
 }
 
@@ -66,18 +70,5 @@ void Effect::reconfigure(ReconfigureFlags flags)
     } catch (const YAML::Exception &e) {
         qCritical(KWIN_GESTURES).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
                 + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
-        return;
     }
-
-    if (m_autoReload) {
-        configureWatcher();
-    } else {
-        m_configFileWatcher.removePaths(m_configFileWatcher.files() + m_configFileWatcher.directories());
-    }
-}
-
-void Effect::configureWatcher()
-{
-    m_configFileWatcher.addPath(configFile);
-    m_configFileWatcher.addPath(QStandardPaths::writableLocation(QStandardPaths::ConfigLocation));
 }
