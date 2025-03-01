@@ -43,6 +43,11 @@ void GestureRecognizer::setPinchOutFastThreshold(const qreal &threshold)
     m_pinchOutFastThreshold = threshold;
 }
 
+void GestureRecognizer::setRotateFastThreshold(const qreal &threshold)
+{
+    m_rotateFastThreshold = threshold;
+}
+
 void GestureRecognizer::setDeltaMultiplier(const qreal &deltaMultiplier)
 {
     m_deltaMultiplier = deltaMultiplier;
@@ -59,22 +64,37 @@ void GestureRecognizer::holdGestureUpdate(const qreal &delta, bool &endedPrematu
 
 bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &endedPrematurely)
 {
-    Q_UNUSED(angleDelta)
     Q_UNUSED(delta)
 
     const auto pinchDelta = -(m_previousPinchScale - scale);
     m_previousPinchScale = scale;
+    PinchDirection pinchDirection = scale < 1 ? PinchDirection::In : PinchDirection::Out;
 
-    // Determine the direction of the swipe
-    PinchDirection direction = scale < 1 ? PinchDirection::In : PinchDirection::Out;
+    RotateDirection rotateDirection = angleDelta > 0 ? RotateDirection::Clockwise : RotateDirection::Counterclockwise;
+    m_accumulatedRotateDelta += std::abs(angleDelta);
+
+    if (m_pinchType == PinchType::Unknown) {
+        if (m_accumulatedRotateDelta >= 10) {
+            m_pinchType = PinchType::Rotate;
+            gestureCancel(m_activePinchGestures);
+        } else if (std::abs(1.0 - scale) >= 0.2) {
+            m_pinchType = PinchType::Pinch;
+            gestureCancel(m_activeRotateGestures);
+        } else {
+            return true;
+        }
+    }
 
     if (m_isDeterminingSpeed) {
         if (m_sampledInputEvents++ != m_inputEventsToSample) {
-            m_accumulatedAbsoluteSampledDelta += std::abs(pinchDelta);
+            m_accumulatedAbsoluteSampledDelta += std::abs(m_pinchType == PinchType::Rotate ? angleDelta : pinchDelta);
             return true;
         }
 
-        if ((m_accumulatedAbsoluteSampledDelta / m_inputEventsToSample) >= (scale < 1 ? m_pinchInFastThreshold : m_pinchOutFastThreshold))
+        const auto speedThreshold = m_pinchType == PinchType::Rotate
+            ? m_rotateFastThreshold
+            : (scale < 1 ? m_pinchInFastThreshold : m_pinchOutFastThreshold);
+        if ((m_accumulatedAbsoluteSampledDelta / m_inputEventsToSample) >= speedThreshold)
             m_speed = GestureSpeed::Fast;
         else
             m_speed = GestureSpeed::Slow;
@@ -82,20 +102,37 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
         m_isDeterminingSpeed = false;
     }
 
-    for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();) {
-        const auto &gesture = *it;
-        if ((gesture->direction() != PinchDirection::Any && gesture->direction() != direction)
-            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed)) {
-            gesture->cancelled();
-            it = m_activePinchGestures.erase(it);
-            continue;
+    if (m_pinchType == PinchType::Rotate) {
+        for (auto it = m_activeRotateGestures.begin(); it != m_activeRotateGestures.end();) {
+            const auto &gesture = *it;
+            if (!gesture->satisfiesUpdateConditions(m_speed, rotateDirection)) {
+                gesture->cancelled();
+                it = m_activeRotateGestures.erase(it);
+                continue;
+            }
+
+            Q_EMIT gesture->updated(angleDelta, QPointF(), endedPrematurely);
+            if (endedPrematurely) {
+                return true;
+            }
+
+            it++;
         }
+    } else if (m_pinchType == PinchType::Pinch) {
+        for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();) {
+            const auto &gesture = *it;
+            if (!gesture->satisfiesUpdateConditions(m_speed, pinchDirection)) {
+                gesture->cancelled();
+                it = m_activePinchGestures.erase(it);
+                continue;
+            }
 
-        Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
-        if (endedPrematurely)
-            return true;
+            Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
+            if (endedPrematurely)
+                return true;
 
-        it++;
+            it++;
+        }
     }
 
     return !m_activePinchGestures.empty();
@@ -151,13 +188,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
 
     for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();) {
         const auto gesture = *it;
-
-        if ((!((gesture->direction() == SwipeDirection::LeftRight
-                && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
-               || (gesture->direction() == SwipeDirection::UpDown
-                   && (direction == SwipeDirection::Up || direction == SwipeDirection::Down)))
-             && (gesture->direction() != SwipeDirection::Any && gesture->direction() != direction))
-            || (gesture->speed() != GestureSpeed::Any && gesture->speed() != m_speed)) {
+        if (!gesture->satisfiesUpdateConditions(m_speed, direction)) {
             gesture->cancelled();
             it = m_activeSwipeGestures.erase(it);
             continue;
@@ -175,6 +206,7 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
 
 void GestureRecognizer::holdGestureBegin(const uint8_t &fingerCount)
 {
+    resetMembers();
     gestureBegin(fingerCount, m_activeHoldGestures);
 }
 
@@ -190,6 +222,7 @@ bool GestureRecognizer::holdGestureEnd()
 
 void GestureRecognizer::swipeGestureBegin(const uint8_t &fingerCount)
 {
+    resetMembers();
     gestureBegin(fingerCount, m_activeSwipeGestures);
 }
 
@@ -205,17 +238,20 @@ bool GestureRecognizer::swipeGestureEnd()
 
 void GestureRecognizer::pinchGestureBegin(const uint8_t &fingerCount)
 {
+    resetMembers();
     gestureBegin(fingerCount, m_activePinchGestures);
+    gestureBegin(fingerCount, m_activeRotateGestures);
 }
 
 void GestureRecognizer::pinchGestureCancel()
 {
     gestureCancel(m_activePinchGestures);
+    gestureCancel(m_activeRotateGestures);
 }
 
 bool GestureRecognizer::pinchGestureEnd()
 {
-    return gestureEnd(m_activePinchGestures);
+    return gestureEnd(m_activePinchGestures) || gestureEnd(m_activeRotateGestures);
 }
 
 template<class TGesture>
@@ -227,11 +263,12 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
     auto hasModifiers = false;
     for (const std::shared_ptr<Gesture> &gesture : m_gestures) {
         std::shared_ptr<TGesture> castedGesture = std::dynamic_pointer_cast<TGesture>(gesture);
-        if (!castedGesture || !gesture->satisfiesConditions(fingerCount))
+        if (!castedGesture || !gesture->satisfiesBeginConditions(fingerCount))
             continue;
 
-        if (castedGesture->speed() != GestureSpeed::Any)
+        if (castedGesture->speed() != GestureSpeed::Any) {
             m_isDeterminingSpeed = true;
+        }
 
         if (castedGesture->modifiers() && *castedGesture->modifiers() != Qt::KeyboardModifier::NoModifier) {
             hasModifiers = true;
@@ -253,8 +290,6 @@ bool GestureRecognizer::gestureEnd(std::vector<std::shared_ptr<TGesture>> &activ
         Q_EMIT gesture->ended();
     activeGestures.clear();
 
-    resetMembers();
-
     return hadActiveGestures;
 }
 
@@ -264,14 +299,14 @@ void GestureRecognizer::gestureCancel(std::vector<std::shared_ptr<TGesture>> &ac
     for (const auto &gesture : activeGestures)
         Q_EMIT gesture->cancelled();
     activeGestures.clear();
-
-    resetMembers();
 }
 
 void GestureRecognizer::resetMembers()
 {
     m_accumulatedAbsoluteSampledDelta = 0;
     m_sampledInputEvents = 0;
+    m_pinchType = PinchType::Unknown;
+    m_accumulatedRotateDelta = 0;
     m_isDeterminingSpeed = false;
     m_previousPinchScale = 1;
     m_currentSwipeAxis = Axis::None;

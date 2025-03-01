@@ -2,6 +2,7 @@
 
 #include "holdgesture.h"
 #include "pinchgesture.h"
+#include "rotategesture.h"
 #include "swipegesture.h"
 
 #include <QObject>
@@ -10,10 +11,16 @@
 namespace libgestures
 {
 
-enum Axis {
+enum class Axis {
     Horizontal,
     Vertical,
     None
+};
+
+enum class PinchType {
+    Unknown,
+    Pinch,
+    Rotate
 };
 
 /**
@@ -40,6 +47,7 @@ public:
     void setSwipeFastThreshold(const qreal &threshold);
     void setPinchInFastThreshold(const qreal &threshold);
     void setPinchOutFastThreshold(const qreal &threshold);
+    void setRotateFastThreshold(const qreal &threshold);
 
     void setDeltaMultiplier(const qreal &multiplier);
 
@@ -117,12 +125,17 @@ private:
     std::vector<std::shared_ptr<PinchGesture>> m_activePinchGestures;
     qreal m_previousPinchScale = 1;
 
+    std::vector<std::shared_ptr<RotateGesture>> m_activeRotateGestures;
+    PinchType m_pinchType = PinchType::Unknown;
+    qreal m_accumulatedRotateDelta = 0;
+
     std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
 
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;
     qreal m_pinchInFastThreshold = 0.04;
     qreal m_pinchOutFastThreshold = 0.08;
+    qreal m_rotateFastThreshold = 5;
 
     GestureSpeed m_speed = GestureSpeed::Any;
     bool m_isDeterminingSpeed = false;

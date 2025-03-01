@@ -630,6 +630,10 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             auto swipeGesture = new libgestures::SwipeGesture;
             swipeGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
             gesture.reset(swipeGesture);
+        } else if (type == "rotate") {
+            auto rotateGesture = new libgestures::RotateGesture;
+            rotateGesture->setDirection(node["direction"].as<libgestures::RotateDirection>());
+            gesture.reset(rotateGesture);
         } else {
             throw Exception(node.Mark(), "Invalid gesture type");
         }
@@ -776,6 +780,8 @@ struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
                 speedNode["pinch_in_threshold"].as<qreal>(gestureRecognizer->m_pinchInFastThreshold));
             gestureRecognizer->setPinchOutFastThreshold(
                 speedNode["pinch_out_threshold"].as<qreal>(gestureRecognizer->m_pinchOutFastThreshold));
+            gestureRecognizer->setRotateFastThreshold(
+                speedNode["rotate_threshold"].as<qreal>(gestureRecognizer->m_rotateFastThreshold));
         }
 
         return true;
@@ -816,6 +822,26 @@ struct convert<libgestures::PinchDirection>
             direction = libgestures::PinchDirection::Any;
         } else {
             throw Exception(node.Mark(), "Invalid pinch direction");
+        }
+
+        return true;
+    }
+};
+
+template<>
+struct convert<libgestures::RotateDirection>
+{
+    static bool decode(const Node &node, libgestures::RotateDirection &direction)
+    {
+        const auto directionRaw = node.as<QString>();
+        if (directionRaw == "any") {
+            direction = libgestures::RotateDirection::Any;
+        } else if (directionRaw == "clockwise") {
+            direction = libgestures::RotateDirection::Clockwise;
+        } else if (directionRaw == "counterclockwise") {
+            direction = libgestures::RotateDirection::Counterclockwise;
+        } else {
+            throw Exception(node.Mark(), "Invalid rotate direction");
         }
 
         return true;

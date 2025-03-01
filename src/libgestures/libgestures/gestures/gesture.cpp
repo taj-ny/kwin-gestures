@@ -78,7 +78,7 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
     }
 }
 
-bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
+bool Gesture::satisfiesBeginConditions(const uint8_t &fingerCount) const
 {
     const auto modifiers = Input::implementation()->keyboardModifiers();
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount
@@ -96,6 +96,11 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
         return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
+}
+
+bool Gesture::satisfiesUpdateConditions(const GestureSpeed &speed) const
+{
+    return m_speed == GestureSpeed::Any || m_speed == speed;
 }
 
 void Gesture::addAction(const std::shared_ptr<GestureAction> &action)

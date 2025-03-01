@@ -23,7 +23,7 @@ public:
      * @returns Whether the amount of fingers fits within the specified range, all (if any) conditions are
      * satisfied, and there is at least one action (if any) that satisfies conditions.
      */
-    bool satisfiesConditions(const uint8_t &fingerCount) const;
+    bool satisfiesBeginConditions(const uint8_t &fingerCount) const;
 
     const GestureSpeed &speed() const;
     const std::optional<Qt::KeyboardModifiers> &modifiers() const;
@@ -64,6 +64,10 @@ signals:
      * triggered.
      */
     void updated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely);
+
+protected:
+    bool satisfiesUpdateConditions(const GestureSpeed &speed) const;
+
 private slots:
     void onCancelled();
     void onEnded();
