@@ -10,17 +10,19 @@
 #include "wayland_server.h"
 
 static uint32_t s_scrollTimeout = 100;
+static qreal s_holdDelta = 5;
 
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
-    m_scrollTimer.setSingleShot(true);
-
+    m_touchpadHoldGestureTimer.setTimerType(Qt::PreciseTimer);
     connect(&m_touchpadHoldGestureTimer, &QTimer::timeout, this, [this]() {
-        holdGestureUpdate(1);
+        holdGestureUpdate(s_holdDelta);
     });
+
+    m_scrollTimer.setSingleShot(true);
     connect(&m_scrollTimer, &QTimer::timeout, this, [this]() {
         swipeGestureEnd(timestamp());
     });
@@ -41,7 +43,7 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
 #endif
 
     m_touchpadGestureRecognizer->holdGestureBegin(fingerCount);
-    m_touchpadHoldGestureTimer.start(1);
+    m_touchpadHoldGestureTimer.start(s_holdDelta);
     return false;
 }
 
