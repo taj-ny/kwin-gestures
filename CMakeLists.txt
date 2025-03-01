@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16.0)
 
 project(kwin_gestures)
-set(PROJECT_VERSION "0.4.0")
+set(PROJECT_VERSION "0.5.0")
 
 set(QT_MIN_VERSION "6.6.0")
 set(QT_MAJOR_VERSION 6)
