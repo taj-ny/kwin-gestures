@@ -135,7 +135,7 @@ private:
     qreal m_swipeGestureFastThreshold = 20;
     qreal m_pinchInFastThreshold = 0.04;
     qreal m_pinchOutFastThreshold = 0.08;
-    qreal m_rotateFastThreshold = 0.5;
+    qreal m_rotateFastThreshold = 5;
 
     GestureSpeed m_speed = GestureSpeed::Any;
     bool m_isDeterminingSpeed = false;
