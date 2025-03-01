@@ -1,5 +1,7 @@
 #include "command.h"
 
+#include <thread>
+
 namespace libgestures
 {
 
@@ -9,13 +11,16 @@ bool CommandGestureAction::tryExecute()
         return false;
     }
 
-    std::ignore = std::system(m_command.c_str());
+    std::thread thread([this]() {
+        std::system(m_command.c_str());
+    });
+    thread.detach();
     return true;
 }
 
 void CommandGestureAction::setCommand(const QString &command)
 {
-    m_command = (command + " &").toStdString();
+    m_command = command.toStdString();
 }
 
 }
