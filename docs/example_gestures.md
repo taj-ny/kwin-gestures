@@ -79,25 +79,25 @@ Not guaranteed to work on all keyboard layouts. It may be necessary to change th
 ```
 
 ## Volume control
-This is an example of a gesture with repeating actions. It's possible to change the swipe direction during the gesture.
+This is an example of a gesture with repeating actions. It's possible to change the direction during the gesture.
 
 Stop all audio before trying this, as the threshold may be too small for some devices.
 
-- Swipe 4 fingers left to decrease volume by 5%
-- Swipe 4 fingers right to increase volume by 5%
+- Rotate 2 fingers counterclockwise to decrease volume by 5%
+- Rotate 2 fingers clockwise to increase volume by 5%
 
 ```yaml
-- type: swipe
-  fingers: 4
-  direction: left_right
+- type: rotate
+  fingers: 2
+  direction: any
 
   actions:
     - on: update
-      interval: -50
+      interval: -10
       command: pactl set-sink-volume @DEFAULT_SINK@ -5%
 
     - on: update
-      interval: 50
+      interval: 10
       command: pactl set-sink-volume @DEFAULT_SINK@ +5%
 ```
 
