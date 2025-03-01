@@ -82,11 +82,7 @@ bool Gesture::satisfiesConditions(const uint8_t &fingerCount) const
 {
     const auto modifiers = Input::implementation()->keyboardModifiers();
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount
-        || (m_modifiers
-            && (
-                (*m_modifiers == Qt::KeyboardModifier::NoModifier && modifiers != Qt::KeyboardModifier::NoModifier)
-                || (*m_modifiers != Qt::KeyboardModifier::NoModifier && (modifiers & *m_modifiers) != *m_modifiers)
-            ))) {
+        || (m_modifiers && *m_modifiers != modifiers)) {
         return false;
     }
 
