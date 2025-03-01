@@ -26,7 +26,7 @@ public:
     bool satisfiesBeginConditions(const uint8_t &fingerCount) const;
 
     const GestureSpeed &speed() const;
-    const std::optional<Qt::KeyboardModifiers> &modifiers() const;
+    const std::optional<Qt::KeyboardModifiers> &keyboardModifiers() const;
 
     void addAction(const std::shared_ptr<GestureAction> &action);
     void addCondition(const std::shared_ptr<const Condition> &condition);

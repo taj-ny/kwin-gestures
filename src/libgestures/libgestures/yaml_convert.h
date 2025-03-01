@@ -666,7 +666,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
         gesture->setThresholds(threshold.min, threshold.max);
 
-        if (const auto modifiersNode = node["modifiers"]) {
+        if (const auto modifiersNode = node["keyboard_modifiers"]) {
             if (modifiersNode.IsSequence()) {
                 if (const auto modifiers = modifiersNode.as<Qt::KeyboardModifiers>(Qt::KeyboardModifier::NoModifier)) {
                     gesture->setKeyboardModifiers(modifiers);
@@ -678,7 +678,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
                 } else if (modifierMatchingMode == "none") {
                     gesture->setKeyboardModifiers(Qt::KeyboardModifier::NoModifier);
                 } else {
-                    throw Exception(node.Mark(), "Invalid modifiers");
+                    throw Exception(node.Mark(), "Invalid keyboard modifier");
                 }
             }
         }
