@@ -270,7 +270,7 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
             m_isDeterminingSpeed = true;
         }
 
-        if (castedGesture->modifiers() && *castedGesture->modifiers() != Qt::KeyboardModifier::NoModifier) {
+        if (castedGesture->keyboardModifiers() && *castedGesture->keyboardModifiers() != Qt::KeyboardModifier::NoModifier) {
             hasModifiers = true;
         }
 

@@ -146,7 +146,7 @@ const GestureSpeed &Gesture::speed() const
     return m_speed;
 }
 
-const std::optional<Qt::KeyboardModifiers> &Gesture::modifiers() const
+const std::optional<Qt::KeyboardModifiers> &Gesture::keyboardModifiers() const
 {
     return m_modifiers;
 }
