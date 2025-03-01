@@ -74,12 +74,12 @@ bool GestureRecognizer::pinchGestureUpdate(const qreal &scale, const qreal &angl
     m_accumulatedRotateDelta += std::abs(angleDelta);
 
     if (m_pinchType == PinchType::Unknown) {
-        if (std::abs(1.0 - scale) >= 0.2) {
-            m_pinchType = PinchType::Pinch;
-            gestureCancel(m_activeRotateGestures);
-        } else if (m_accumulatedRotateDelta >= 10) {
+        if (m_accumulatedRotateDelta >= 10) {
             m_pinchType = PinchType::Rotate;
             gestureCancel(m_activePinchGestures);
+        } else if (std::abs(1.0 - scale) >= 0.2) {
+            m_pinchType = PinchType::Pinch;
+            gestureCancel(m_activeRotateGestures);
         } else {
             return true;
         }
