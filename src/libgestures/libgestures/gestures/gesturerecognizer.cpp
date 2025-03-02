@@ -13,6 +13,17 @@ TEMPLATES(HoldGesture)
 TEMPLATES(PinchGesture)
 TEMPLATES(SwipeGesture)
 
+static qreal s_holdDelta = 5;
+
+GestureRecognizer::GestureRecognizer()
+{
+    m_holdTimer.setTimerType(Qt::PreciseTimer);
+    connect(&m_holdTimer, &QTimer::timeout, this, [this]() {
+        bool _ = false;
+        holdGestureUpdate(s_holdDelta, _);
+    });
+}
+
 void GestureRecognizer::registerGesture(std::shared_ptr<Gesture> gesture)
 {
     m_gestures.push_back(gesture);
@@ -207,16 +218,19 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
 bool GestureRecognizer::holdGestureBegin(const uint8_t &fingerCount)
 {
     resetMembers();
+    m_holdTimer.start(s_holdDelta);
     return gestureBegin(fingerCount, m_activeHoldGestures);
 }
 
 void GestureRecognizer::holdGestureCancel()
 {
+    m_holdTimer.stop();
     gestureCancel(m_activeHoldGestures);
 }
 
 bool GestureRecognizer::holdGestureEnd()
 {
+    m_holdTimer.stop();
     return gestureEnd(m_activeHoldGestures);
 }
 

@@ -29,7 +29,6 @@ public:
     void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
-    void holdGestureUpdate(const qreal &delta);
     bool holdGestureEnd(std::chrono::microseconds time) override;
     bool holdGestureCancelled(std::chrono::microseconds time) override;
 
@@ -57,7 +56,6 @@ private:
     std::shared_ptr<libgestures::GestureRecognizer> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
 
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
-    QTimer m_touchpadHoldGestureTimer;
     QTimer m_scrollTimer;
 
     bool m_pinchGestureActive = false;

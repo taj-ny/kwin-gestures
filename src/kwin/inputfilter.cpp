@@ -10,18 +10,12 @@
 #include "wayland_server.h"
 
 static uint32_t s_scrollTimeout = 100;
-static qreal s_holdDelta = 5;
 
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
-    m_touchpadHoldGestureTimer.setTimerType(Qt::PreciseTimer);
-    connect(&m_touchpadHoldGestureTimer, &QTimer::timeout, this, [this]() {
-        holdGestureUpdate(s_holdDelta);
-    });
-
     m_scrollTimer.setSingleShot(true);
     connect(&m_scrollTimer, &QTimer::timeout, this, [this]() {
         swipeGestureEnd(timestamp());
@@ -48,30 +42,12 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
 #endif
 
     m_touchpadGestureRecognizer->holdGestureBegin(fingerCount);
-    m_touchpadHoldGestureTimer.start(s_holdDelta);
     return false;
-}
-
-void GestureInputEventFilter::holdGestureUpdate(const qreal &delta)
-{
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return;
-#endif
-
-    auto endedPrematurely = false;
-    m_touchpadGestureRecognizer->holdGestureUpdate(delta, endedPrematurely);
-    if (!endedPrematurely)
-        return;
-
-    holdGestureEnd(timestamp());
 }
 
 bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-    m_touchpadHoldGestureTimer.stop();
 
 #ifndef KWIN_6_2_OR_GREATER
     if (KWin::waylandServer()->isScreenLocked())
@@ -94,8 +70,6 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-    m_touchpadHoldGestureTimer.stop();
 
 #ifndef KWIN_6_2_OR_GREATER
     if (KWin::waylandServer()->isScreenLocked())
@@ -268,11 +242,13 @@ bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
     }
 
     if (event->state == PointerButtonStatePressed) {
+        m_mouseGestureRecognizer->holdGestureCancel();
         m_mouseGestureRecognizer->swipeGestureCancel();
-        if (m_mouseGestureRecognizer->swipeGestureBegin(1)) {
+        if (m_mouseGestureRecognizer->swipeGestureBegin(1) || m_mouseGestureRecognizer->holdGestureBegin(1)) {
             return true;
         }
     } else if (event->state == PointerButtonStateReleased) {
+        m_mouseGestureRecognizer->holdGestureEnd();
         m_mouseGestureRecognizer->swipeGestureEnd();
     }
 

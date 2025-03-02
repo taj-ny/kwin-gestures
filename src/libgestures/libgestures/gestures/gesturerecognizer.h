@@ -7,6 +7,7 @@
 
 #include <QObject>
 #include <QPointF>
+#include <QTimer>
 
 namespace libgestures
 {
@@ -30,7 +31,7 @@ class GestureRecognizer : public QObject
 {
     Q_OBJECT
 public:
-    GestureRecognizer() = default;
+    GestureRecognizer();
 
     /**
      * Adds a gesture to the end of the gesture list.
@@ -56,13 +57,6 @@ public:
      * @return Whether any gestures have been activated.
      */
     bool holdGestureBegin(const uint8_t &fingerCount);
-    // TODO move this back to GestureRecognizer
-    /**
-     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
-     * parameter is only handled in the KWin effect to continue blocking built-in gestures.
-     * @remark This method should be called every 1 millisecond.
-     */
-    void holdGestureUpdate(const qreal &delta, bool &endedPrematurely);
     /**
      * @return Whether there were any active hold gestures before the end.
      */
@@ -110,6 +104,12 @@ public:
     void pinchGestureCancel();
 
 private:
+    /**
+     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
+     * parameter is only handled in the KWin effect to continue blocking built-in gestures.
+     */
+    void holdGestureUpdate(const qreal &delta, bool &endedPrematurely);
+
     template<class TGesture>
     bool gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
     template<class TGesture>
@@ -133,6 +133,7 @@ private:
     qreal m_accumulatedRotateDelta = 0;
 
     std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
+    QTimer m_holdTimer;
 
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;
