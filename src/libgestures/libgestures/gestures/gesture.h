@@ -40,6 +40,12 @@ public:
      * else - all specified modifiers must be active
      */
     void setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers);
+
+    /**
+     * @param modifiers std::nullopt - ignore buttons, Qt::MouseButton::NoButton - no buttons, anything
+     * else - all specified buttons must be pressed
+     */
+    void setMouseButtons(const std::optional<Qt::MouseButtons> &buttons);
 signals:
     /**
      * Emitted when the gesture has been cancelled.
@@ -85,7 +91,9 @@ private:
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;
     GestureSpeed m_speed = GestureSpeed::Any;
-    std::optional<Qt::KeyboardModifiers> m_modifiers = std::nullopt;
+
+    std::optional<Qt::KeyboardModifiers> m_keyboardModifiers = std::nullopt;
+    std::optional<Qt::MouseButtons> m_mouseButtons = std::nullopt;
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 

@@ -1,7 +1,11 @@
 #pragma once
 
 #include "input.h"
+
+#include "impl/kwininput.h"
+
 #include "libgestures/gestures/gesturerecognizer.h"
+
 #include <QTimer>
 
 /**
@@ -21,6 +25,7 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
+    void setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
     void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
@@ -38,6 +43,10 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
+    bool pointerMotion(KWin::PointerMotionEvent *event) override;
+
+    bool pointerButton(KWin::PointerButtonEvent *event) override;
+
 #ifdef KWIN_6_3_OR_GREATER
     bool pointerAxis(KWin::PointerAxisEvent *event) override;
 #else
@@ -45,9 +54,12 @@ public:
 #endif
 
 private:
+    std::shared_ptr<libgestures::GestureRecognizer> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
+
     std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
     QTimer m_touchpadHoldGestureTimer;
     QTimer m_scrollTimer;
 
     bool m_pinchGestureActive = false;
+
 };

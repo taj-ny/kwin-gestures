@@ -55,6 +55,7 @@ public:
     void mouseButton(const uint32_t &button, const bool &state) override;
     void mouseMoveAbsolute(const QPointF &pos) override;
     void mouseMoveRelative(const QPointF &pos) override;
+    Qt::MouseButtons mouseButtons() const override;
 
 private slots:
     void slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods);

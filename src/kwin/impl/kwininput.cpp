@@ -72,6 +72,11 @@ void KWinInput::mouseMoveRelative(const QPointF &pos)
     m_pointer->processFrame(m_device.get());
 }
 
+Qt::MouseButtons KWinInput::mouseButtons() const
+{
+    return m_pointer->buttons();
+}
+
 void KWinInput::slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods)
 {
     if (m_ignoreModifierUpdates) {

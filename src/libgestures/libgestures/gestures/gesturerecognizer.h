@@ -53,8 +53,9 @@ public:
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
+     * @return Whether any gestures have been activated.
      */
-    void holdGestureBegin(const uint8_t &fingerCount);
+    bool holdGestureBegin(const uint8_t &fingerCount);
     // TODO move this back to GestureRecognizer
     /**
      * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
@@ -70,8 +71,9 @@ public:
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
+     * @return Whether any gestures have been activated.
      */
-    void swipeGestureBegin(const uint8_t &fingerCount);
+    bool swipeGestureBegin(const uint8_t &fingerCount);
     /**
      * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
@@ -88,8 +90,9 @@ public:
 
     /**
      * @param fingerCount Amount of fingers currently on the input device.
+     * @return Whether any gestures have been activated.
      */
-    void pinchGestureBegin(const uint8_t &fingerCount);
+    bool pinchGestureBegin(const uint8_t &fingerCount);
     /**
      * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
@@ -108,7 +111,7 @@ public:
 
 private:
     template<class TGesture>
-    void gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
+    bool gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
     template<class TGesture>
     bool gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures);
     template<class TGesture>

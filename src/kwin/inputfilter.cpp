@@ -28,6 +28,11 @@ GestureInputEventFilter::GestureInputEventFilter()
     });
 }
 
+void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
+{
+    m_mouseGestureRecognizer = gestureRecognizer;
+}
+
 void GestureInputEventFilter::setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
 {
     m_touchpadGestureRecognizer = gestureRecognizer;
@@ -241,6 +246,36 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 
     m_pinchGestureActive = false;
     m_touchpadGestureRecognizer->pinchGestureCancel();
+    return false;
+}
+
+bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
+{
+    const auto device = event->device;
+    if (!device->isPointer() || device->isTouch() || device->isTouchpad()) {
+        return false;
+    }
+
+    bool _ = false;
+    return m_mouseGestureRecognizer->swipeGestureUpdate(event->delta, _);
+}
+
+bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
+{
+    const auto device = event->device;
+    if (!device->isPointer() || device->isTouch() || device->isTouchpad()) {
+        return false;
+    }
+
+    if (event->state == PointerButtonStatePressed) {
+        m_mouseGestureRecognizer->swipeGestureCancel();
+        if (m_mouseGestureRecognizer->swipeGestureBegin(1)) {
+            return true;
+        }
+    } else if (event->state == PointerButtonStateReleased) {
+        m_mouseGestureRecognizer->swipeGestureEnd();
+    }
+
     return false;
 }
 

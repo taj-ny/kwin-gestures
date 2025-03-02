@@ -65,8 +65,13 @@ void Effect::reconfigure(ReconfigureFlags flags)
     try {
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);
-        auto gestureRecognizer = config["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();
-        m_inputEventFilter->setTouchpadGestureRecognizer(gestureRecognizer);
+
+        if (config["mouse"].IsDefined()) {
+            m_inputEventFilter->setMouseGestureRecognizer(config["mouse"].as<std::shared_ptr<libgestures::GestureRecognizer>>());
+        }
+        if (config["touchpad"].IsDefined()) {
+            m_inputEventFilter->setTouchpadGestureRecognizer(config["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>());
+        }
     } catch (const YAML::Exception &e) {
         qCritical(KWIN_GESTURES).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
                 + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
