@@ -80,9 +80,11 @@ void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied,
 
 bool Gesture::satisfiesBeginConditions(const uint8_t &fingerCount) const
 {
-    const auto modifiers = Input::implementation()->keyboardModifiers();
+    const auto keyboardModifiers = Input::implementation()->keyboardModifiers();
+    const auto mouseButtons = Input::implementation()->mouseButtons();
     if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount
-        || (m_modifiers && *m_modifiers != modifiers)) {
+        || (m_keyboardModifiers && *m_keyboardModifiers != keyboardModifiers)
+        || (m_mouseButtons && *m_mouseButtons != mouseButtons)) {
         return false;
     }
 
@@ -127,7 +129,12 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 
 void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)
 {
-    m_modifiers = modifiers;
+    m_keyboardModifiers = modifiers;
+}
+
+void Gesture::setMouseButtons(const std::optional<Qt::MouseButtons> &buttons)
+{
+    m_mouseButtons = buttons;
 }
 
 bool Gesture::thresholdReached() const
@@ -148,7 +155,7 @@ const GestureSpeed &Gesture::speed() const
 
 const std::optional<Qt::KeyboardModifiers> &Gesture::keyboardModifiers() const
 {
-    return m_modifiers;
+    return m_keyboardModifiers;
 }
 
 }

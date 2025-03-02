@@ -6,12 +6,23 @@ namespace libgestures
 {
 
 #define TEMPLATES(TGesture)                                                                                                                      \
-    template void GestureRecognizer::gestureBegin<TGesture>(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures); \
+    template bool GestureRecognizer::gestureBegin<TGesture>(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures); \
     template bool GestureRecognizer::gestureEnd<TGesture>(std::vector<std::shared_ptr<TGesture>> & activeGestures);                              \
     template void GestureRecognizer::gestureCancel<TGesture>(std::vector<std::shared_ptr<TGesture>> & activeGestures);
 TEMPLATES(HoldGesture)
 TEMPLATES(PinchGesture)
 TEMPLATES(SwipeGesture)
+
+static qreal s_holdDelta = 5;
+
+GestureRecognizer::GestureRecognizer()
+{
+    m_holdTimer.setTimerType(Qt::PreciseTimer);
+    connect(&m_holdTimer, &QTimer::timeout, this, [this]() {
+        bool _ = false;
+        holdGestureUpdate(s_holdDelta, _);
+    });
+}
 
 void GestureRecognizer::registerGesture(std::shared_ptr<Gesture> gesture)
 {
@@ -204,26 +215,29 @@ bool GestureRecognizer::swipeGestureUpdate(const QPointF &delta, bool &endedPrem
     return !m_activeSwipeGestures.empty();
 }
 
-void GestureRecognizer::holdGestureBegin(const uint8_t &fingerCount)
+bool GestureRecognizer::holdGestureBegin(const uint8_t &fingerCount)
 {
     resetMembers();
-    gestureBegin(fingerCount, m_activeHoldGestures);
+    m_holdTimer.start(s_holdDelta);
+    return gestureBegin(fingerCount, m_activeHoldGestures);
 }
 
 void GestureRecognizer::holdGestureCancel()
 {
+    m_holdTimer.stop();
     gestureCancel(m_activeHoldGestures);
 }
 
 bool GestureRecognizer::holdGestureEnd()
 {
+    m_holdTimer.stop();
     return gestureEnd(m_activeHoldGestures);
 }
 
-void GestureRecognizer::swipeGestureBegin(const uint8_t &fingerCount)
+bool GestureRecognizer::swipeGestureBegin(const uint8_t &fingerCount)
 {
     resetMembers();
-    gestureBegin(fingerCount, m_activeSwipeGestures);
+    return gestureBegin(fingerCount, m_activeSwipeGestures);
 }
 
 void GestureRecognizer::swipeGestureCancel()
@@ -236,11 +250,11 @@ bool GestureRecognizer::swipeGestureEnd()
     return gestureEnd(m_activeSwipeGestures);
 }
 
-void GestureRecognizer::pinchGestureBegin(const uint8_t &fingerCount)
+bool GestureRecognizer::pinchGestureBegin(const uint8_t &fingerCount)
 {
     resetMembers();
-    gestureBegin(fingerCount, m_activePinchGestures);
-    gestureBegin(fingerCount, m_activeRotateGestures);
+    return gestureBegin(fingerCount, m_activePinchGestures)
+        || gestureBegin(fingerCount, m_activeRotateGestures);
 }
 
 void GestureRecognizer::pinchGestureCancel()
@@ -255,10 +269,11 @@ bool GestureRecognizer::pinchGestureEnd()
 }
 
 template<class TGesture>
-void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures)
+bool GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures)
 {
-    if (!activeGestures.empty())
-        return;
+    if (!activeGestures.empty()) {
+        return true;
+    }
 
     auto hasModifiers = false;
     for (const std::shared_ptr<Gesture> &gesture : m_gestures) {
@@ -280,6 +295,8 @@ void GestureRecognizer::gestureBegin(const uint8_t &fingerCount, std::vector<std
     if (hasModifiers) {
         Input::implementation()->keyboardClearModifiers();
     }
+
+    return !activeGestures.empty();
 }
 
 template<class TGesture>

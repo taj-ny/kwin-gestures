@@ -34,6 +34,8 @@ public:
     virtual void mouseMoveAbsolute(const QPointF &pos) { };
     virtual void mouseMoveRelative(const QPointF &pos) { };
 
+    virtual Qt::MouseButtons mouseButtons() const;
+
     static Input *implementation()
     {
         return s_implementation.get();

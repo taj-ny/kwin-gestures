@@ -682,6 +682,22 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
                 }
             }
         }
+        if (const auto mouseButtonsNode = node["mouse_buttons"]) {
+            if (mouseButtonsNode.IsSequence()) {
+                if (const auto buttons = mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton)) {
+                    gesture->setMouseButtons(buttons);
+                }
+            } else {
+                const auto buttonMatchingMode = mouseButtonsNode.as<QString>();
+                if (buttonMatchingMode == "any") {
+                    gesture->setMouseButtons(std::nullopt);
+                } else if (buttonMatchingMode == "none") {
+                    gesture->setMouseButtons(Qt::MouseButton::NoButton);
+                } else {
+                    throw Exception(node.Mark(), "Invalid mouse button");
+                }
+            }
+        }
 
         for (const auto &conditionNode : node["conditions"]) {
             gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
@@ -1046,6 +1062,26 @@ struct convert<Qt::KeyboardModifiers>
     }
 };
 
+static const std::unordered_map<QString, Qt::MouseButton> s_mouseButtons = {
+    {"left", Qt::MouseButton::LeftButton},
+    {"middle", Qt::MouseButton::MiddleButton},
+    {"right", Qt::MouseButton::RightButton}
+};
+template<>
+struct convert<Qt::MouseButtons>
+{
+    static bool decode(const Node &node, Qt::MouseButtons &buttons)
+    {
+        for (const auto &buttonRaw : node.as<QStringList>()) {
+            if (s_mouseButtons.contains(buttonRaw)) {
+                buttons |= s_mouseButtons.at(buttonRaw);
+            } else {
+                throw Exception(node.Mark(), "Invalid mouse button");
+            }
+        }
 
+        return true;
+    }
+};
 
 }
