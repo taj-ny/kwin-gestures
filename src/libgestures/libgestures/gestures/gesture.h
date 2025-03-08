@@ -20,8 +20,8 @@ public:
     Gesture();
 
     /**
-     * @returns Whether the amount of fingers fits within the specified range, all (if any) conditions are
-     * satisfied, and there is at least one action (if any) that satisfies conditions.
+     * @returns Whether the following conditions are satisfied: finger count, mouse buttons, keyboard modifiers, at
+     * least one condition satisfied (if any), at least one action with at least one satisfied condition (if any).
      */
     bool satisfiesBeginConditions(const uint8_t &fingerCount) const;
 
@@ -74,6 +74,8 @@ signals:
 protected:
     bool satisfiesUpdateConditions(const GestureSpeed &speed) const;
 
+    void setFingerCountIsRelevant(const bool &relevant);
+
 private slots:
     void onCancelled();
     void onEnded();
@@ -88,6 +90,8 @@ private:
 
     uint8_t m_minimumFingers = 0;
     uint8_t m_maximumFingers = 0;
+    bool m_fingerCountIsRelevant = true;
+
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;
     GestureSpeed m_speed = GestureSpeed::Any;

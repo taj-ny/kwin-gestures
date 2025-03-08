@@ -22,6 +22,7 @@ typedef KWin::InputRedirection::KeyboardKeyState KeyboardKeyState;
 
 class InputDevice : public KWin::InputDevice
 {
+public:
     QString name() const override;
     bool isEnabled() const override;
     void setEnabled(bool enabled) override;
@@ -52,10 +53,13 @@ public:
     void keyboardKey(const uint32_t &key, const bool &state) override;
     Qt::KeyboardModifiers keyboardModifiers() const override;
     void keyboardClearModifiers() override;
+
     void mouseButton(const uint32_t &button, const bool &state) override;
     void mouseMoveAbsolute(const QPointF &pos) override;
     void mouseMoveRelative(const QPointF &pos) override;
     Qt::MouseButtons mouseButtons() const override;
+
+    bool isSendingInput() const override;
 
 private slots:
     void slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods);
@@ -69,4 +73,5 @@ private:
 
     Qt::KeyboardModifiers m_modifiers = Qt::KeyboardModifier::NoModifier;
     bool m_ignoreModifierUpdates = false;
+    bool m_isSendingInput = false;
 };

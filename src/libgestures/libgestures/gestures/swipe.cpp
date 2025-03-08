@@ -1,4 +1,4 @@
-#include "swipegesture.h"
+#include "swipe.h"
 
 namespace libgestures
 {

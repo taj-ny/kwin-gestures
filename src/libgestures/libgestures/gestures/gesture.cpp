@@ -82,7 +82,7 @@ bool Gesture::satisfiesBeginConditions(const uint8_t &fingerCount) const
 {
     const auto keyboardModifiers = Input::implementation()->keyboardModifiers();
     const auto mouseButtons = Input::implementation()->mouseButtons();
-    if (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount
+    if ((m_fingerCountIsRelevant && (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount))
         || (m_keyboardModifiers && *m_keyboardModifiers != keyboardModifiers)
         || (m_mouseButtons && *m_mouseButtons != mouseButtons)) {
         return false;
@@ -125,6 +125,11 @@ void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
 {
     m_minimumFingers = minimum;
     m_maximumFingers = maximum;
+}
+
+void Gesture::setFingerCountIsRelevant(const bool &relevant)
+{
+    m_fingerCountIsRelevant = relevant;
 }
 
 void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)

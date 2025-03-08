@@ -9,52 +9,48 @@
 #include "input_event_spy.h"
 #include "wayland_server.h"
 
-static uint32_t s_scrollTimeout = 100;
+#ifndef KWIN_6_2_OR_GREATER
+#define ENSURE_SESSION_UNLOCKED() \
+    if (KWin::waylandServer()->isScreenLocked()) { \
+        return false;           \
+    }
+#else
+#define ENSURE_SESSION_UNLOCKED()
+#endif
 
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
-    m_scrollTimer.setSingleShot(true);
-    connect(&m_scrollTimer, &QTimer::timeout, this, [this]() {
-        swipeGestureEnd(timestamp());
-    });
 }
 
-void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
+void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
 {
     m_mouseGestureRecognizer = gestureRecognizer;
+    m_mouseGestureRecognizer->setDeviceType(libgestures::DeviceType::Mouse);
 }
 
-void GestureInputEventFilter::setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
+void GestureInputEventFilter::setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
 {
     m_touchpadGestureRecognizer = gestureRecognizer;
+    m_touchpadGestureRecognizer->setDeviceType(libgestures::DeviceType::Touchpad);
 }
 
 bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
     Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    m_touchpadGestureRecognizer->holdGestureBegin(fingerCount);
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Hold, fingerCount);
     return false;
 }
 
 bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    if (m_touchpadGestureRecognizer->holdGestureEnd()) {
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Hold)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->holdGestureCancelled(time);
         });
@@ -70,37 +66,24 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    m_touchpadGestureRecognizer->holdGestureCancel();
+    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Hold);
     return false;
 }
 
 bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
     Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    m_touchpadGestureRecognizer->swipeGestureBegin(fingerCount);
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Swipe, fingerCount);
     return false;
 }
 
 bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
-
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
+    ENSURE_SESSION_UNLOCKED();
 
     auto endedPrematurely = false;
     const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, endedPrematurely);
@@ -114,14 +97,9 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
 
 bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    if (m_touchpadGestureRecognizer->swipeGestureEnd()) {
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Swipe)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->swipeGestureCancelled(time);
         });
@@ -137,38 +115,26 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
 bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
+    ENSURE_SESSION_UNLOCKED();
 
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
-
-    m_touchpadGestureRecognizer->swipeGestureCancel();
+    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Swipe);
     return false;
 }
 
 bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
+    ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = true;
-    m_touchpadGestureRecognizer->pinchGestureBegin(fingerCount);
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Pinch, fingerCount);
     return false;
 }
 
 bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, const QPointF &delta, std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
+    ENSURE_SESSION_UNLOCKED();
 
     // Two-finger pinch gestures may be at first incorrectly interpreted by libinput as scrolling. Libinput does
     // eventually correctly determine the gesture after a few events, but it doesn't send the GESTURE_PINCH_BEGIN event.
@@ -189,14 +155,10 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
 bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
+    ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    if (m_touchpadGestureRecognizer->pinchGestureEnd()) {
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Pinch)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->pinchGestureCancelled(time);
         });
@@ -212,47 +174,35 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
 bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds time)
 {
     Q_UNUSED(time)
-
-#ifndef KWIN_6_2_OR_GREATER
-    if (KWin::waylandServer()->isScreenLocked())
-        return false;
-#endif
+    ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    m_touchpadGestureRecognizer->pinchGestureCancel();
+    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Pinch);
     return false;
 }
 
 bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 {
+    ENSURE_SESSION_UNLOCKED();
+
     const auto device = event->device;
-    if (!device->isPointer() || device->isTouch() || device->isTouchpad()) {
+    if (!device || !isMouse(event->device)) {
         return false;
     }
 
-    bool _ = false;
-    return m_mouseGestureRecognizer->swipeGestureUpdate(event->delta, _);
+    m_mouseGestureRecognizer->pointerMotion(event->delta);
+    return false;
 }
 
 bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 {
-    const auto device = event->device;
-    if (!device->isPointer() || device->isTouch() || device->isTouchpad()) {
+    ENSURE_SESSION_UNLOCKED();
+
+    if (!isMouse(event->device)) {
         return false;
     }
 
-    if (event->state == PointerButtonStatePressed) {
-        m_mouseGestureRecognizer->holdGestureCancel();
-        m_mouseGestureRecognizer->swipeGestureCancel();
-        if (m_mouseGestureRecognizer->swipeGestureBegin(1) || m_mouseGestureRecognizer->holdGestureBegin(1)) {
-            return true;
-        }
-    } else if (event->state == PointerButtonStateReleased) {
-        m_mouseGestureRecognizer->holdGestureEnd();
-        m_mouseGestureRecognizer->swipeGestureEnd();
-    }
-
-    return false;
+    return m_mouseGestureRecognizer->pointerButton(event->state == PointerButtonStatePressed);
 }
 
 #ifdef KWIN_6_3_OR_GREATER
@@ -271,15 +221,12 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
     const auto inverted = event->inverted();
 #endif
 
-    if (!device->isTouchpad()) {
+    ENSURE_SESSION_UNLOCKED();
+
+    const auto mouse = isMouse(device);
+    if (!device->isTouchpad() && !mouse) {
         return false;
     }
-
-    if (!m_scrollTimer.isActive()) {
-        swipeGestureBegin(2, timestamp());
-    }
-    m_scrollTimer.stop();
-    m_scrollTimer.start(s_scrollTimeout);
 
     auto delta = orientation == Qt::Orientation::Horizontal
         ? QPointF(eventDelta, 0)
@@ -287,11 +234,13 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
     if (inverted) {
         delta *= -1;
     }
-    if (swipeGestureUpdate(delta, timestamp())) {
-        return true;
-    }
 
-    return false;
+    return mouse ? m_mouseGestureRecognizer->pointerAxis(delta) : m_touchpadGestureRecognizer->pointerAxis(delta);
+}
+
+bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
+{
+    return device->isPointer() && !device->isTouch() && !device->isTouchpad();
 }
 
 #include "moc_inputfilter.cpp"

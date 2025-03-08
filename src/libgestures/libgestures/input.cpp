@@ -13,6 +13,11 @@ Qt::MouseButtons Input::mouseButtons() const
     return Qt::MouseButton::NoButton;
 }
 
+bool Input::isSendingInput() const
+{
+    return false;
+}
+
 std::unique_ptr<Input> Input::s_implementation = std::make_unique<Input>();
 void Input::setImplementation(Input *implementation)
 {

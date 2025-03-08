@@ -1,4 +1,4 @@
-#include "pinchgesture.h"
+#include "pinch.h"
 
 namespace libgestures
 {

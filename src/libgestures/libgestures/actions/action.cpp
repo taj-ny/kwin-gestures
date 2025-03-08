@@ -81,7 +81,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
         // Direction changed
-        m_accumulatedDelta = 0;
+        m_accumulatedDelta = delta;
     } else {
         m_accumulatedDelta += delta;
         m_absoluteAccumulatedDelta += std::abs(delta);
@@ -90,7 +90,7 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     if (m_on != On::Update) {
         return;
     }
-    if (m_repeatInterval == 0) {
+    if (m_repeatInterval == 0 && std::signbit(m_repeatInterval) == std::signbit(delta)) {
         tryExecute();
         return;
     }

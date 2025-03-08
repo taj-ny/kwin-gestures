@@ -4,13 +4,14 @@
 
 #include "impl/kwininput.h"
 
-#include "libgestures/gestures/gesturerecognizer.h"
+#include "libgestures/gestures/handler.h"
 
 #include <QTimer>
 
 /**
- * Installed before GlobalShortcutFilter. Prevents it from receiving input events for which a custom gesture added by
- * the user has been recognized and handled.
+ * Captures input events, forwards them to the proper instance of GestureHandler, and blocks them if necessary.
+ *
+ * Installed before GlobalShortcutFilter, which is responsible for handling touchpad gestures.
  *
  * @remark If KWin version <=6.1.90, this filter is installed as the first one. For this reason, all methods that
  * process events must not do anything if the session is locked and must pass the event to the next filter. On later
@@ -25,8 +26,8 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
-    void setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
-    void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
+    void setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer);
+    void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     bool holdGestureEnd(std::chrono::microseconds time) override;
@@ -43,7 +44,6 @@ public:
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
     bool pointerMotion(KWin::PointerMotionEvent *event) override;
-
     bool pointerButton(KWin::PointerButtonEvent *event) override;
 
 #ifdef KWIN_6_3_OR_GREATER
@@ -53,11 +53,10 @@ public:
 #endif
 
 private:
-    std::shared_ptr<libgestures::GestureRecognizer> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
+    bool isMouse(const KWin::InputDevice *device) const;
 
-    std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
-    QTimer m_scrollTimer;
+    std::shared_ptr<libgestures::GestureHandler> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
+    std::shared_ptr<libgestures::GestureHandler> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
 
     bool m_pinchGestureActive = false;
-
 };

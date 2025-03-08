@@ -1,9 +1,9 @@
 #pragma once
 
-#include "holdgesture.h"
-#include "pinchgesture.h"
-#include "rotategesture.h"
-#include "swipegesture.h"
+#include "hold.h"
+#include "pinch.h"
+#include "rotate.h"
+#include "wheel.h"
 
 #include <QObject>
 #include <QPointF>
@@ -24,14 +24,34 @@ enum class PinchType {
     Rotate
 };
 
+enum class GestureType {
+    Hold,
+    Pinch,
+    Rotate,
+    Swipe,
+    Wheel
+};
+
+enum class DeviceType {
+    Mouse,
+    Touchpad
+};
+
 /**
- * Recognizes and handles gestures based on received input events.
+ * Recognizes and handles gestures based on received input events. Can only handle one gesture at a time. Each type of
+ * input device (keyboard, mouse, touchscreen) must have its own instance.
+ *
+ * Supported gestures:
+ *   - mouse - hold, swipe, wheel
+ *   - touchpad - hold, pinch, swipe, rotate
  */
-class GestureRecognizer : public QObject
+class GestureHandler : public QObject
 {
     Q_OBJECT
 public:
-    GestureRecognizer();
+    GestureHandler();
+
+    void setDeviceType(const DeviceType &type);
 
     /**
      * Adds a gesture to the end of the gesture list.
@@ -44,6 +64,8 @@ public:
      */
     void unregisterGestures();
 
+    bool hasActiveGestures();
+
     void setInputEventsToSample(const uint8_t &events);
     void setSwipeFastThreshold(const qreal &threshold);
     void setPinchInFastThreshold(const qreal &threshold);
@@ -52,56 +74,40 @@ public:
 
     void setDeltaMultiplier(const qreal &multiplier);
 
+    bool hasActivatableGestures(const GestureType &type, const uint8_t &fingerCount = 0);
     /**
      * @param fingerCount Amount of fingers currently on the input device.
      * @return Whether any gestures have been activated.
      */
-    bool holdGestureBegin(const uint8_t &fingerCount);
+    bool gestureBegin(const GestureType &type, const uint8_t &fingerCount = 0);
     /**
-     * @return Whether there were any active hold gestures before the end.
+     * @return Whether there were any active gestures before the end.
      */
-    bool holdGestureEnd();
-    void holdGestureCancel();
+    bool gestureEnd(const GestureType &type);
+    void gestureCancel(const GestureType &type);
 
-    /**
-     * @param fingerCount Amount of fingers currently on the input device.
-     * @return Whether any gestures have been activated.
-     */
-    bool swipeGestureBegin(const uint8_t &fingerCount);
     /**
      * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
      * @return Whether there are currently any active swipe gestures.
      */
     bool swipeGestureUpdate(const QPointF &delta, bool &endedPrematurely);
-    /**
-     * @remark This method may be called before the fingers have been lifted if a gesture with a threshold has been
-     * triggered.
-     * @return Whether there were any active swipe gestures before the end.
-     */
-    bool swipeGestureEnd();
-    void swipeGestureCancel();
 
-    /**
-     * @param fingerCount Amount of fingers currently on the input device.
-     * @return Whether any gestures have been activated.
-     */
-    bool pinchGestureBegin(const uint8_t &fingerCount);
     /**
      * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
      * @return Whether there are currently any active pinch gestures.
      */
     bool pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &endedPrematurely);
+
     /**
-     * @param resetHasTriggeredGesture Whether built-in gestures should be allowed to trigger. Should be @c false if
-     * this method is called due to a gesture with a threshold triggering.
-     * @remarks This method may be called before the fingers have been lifted if a gesture with a threshold has been
-     * triggered.
-     * @return Whether there were any active pinch gestures before the end.
+     * @return Whether any gestures have been activated.
      */
-    bool pinchGestureEnd();
-    void pinchGestureCancel();
+    bool wheelGestureUpdate(const QPointF &delta);
+
+    void pointerMotion(const QPointF &delta);
+    bool pointerButton(const bool &state);
+    bool pointerAxis(const QPointF &delta);
 
 private:
     /**
@@ -110,8 +116,14 @@ private:
      */
     void holdGestureUpdate(const qreal &delta, bool &endedPrematurely);
 
+    /**
+     * @tparam TGesture
+     * @param gestures Type of gestures eligible for activation.
+     * @param activeGestures Vector where activated gestures will be inserted.
+     * @return Whether any gestures have been activated.
+     */
     template<class TGesture>
-    bool gestureBegin(const uint8_t &fingerCount, std::vector<std::shared_ptr<TGesture>> &activeGestures);
+    bool gestureBegin(const uint8_t &fingerCount, const GestureType &type, std::vector<std::shared_ptr<TGesture>> &activeGestures);
     template<class TGesture>
     bool gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures);
     template<class TGesture>
@@ -119,11 +131,14 @@ private:
 
     void resetMembers();
 
-    std::vector<std::shared_ptr<Gesture>> m_gestures;
+    DeviceType m_deviceType = DeviceType::Touchpad;
+
+    std::map<GestureType, std::vector<std::shared_ptr<Gesture>>> m_gestures;
 
     std::vector<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;
+    QTimer m_pointerAxisTimer;
 
     std::vector<std::shared_ptr<PinchGesture>> m_activePinchGestures;
     qreal m_previousPinchScale = 1;
@@ -148,7 +163,7 @@ private:
 
     qreal m_deltaMultiplier = 1.0;
 
-    friend struct YAML::convert<std::shared_ptr<GestureRecognizer>>;
+    friend struct YAML::convert<std::shared_ptr<GestureHandler>>;
     friend class TestGestureRecognizer;
 };
 

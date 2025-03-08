@@ -1,4 +1,4 @@
-#include "rotategesture.h"
+#include "rotate.h"
 
 namespace libgestures
 {

@@ -13,6 +13,7 @@ KWinInput::KWinInput()
 {
     m_input = KWin::input();
     m_input->addInputDevice(m_device.get());
+    m_device.get()->isTouchpad();
     m_pointer = m_input->pointer();
     m_keyboard = m_input->keyboard();
 
@@ -29,9 +30,11 @@ KWinInput::~KWinInput()
 
 void KWinInput::keyboardKey(const uint32_t &key, const bool &state)
 {
+    m_isSendingInput = true;
     m_ignoreModifierUpdates = true;
     m_keyboard->processKey(key, state ? KeyboardKeyStatePressed : KeyboardKeyStateReleased, timestamp(), m_device.get());
     m_ignoreModifierUpdates = false;
+    m_isSendingInput = false;
 }
 
 Qt::KeyboardModifiers KWinInput::keyboardModifiers() const
@@ -56,25 +59,36 @@ void KWinInput::keyboardClearModifiers()
 
 void KWinInput::mouseButton(const uint32_t &button, const bool &state)
 {
+    m_isSendingInput = true;
     m_pointer->processButton(button, state ? PointerButtonStatePressed : PointerButtonStateReleased, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
 }
 
 void KWinInput::mouseMoveAbsolute(const QPointF &pos)
 {
+    m_isSendingInput = true;
     m_pointer->processMotionAbsolute(pos, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
 }
 
 void KWinInput::mouseMoveRelative(const QPointF &pos)
 {
+    m_isSendingInput = true;
     m_pointer->processMotion(pos, pos, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
 }
 
 Qt::MouseButtons KWinInput::mouseButtons() const
 {
     return m_pointer->buttons();
+}
+
+bool KWinInput::isSendingInput() const
+{
+    return m_isSendingInput;
 }
 
 void KWinInput::slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods)

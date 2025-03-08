@@ -3,7 +3,7 @@
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
 #include "libgestures/actions/plasmaglobalshortcut.h"
-#include "libgestures/gestures/gesturerecognizer.h"
+#include "libgestures/gestures/handler.h"
 
 #include <QRegularExpression>
 #include <QVector>
@@ -620,6 +620,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
     static bool decode(const Node &node, std::shared_ptr<libgestures::Gesture> &gesture)
     {
         const auto type = node["type"].as<QString>();
+        bool fingerCountIsRelevant = true;
         if (type == "hold") {
             gesture = std::make_shared<libgestures::HoldGesture>();
         } else if (type == "pinch") {
@@ -634,22 +635,34 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             auto rotateGesture = new libgestures::RotateGesture;
             rotateGesture->setDirection(node["direction"].as<libgestures::RotateDirection>());
             gesture.reset(rotateGesture);
+        } else if (type == "wheel") {
+            auto wheelGesture = new libgestures::WheelGesture;
+            wheelGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
+            gesture.reset(wheelGesture);
+            fingerCountIsRelevant = false;
+
+            if (!node["keyboard_modifiers"] && !node["mouse_buttons"]) {
+                throw Exception(node.Mark(), "At least one of (keyboard_modifiers, mouse_buttons) must be set for mouse gestures.");
+            }
         } else {
             throw Exception(node.Mark(), "Invalid gesture type");
         }
 
-        const auto fingersNode = node["fingers"];
-        if (!fingersNode) {
-            throw Exception(node.Mark(), "Finger count not specified");
-        }
-        const auto fingersRaw = fingersNode.as<QString>();
-        range fingers;
-        if (fingersRaw.contains("-")) {
-            const auto split = fingersRaw.split("-");
-            fingers.min = split[0].toUInt();
-            fingers.max = split[1].toUInt();
-        } else {
-            fingers.min = fingers.max = fingersRaw.toUInt();
+        if (fingerCountIsRelevant) {
+            if (const auto fingersNode = node["fingers"]) {
+                const auto fingersRaw = fingersNode.as<QString>();
+                range fingers;
+                if (fingersRaw.contains("-")) {
+                    const auto split = fingersRaw.split("-");
+                    fingers.min = split[0].toUInt();
+                    fingers.max = split[1].toUInt();
+                } else {
+                    fingers.min = fingers.max = fingersRaw.toUInt();
+                }
+                gesture->setFingers(fingers.min, fingers.max);
+            } else {
+                throw Exception(node.Mark(), "Finger count not specified");
+            }
         }
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
@@ -662,7 +675,6 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             threshold.min = thresholdRaw.toFloat();
         }
 
-        gesture->setFingers(fingers.min, fingers.max);
         gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
         gesture->setThresholds(threshold.min, threshold.max);
 
@@ -771,16 +783,16 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 };
 
 template<>
-struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
+struct convert<std::shared_ptr<libgestures::GestureHandler>>
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
+    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
     {
         const auto gesturesNode = node["gestures"];
         if (!gesturesNode.IsDefined()) {
             throw Exception(node.Mark(), "No gestures specified");
         }
 
-        gestureRecognizer = std::make_unique<libgestures::GestureRecognizer>();
+        gestureRecognizer = std::make_unique<libgestures::GestureHandler>();
         for (const auto gestureNode : gesturesNode) {
             gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
         }
