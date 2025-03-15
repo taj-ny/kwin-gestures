@@ -15,11 +15,6 @@ class RotateGesture : public Gesture
 {
 public:
     bool satisfiesUpdateConditions(const GestureSpeed &speed, const RotateDirection &direction) const;
-
-    RotateDirection direction() const
-    {
-        return m_direction;
-    }
     void setDirection(const RotateDirection &direction);
 
 private:

@@ -620,9 +620,10 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
     static bool decode(const Node &node, std::shared_ptr<libgestures::Gesture> &gesture)
     {
         const auto type = node["type"].as<QString>();
-        bool fingerCountIsRelevant = true;
-        if (type == "hold") {
-            gesture = std::make_shared<libgestures::HoldGesture>();
+        if (type == "hold" || type == "press") {
+            auto pressGesture = new libgestures::PressGesture;
+            pressGesture->setInstant(node["press_instant"].as<bool>(false));
+            gesture.reset(pressGesture);
         } else if (type == "pinch") {
             auto pinchGesture = new libgestures::PinchGesture;
             pinchGesture->setDirection(node["direction"].as<libgestures::PinchDirection>());
@@ -639,31 +640,20 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             auto wheelGesture = new libgestures::WheelGesture;
             wheelGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
             gesture.reset(wheelGesture);
-            fingerCountIsRelevant = false;
-
-            if (!node["keyboard_modifiers"] && !node["mouse_buttons"]) {
-                throw Exception(node.Mark(), "At least one of (keyboard_modifiers, mouse_buttons) must be set for mouse gestures.");
-            }
         } else {
             throw Exception(node.Mark(), "Invalid gesture type");
         }
 
-        if (fingerCountIsRelevant) {
-            if (const auto fingersNode = node["fingers"]) {
-                const auto fingersRaw = fingersNode.as<QString>();
-                range fingers;
-                if (fingersRaw.contains("-")) {
-                    const auto split = fingersRaw.split("-");
-                    fingers.min = split[0].toUInt();
-                    fingers.max = split[1].toUInt();
-                } else {
-                    fingers.min = fingers.max = fingersRaw.toUInt();
-                }
-                gesture->setFingers(fingers.min, fingers.max);
-            } else {
-                throw Exception(node.Mark(), "Finger count not specified");
-            }
+        const auto fingersRaw = node["fingers"].as<QString>("1");
+        range fingers;
+        if (fingersRaw.contains("-")) {
+            const auto split = fingersRaw.split("-");
+            fingers.min = split[0].toUInt();
+            fingers.max = split[1].toUInt();
+        } else {
+            fingers.min = fingers.max = fingersRaw.toUInt();
         }
+        gesture->setFingers(fingers.min, fingers.max);
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
         range threshold(0, 0);
@@ -695,20 +685,10 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             }
         }
         if (const auto mouseButtonsNode = node["mouse_buttons"]) {
-            if (mouseButtonsNode.IsSequence()) {
-                if (const auto buttons = mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton)) {
-                    gesture->setMouseButtons(buttons);
-                }
-            } else {
-                const auto buttonMatchingMode = mouseButtonsNode.as<QString>();
-                if (buttonMatchingMode == "any") {
-                    gesture->setMouseButtons(std::nullopt);
-                } else if (buttonMatchingMode == "none") {
-                    gesture->setMouseButtons(Qt::MouseButton::NoButton);
-                } else {
-                    throw Exception(node.Mark(), "Invalid mouse button");
-                }
-            }
+            gesture->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton));
+        }
+        if (const auto edgesNode = node["edges"]) {
+            gesture->setEdges(edgesNode.as<std::set<libgestures::Edges>>());
         }
 
         for (const auto &conditionNode : node["conditions"]) {
@@ -772,10 +752,33 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 
         action->setOn(on);
         action->setThresholds(threshold.min, threshold.max);
-        action->setRepeatInterval(node["interval"].as<qreal>(0));
+        action->setRepeatInterval(node["interval"].as<libgestures::ActionInterval>(libgestures::ActionInterval()));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
         for (const auto &conditionNode : node["conditions"]) {
             action->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
+        }
+
+        return true;
+    }
+};
+
+template<>
+struct convert<libgestures::ActionInterval>
+{
+    static bool decode(const Node &node, libgestures::ActionInterval &interval)
+    {
+        const auto intervalRaw = node.as<QString>();
+        if (intervalRaw == "+") {
+            interval.setDirection(libgestures::IntervalDirection::Positive);
+            return true;
+        } else if (intervalRaw == "-") {
+            interval.setDirection(libgestures::IntervalDirection::Negative);
+            return true;
+        }
+
+        if (const auto value = node.as<qreal>()) {
+            interval.setValue(value);
+            interval.setDirection(value < 0 ? libgestures::IntervalDirection::Negative : libgestures::IntervalDirection::Positive);
         }
 
         return true;
@@ -898,6 +901,34 @@ struct convert<libgestures::SwipeDirection>
             direction = libgestures::SwipeDirection::Any;
         } else {
             throw Exception(node.Mark(), "Invalid swipe direction");
+        }
+
+        return true;
+    }
+};
+
+static const std::unordered_map<QString, libgestures::Edges> s_edges = {
+    {"none", libgestures::Edge::None},
+    {"left", libgestures::Edge::Left},
+    {"right", libgestures::Edge::Right},
+    {"top", libgestures::Edge::Top},
+    {"bottom", libgestures::Edge::Bottom},
+    {"top_left", libgestures::Edge::Top | libgestures::Edge::Left},
+    {"top_right", libgestures::Edge::Top | libgestures::Edge::Right},
+    {"bottom_right", libgestures::Edge::Bottom | libgestures::Edge::Right},
+    {"bottom_left", libgestures::Edge::Bottom | libgestures::Edge::Left},
+};
+template<>
+struct convert<std::set<libgestures::Edges>>
+{
+    static bool decode(const Node &node, std::set<libgestures::Edges> &edges)
+    {
+        for (const auto edge : node.as<QStringList>()) {
+            if (s_edges.contains(edge)) {
+                edges.insert(s_edges.at(edge));
+            } else {
+                throw Exception(node.Mark(), "Invalid edge");
+            }
         }
 
         return true;
@@ -1077,7 +1108,9 @@ struct convert<Qt::KeyboardModifiers>
 static const std::unordered_map<QString, Qt::MouseButton> s_mouseButtons = {
     {"left", Qt::MouseButton::LeftButton},
     {"middle", Qt::MouseButton::MiddleButton},
-    {"right", Qt::MouseButton::RightButton}
+    {"right", Qt::MouseButton::RightButton},
+    {"back", Qt::MouseButton::ExtraButton1},
+    {"forward", Qt::MouseButton::ExtraButton2},
 };
 template<>
 struct convert<Qt::MouseButtons>

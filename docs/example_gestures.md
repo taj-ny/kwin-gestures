@@ -3,29 +3,117 @@ All gestures provided here are instant - actions trigger immediately when the ge
 
 Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
 
-## Window drag
-Swipe 3 fingers to drag the window. Swipe gestures have a different acceleration profile. You can change *Device.delta_multiplier* to make the gesture faster or slower.
+## Mouse
+<details>
+  <summary>Meta + Wheel - Volume control</summary>
+  
+  ```yaml
+  - type: wheel
+    direction: up_down
+    keyboard_modifiers: [ meta ]
 
-```yaml
-- type: swipe
-  direction: any
-  fingers: 3
+    actions:
+      - on: update
+        interval: '+'
+        input:
+          - keyboard: [ volumedown ]
 
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ +leftmeta ]
-        - mouse: [ +left ]
+      - on: update
+        interval: '-'
+        input:
+          - keyboard: [ volumeup ]
+  ```
+</details>
+<details>
+  <summary>Meta + Left/Right - Go back/forward</summary>
 
-    - on: update
-      input:
-        - mouse: [ move_by_delta ]
+  ```yaml
+  - type: press
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
 
-    - on: end_cancel
-      input:
-        - keyboard: [ -leftmeta ]
-        - mouse: [ -left ]
+    actions:
+      - on: begin
+        input:
+          - mouse: [ back ]
+
+  - type: press
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ right ]
+
+    actions:
+      - on: begin
+        input:
+          - mouse: [ forward ]
+  ```
+</details>
+<details>
+  <summary>Meta + Left + Swipe up/down - Home/End</summary>
+  
+  ```yaml
+  - type: swipe
+    direction: up
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftctrl+home ]
+
+  - type: swipe
+    direction: down
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftctrl+end ]
+  ```
+</details>
+<details>
+  <summary>Left click top left corner - Open dolphin</summary>
+
+  ```yaml
+  - type: press
+    mouse_buttons: [ left ]
+    edges: [ top_left ]
+    press_instant: true
+
+    actions:
+      - on: begin
+        command: dolphin
+  ```
+</details>
+
+## Touchpad
+<details>
+  <summary>Swipe 3 - Window drag</summary>
+
+  Swipe gestures have a different acceleration profile. You can change *Device.delta_multiplier* to make the gesture faster or slower.
+
+  ```yaml
+  - type: swipe
+    direction: any
+    fingers: 3
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ +leftmeta ]
+          - mouse: [ +left ]
+
+      - on: update
+        input:
+          - mouse: [ move_by_delta ]
+
+      - on: end_cancel
+        input:
+          - keyboard: [ -leftmeta ]
+          - mouse: [ -left ]
 ```
+</details>
 
 ## Firefox/Dolphin navigation
 Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
@@ -230,7 +318,7 @@ Stop all audio before trying this, as the threshold may be too small for some de
 ```
 
 ## KRunner
-- Hold 4 fingers to launch KRunner
+- Press 4 fingers to launch KRunner
 
 ```yaml
 # Launch KRunner

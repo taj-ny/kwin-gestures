@@ -42,7 +42,7 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Hold, fingerCount);
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Press, fingerCount);
     return false;
 }
 
@@ -50,7 +50,7 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 {
     ENSURE_SESSION_UNLOCKED();
 
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Hold)) {
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Press)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->holdGestureCancelled(time);
         });
@@ -68,7 +68,7 @@ bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds tim
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Hold);
+    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Press);
     return false;
 }
 
@@ -85,9 +85,9 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
 {
     ENSURE_SESSION_UNLOCKED();
 
-    auto endedPrematurely = false;
-    const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, endedPrematurely);
-    if (endedPrematurely) {
+    auto ended = false;
+    const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, ended);
+    if (ended) {
         swipeGestureEnd(time);
         return true;
     }
@@ -127,7 +127,7 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = true;
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Pinch, fingerCount);
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate, fingerCount);
     return false;
 }
 
@@ -142,9 +142,9 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
         pinchGestureBegin(2, time);
     }
 
-    auto endedPrematurely = false;
-    const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, endedPrematurely);
-    if (endedPrematurely) {
+    auto ended = false;
+    const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, ended);
+    if (ended) {
         pinchGestureEnd(time);
         return true;
     }
@@ -158,7 +158,7 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Pinch)) {
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->pinchGestureCancelled(time);
         });
@@ -177,7 +177,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Pinch);
+    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate);
     return false;
 }
 
@@ -198,11 +198,11 @@ bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 {
     ENSURE_SESSION_UNLOCKED();
 
-    if (!isMouse(event->device)) {
+    if (!event->device || !isMouse(event->device)) {
         return false;
     }
 
-    return m_mouseGestureRecognizer->pointerButton(event->state == PointerButtonStatePressed);
+    return m_mouseGestureRecognizer->pointerButton(event->button, event->nativeButton, event->state == PointerButtonStatePressed);
 }
 
 #ifdef KWIN_6_3_OR_GREATER
@@ -241,6 +241,10 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
 bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
 {
     return device->isPointer() && !device->isTouch() && !device->isTouchpad();
+}
+
+bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event) {
+    return InputEventFilter::keyboardKey(event);
 }
 
 #include "moc_inputfilter.cpp"

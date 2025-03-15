@@ -2,35 +2,36 @@
 
 #include "libgestures/input.h"
 
+#include "libgestures/yaml_convert.h"
+
 namespace libgestures
 {
-
-#define TEMPLATES(TGesture)                                                                                                                      \
-    template bool GestureHandler::gestureBegin<TGesture>(const uint8_t &fingerCount, const GestureType &type, std::vector<std::shared_ptr<TGesture>> &activeGestures); \
-    template bool GestureHandler::gestureEnd<TGesture>(std::vector<std::shared_ptr<TGesture>> &activeGestures);                              \
-    template void GestureHandler::gestureCancel<TGesture>(std::vector<std::shared_ptr<TGesture>> &activeGestures);
-TEMPLATES(HoldGesture)
-TEMPLATES(PinchGesture)
-TEMPLATES(SwipeGesture)
-TEMPLATES(WheelGesture)
 
 static qreal s_holdDelta = 5; // 200 Hz
 static uint32_t s_mousePointerAxisTimeout = 500;
 static uint32_t s_touchpadPointerAxisTimeout = 100;
+static uint32_t s_longPointerAxisTimeout = 2000;
 
 GestureHandler::GestureHandler()
 {
-    m_holdTimer.setTimerType(Qt::PreciseTimer);
-    connect(&m_holdTimer, &QTimer::timeout, this, [this]() {
-        bool _ = false;
-        holdGestureUpdate(s_holdDelta, _);
+    m_pressTimer.setTimerType(Qt::PreciseTimer);
+    connect(&m_pressTimer, &QTimer::timeout, this, [this] {
+        pressGestureUpdate(s_holdDelta);
     });
 
-    m_pointerAxisTimer.setSingleShot(true);
-    connect(&m_pointerAxisTimer, &QTimer::timeout, this, [this]() {
-        gestureEnd(GestureType::Swipe);
-        gestureEnd(GestureType::Wheel);
+    m_pointerAxisTimeoutTimer.setSingleShot(true);
+    connect(&m_pointerAxisTimeoutTimer, &QTimer::timeout, this, [this] {
+        gestureEnd(GestureType::Swipe | GestureType::Wheel);
     });
+
+    m_mouseButtonTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_mouseButtonTimer.setSingleShot(true);
+
+    m_mouseTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_mouseTimeoutTimer.setSingleShot(true);
+
+    m_mouseLongPointerAxisTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_mouseLongPointerAxisTimeoutTimer.setSingleShot(true);
 }
 
 void GestureHandler::setDeviceType(const DeviceType &type)
@@ -41,8 +42,8 @@ void GestureHandler::setDeviceType(const DeviceType &type)
 void GestureHandler::registerGesture(std::shared_ptr<Gesture> gesture)
 {
     GestureType type;
-    if (std::dynamic_pointer_cast<HoldGesture>(gesture)) {
-        type = GestureType::Hold;
+    if (std::dynamic_pointer_cast<PressGesture>(gesture)) {
+        type = GestureType::Press;
     } else if (std::dynamic_pointer_cast<PinchGesture>(gesture)) {
         type = GestureType::Pinch;
     } else if (std::dynamic_pointer_cast<RotateGesture>(gesture)) {
@@ -58,9 +59,22 @@ void GestureHandler::registerGesture(std::shared_ptr<Gesture> gesture)
     m_gestures[type].push_back(gesture);
 }
 
-void GestureHandler::unregisterGestures()
+std::vector<Gesture *> GestureHandler::activatableGestures(const GestureType &type, const GestureBeginEvent &data)
 {
-    m_gestures.clear();
+    std::vector<Gesture *> gestures;
+    for (const auto &gesture : m_gestures[type]) {
+        if (!gesture->satisfiesBeginConditions(data)) {
+            continue;
+        }
+
+        gestures.push_back(gesture.get());
+    }
+    return gestures;
+}
+
+bool GestureHandler::hasActiveGestures(const GestureType &type)
+{
+    return !m_activeGestures[type].empty();
 }
 
 void GestureHandler::setInputEventsToSample(const uint8_t &events)
@@ -93,16 +107,16 @@ void GestureHandler::setDeltaMultiplier(const qreal &deltaMultiplier)
     m_deltaMultiplier = deltaMultiplier;
 }
 
-void GestureHandler::holdGestureUpdate(const qreal &delta, bool &endedPrematurely)
+void GestureHandler::pressGestureUpdate(const qreal &delta)
 {
-    for (const auto &holdGesture : m_activeHoldGestures) {
-        Q_EMIT holdGesture->updated(delta, QPointF(), endedPrematurely);
-        if (endedPrematurely)
+    for (const auto &gesture : m_activeGestures[GestureType::Press]) {
+        if (!gesture->update(delta)) {
             return;
+        }
     }
 }
 
-bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &endedPrematurely)
+bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &ended)
 {
     Q_UNUSED(delta)
 
@@ -116,10 +130,10 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
     if (m_pinchType == PinchType::Unknown) {
         if (m_accumulatedRotateDelta >= 10) {
             m_pinchType = PinchType::Rotate;
-            gestureCancel(m_activePinchGestures);
+            gestureCancel(GestureType::Pinch);
         } else if (std::abs(1.0 - scale) >= 0.2) {
             m_pinchType = PinchType::Pinch;
-            gestureCancel(m_activeRotateGestures);
+            gestureCancel(GestureType::Rotate);
         } else {
             return true;
         }
@@ -143,42 +157,46 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
     }
 
     if (m_pinchType == PinchType::Rotate) {
-        for (auto it = m_activeRotateGestures.begin(); it != m_activeRotateGestures.end();) {
-            const auto &gesture = *it;
+        auto &activeGestures = m_activeGestures[GestureType::Rotate];
+        for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+            const auto gesture = dynamic_cast<RotateGesture *>(*it);
             if (!gesture->satisfiesUpdateConditions(m_speed, rotateDirection)) {
-                gesture->cancelled();
-                it = m_activeRotateGestures.erase(it);
+                gesture->cancel();
+                it = activeGestures.erase(it);
                 continue;
             }
 
-            Q_EMIT gesture->updated(angleDelta, QPointF(), endedPrematurely);
-            if (endedPrematurely) {
+            if (!gesture->update(angleDelta)) {
+                ended = true;
                 return true;
             }
 
             it++;
         }
     } else if (m_pinchType == PinchType::Pinch) {
-        for (auto it = m_activePinchGestures.begin(); it != m_activePinchGestures.end();) {
-            const auto &gesture = *it;
+        auto &activeGestures = m_activeGestures[GestureType::Pinch];
+        for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+            const auto gesture = dynamic_cast<PinchGesture *>(*it);
             if (!gesture->satisfiesUpdateConditions(m_speed, pinchDirection)) {
-                gesture->cancelled();
-                it = m_activePinchGestures.erase(it);
+                gesture->cancel();
+                it = activeGestures.erase(it);
                 continue;
             }
 
-            Q_EMIT gesture->updated(pinchDelta, QPointF(), endedPrematurely);
-            if (endedPrematurely)
+            if (!gesture->update(pinchDelta, QPointF())) {
+                ended = true;
                 return true;
+            }
 
             it++;
         }
     }
 
-    return !m_activePinchGestures.empty();
+    return !m_activeGestures[GestureType::Pinch].empty()
+        || !m_gestures[GestureType::Rotate].empty();
 }
 
-bool GestureHandler::swipeGestureUpdate(const QPointF &delta, bool &endedPrematurely)
+bool GestureHandler::swipeGestureUpdate(const QPointF &delta, bool &ended)
 {
     m_currentSwipeDelta += delta;
 
@@ -226,59 +244,153 @@ bool GestureHandler::swipeGestureUpdate(const QPointF &delta, bool &endedPrematu
         Q_UNREACHABLE();
     }
 
-    for (auto it = m_activeSwipeGestures.begin(); it != m_activeSwipeGestures.end();) {
-        const auto gesture = *it;
+    auto &activeGestures = m_activeGestures[GestureType::Swipe];
+    for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+        const auto gesture = dynamic_cast<SwipeGesture *>(*it);
         if (!gesture->satisfiesUpdateConditions(m_speed, direction)) {
-            gesture->cancelled();
-            it = m_activeSwipeGestures.erase(it);
+            gesture->cancel();
+            it = activeGestures.erase(it);
             continue;
         }
 
-        Q_EMIT gesture->updated(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier, endedPrematurely);
-        if (endedPrematurely)
+        if (!gesture->update(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier)) {
+            ended = true;
             return true;
+        }
 
         it++;
     }
 
-    return !m_activeSwipeGestures.empty();
+    return !activeGestures.empty();
 }
 
 bool GestureHandler::wheelGestureUpdate(const QPointF &delta)
 {
-    bool _ = false;
-    return swipeGestureUpdate(delta, _);
+    SwipeDirection direction = SwipeDirection::Left;
+    if (delta.x() > 0) {
+        direction = SwipeDirection::Right;
+    } else if (delta.y() > 0) {
+        direction = SwipeDirection::Down;
+    } else if (delta.y() < 0) {
+        direction = SwipeDirection::Up;
+    }
+
+    auto &activeGestures = m_activeGestures[GestureType::Wheel];
+    for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+        const auto gesture = dynamic_cast<WheelGesture *>(*it);
+        if (!gesture->satisfiesUpdateConditions(GestureSpeed::Any, direction)) {
+            gesture->cancel();
+            it = activeGestures.erase(it);
+            continue;
+        }
+
+        if (!gesture->update(std::abs(delta.x()) > 0 ? delta.x() : delta.y())) {
+            return true;
+        }
+
+        it++;
+    }
+
+    return !activeGestures.empty();
 }
 
 void GestureHandler::pointerMotion(const QPointF &delta)
 {
-    if (m_pointerAxisTimer.isActive() || libgestures::Input::implementation()->isSendingInput()) {
+    if (Input::implementation()->isSendingInput()) {
         return;
     }
 
+    // If the user holds a button, activating a hold gesture, but then moves the mouse, and there are no swipe
+    // gestures, press the blocked buttons to allow dragging/selection.
+//    if ((gestureCancel(GestureType::Press) || m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive())
+//        && !hasActiveGestures(GestureType::Swipe)) {
+//        pressBlockedMouseButtons();
+//    }
+
+    if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
+        gestureCancel(GestureType::All);
+
+        m_mouseButtonTimer.stop();
+        m_mouseTimeoutTimer.stop();
+        if (!gestureBegin(GestureType::Swipe)) {
+            pressBlockedMouseButtons();
+        }
+    }
+
+    const auto hadActiveGestures = hasActiveGestures(GestureType::Swipe);
     bool _ = false;
     swipeGestureUpdate(delta, _);
+    if (hadActiveGestures && !hasActiveGestures(GestureType::Swipe)) {
+        // Swipe gesture cancelled due to wrong speed or direction
+        pressBlockedMouseButtons();
+    }
 }
 
-bool GestureHandler::pointerButton(const bool &state)
+bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state)
 {
-    if (libgestures::Input::implementation()->isSendingInput()) {
+    if (Input::implementation()->isSendingInput()) {
         return false;
     }
 
     if (state) {
-        gestureCancel(libgestures::GestureType::Hold);
-        gestureCancel(libgestures::GestureType::Swipe);
-        gestureCancel(libgestures::GestureType::Wheel);
-        if (gestureBegin(libgestures::GestureType::Hold, 1)
-            || gestureBegin(libgestures::GestureType::Swipe, 1)
-            || hasActivatableGestures(libgestures::GestureType::Wheel)) {
+        gestureCancel(GestureType::All);
+
+        m_data = {};
+
+        // This should be per-gesture instead of global, but it's good enough
+        m_instantPress = false;
+        for (const auto &gesture : activatableGestures(GestureType::Press, m_data)) {
+            if (dynamic_cast<PressGesture *>(gesture)->instant()) {
+                m_instantPress = true;
+                break;
+            }
+        }
+
+        disconnect(&m_mouseButtonTimer, nullptr, nullptr, nullptr);
+        disconnect(&m_mouseTimeoutTimer, nullptr, nullptr, nullptr);
+        connect(&m_mouseButtonTimer, &QTimer::timeout, this, [this] {
+            const auto swipeTimeout = [this] {
+                if (!hasActiveGestures(GestureType::Wheel) && !gestureBegin(GestureType::Press, m_data)) {
+                    pressBlockedMouseButtons();
+                }
+            };
+
+            if (m_instantPress) {
+                swipeTimeout();
+                return;
+            }
+
+            connect(&m_mouseTimeoutTimer, &QTimer::timeout, [swipeTimeout] {
+                swipeTimeout();
+            });
+            m_mouseTimeoutTimer.start(200);
+        });
+        m_mouseButtonTimer.start(50);
+
+        if (shouldBlockMouseButton(button, m_data)) {
+            m_blockedMouseButtons.push_back(nativeButton);
             return true;
         }
     } else {
-        gestureEnd(libgestures::GestureType::Hold);
-        gestureEnd(libgestures::GestureType::Swipe);
-        gestureEnd(libgestures::GestureType::Wheel);
+        auto hadGesture = gestureEnd(libgestures::GestureType::All)
+            || m_mouseLongPointerAxisTimeoutTimer.isActive();
+
+        // Prevent gesture skipping when clicking rapidly
+        if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
+            m_mouseButtonTimer.stop();
+            m_mouseTimeoutTimer.stop();
+
+            if (m_instantPress) {
+                gestureBegin(GestureType::Press, m_data);
+                pressGestureUpdate(s_holdDelta);
+                hadGesture = gestureEnd(GestureType::Press) || hadGesture;
+            }
+        }
+
+        if (m_blockedMouseButtons.removeAll(nativeButton) && !hadGesture) {
+            Input::implementation()->mouseButton(nativeButton, true);
+            Input::implementation()->mouseButton(nativeButton, false);
+        }
     }
 
     return false;
@@ -287,133 +399,132 @@ bool GestureHandler::pointerButton(const bool &state)
 bool GestureHandler::pointerAxis(const QPointF &delta)
 {
     const auto mouse = m_deviceType == DeviceType::Mouse;
-    if (!m_pointerAxisTimer.isActive()) {
+    if (!m_pointerAxisTimeoutTimer.isActive()) {
         if (mouse) {
             gestureBegin(GestureType::Wheel);
         } else {
             gestureBegin(GestureType::Swipe, 2);
         }
     }
-    m_pointerAxisTimer.stop();
-    m_pointerAxisTimer.start(mouse ? s_mousePointerAxisTimeout : s_touchpadPointerAxisTimeout);
+    m_pointerAxisTimeoutTimer.stop();
+    m_pointerAxisTimeoutTimer.start(mouse ? s_mousePointerAxisTimeout : s_touchpadPointerAxisTimeout);
 
     bool _ = false;
     if (mouse ? wheelGestureUpdate(delta) : swipeGestureUpdate(delta, _)) {
+        m_mouseLongPointerAxisTimeoutTimer.start(s_longPointerAxisTimeout);
         return true;
+    }
+    m_pointerAxisTimeoutTimer.stop();
+//    m_mouseLongPointerAxisTimeoutTimer.stop();
+    return false;
+}
+
+bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event)
+{
+    for (const auto &[type, gestures] : m_gestures) {
+        for (const auto &gesture : gestures) {
+            const auto gestureModifiers = gesture->keyboardModifiers();
+            const auto gestureButtons = gesture->mouseButtons();
+            const auto gestureEdges = gesture->edges();
+            if ((gestureModifiers && *gestureModifiers != event.keyboardModifiers)
+                || (gestureEdges && !gestureEdges->contains(event.edges))) {
+                continue;
+            }
+            if (gestureButtons && (*gestureButtons & button)) {
+                return true;
+            }
+        }
     }
     return false;
 }
 
-bool GestureHandler::hasActivatableGestures(const GestureType &type, const uint8_t &fingerCount)
+void GestureHandler::pressBlockedMouseButtons()
 {
-    const auto gestures = m_gestures[type];
-    return std::find_if(gestures.begin(), gestures.end(), [&fingerCount](const auto &gesture) {
-        return gesture->satisfiesBeginConditions(fingerCount);
-    }) != gestures.end();
+    for (const auto &button : m_blockedMouseButtons) {
+        Input::implementation()->mouseButton(button, true);
+    }
+    m_blockedMouseButtons.clear();
 }
 
-bool GestureHandler::gestureBegin(const GestureType &type, const uint8_t &fingerCount)
+bool GestureHandler::gestureBegin(const GestureTypes &types, const uint8_t &fingers)
 {
+    return gestureBegin(types, GestureBeginEvent{
+        .fingers = fingers
+    });
+}
+
+bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginEvent &data)
+{
+    gestureCancel(GestureType::All);
     resetMembers();
-    switch (type) {
-        case GestureType::Hold:
-            m_holdTimer.start(s_holdDelta);
-            return gestureBegin(fingerCount, type, m_activeHoldGestures);
-        case GestureType::Pinch:
-        case GestureType::Rotate:
-            return gestureBegin(fingerCount, GestureType::Pinch, m_activePinchGestures)
-                   || gestureBegin(fingerCount, GestureType::Rotate, m_activeRotateGestures);
-        case GestureType::Swipe:
-            return gestureBegin(fingerCount, GestureType::Swipe, m_activeSwipeGestures);
-        case GestureType::Wheel:
-            return gestureBegin(0, GestureType::Wheel, m_activeSwipeGestures);
-    }
 
-    return false;
-}
-
-bool GestureHandler::gestureEnd(const GestureType &type)
-{
-    switch (type) {
-        case GestureType::Hold:
-            m_holdTimer.stop();
-            return gestureEnd(m_activeHoldGestures);
-        case GestureType::Pinch:
-        case GestureType::Rotate:
-            return gestureEnd(m_activePinchGestures) || gestureEnd(m_activeRotateGestures);
-        case GestureType::Swipe:
-        case GestureType::Wheel:
-            return gestureEnd(m_activeSwipeGestures);
-    }
-
-    return false;
-}
-
-void GestureHandler::gestureCancel(const GestureType &type)
-{
-    switch (type) {
-        case GestureType::Hold:
-            m_holdTimer.stop();
-            gestureCancel(m_activeHoldGestures);
-        case GestureType::Pinch:
-        case GestureType::Rotate:
-            gestureCancel(m_activePinchGestures);
-            gestureCancel(m_activeRotateGestures);
-        case GestureType::Swipe:
-        case GestureType::Wheel:
-            gestureCancel(m_activeSwipeGestures);
-    }
-}
-
-template<class TGesture>
-bool GestureHandler::gestureBegin(const uint8_t &fingerCount, const GestureType &type, std::vector<std::shared_ptr<TGesture>> &activeGestures)
-{
-    if (!activeGestures.empty()) {
-        return true;
-    }
-
-    auto hasModifiers = false;
-    for (const std::shared_ptr<Gesture> &gesture : m_gestures[type]) {
-        std::shared_ptr<TGesture> castedGesture = std::dynamic_pointer_cast<TGesture>(gesture);
-        if (!castedGesture || !gesture->satisfiesBeginConditions(fingerCount)) {
+    auto hasGestures = false;
+    auto hasKeyboardModifiers = false;
+    for (const auto &[type, _] : m_gestures) {
+        if (!(types & type)) {
             continue;
         }
 
-        if (castedGesture->speed() != GestureSpeed::Any) {
-            m_isDeterminingSpeed = true;
+        auto &activeGestures = m_activeGestures[type];
+        if (!activeGestures.empty()) {
+            return true;
         }
 
-        if (castedGesture->keyboardModifiers() && *castedGesture->keyboardModifiers() != Qt::KeyboardModifier::NoModifier) {
-            hasModifiers = true;
+        if (type == GestureType::Press) {
+            m_pressTimer.start(s_holdDelta);
         }
 
-        activeGestures.push_back(castedGesture);
+        for (auto &gesture : activatableGestures(type, data)) {
+            m_isDeterminingSpeed = m_isDeterminingSpeed || gesture->speed() != GestureSpeed::Any;
+            hasKeyboardModifiers = hasKeyboardModifiers || (gesture->keyboardModifiers() && *gesture->keyboardModifiers() != Qt::KeyboardModifier::NoModifier);
+
+            activeGestures.push_back(gesture);
+        }
+
+        hasGestures = hasGestures || !activeGestures.empty();
     }
-
-    if (hasModifiers) {
+    if (hasKeyboardModifiers) {
         Input::implementation()->keyboardClearModifiers();
     }
 
-    return !activeGestures.empty();
+    return hasGestures;
 }
 
-template<class TGesture>
-bool GestureHandler::gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures)
+bool GestureHandler::gestureEnd(const GestureTypes &types)
 {
-    bool hadActiveGestures = !activeGestures.empty();
-    for (const auto &gesture : activeGestures)
-        Q_EMIT gesture->ended();
-    activeGestures.clear();
+    return gestureEndOrCancel(types);
+}
 
+bool GestureHandler::gestureCancel(const GestureTypes &types)
+{
+    return gestureEndOrCancel(types, false);
+}
+
+bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &end)
+{
+    m_mouseLongPointerAxisTimeoutTimer.stop();
+    auto hadActiveGestures = false;
+    for (auto &[type, gestures] : m_activeGestures) {
+        if (!(types & type)) {
+            continue;
+        }
+
+        if (type == GestureType::Press) {
+            m_pressTimer.stop();
+        }
+
+        hadActiveGestures = hadActiveGestures || !gestures.empty();
+        for (const auto &gesture : gestures) {
+            if (end) {
+                gesture->end();
+                continue;
+            }
+
+            gesture->cancel();
+        }
+        gestures.clear();
+    }
     return hadActiveGestures;
-}
-
-template<class TGesture>
-void GestureHandler::gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures)
-{
-    for (const auto &gesture : activeGestures)
-        Q_EMIT gesture->cancelled();
-    activeGestures.clear();
 }
 
 void GestureHandler::resetMembers()

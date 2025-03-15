@@ -3,14 +3,6 @@
 namespace libgestures
 {
 
-GestureAction::GestureAction()
-{
-    connect(this, &GestureAction::gestureCancelled, this, &GestureAction::onGestureCancelled);
-    connect(this, &GestureAction::gestureEnded, this, &GestureAction::onGestureEnded);
-    connect(this, &GestureAction::gestureStarted, this, &GestureAction::onGestureStarted);
-    connect(this, &GestureAction::gestureUpdated, this, &GestureAction::onGestureUpdated);
-}
-
 void GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_conditions.push_back(condition);
@@ -29,15 +21,14 @@ bool GestureAction::thresholdReached() const
         && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold);
 }
 
-bool GestureAction::tryExecute()
+void GestureAction::tryExecute()
 {
     if (!satisfiesConditions() || !thresholdReached()) {
-        return false;
+        return;
     }
 
+    execute();
     m_executed = true;
-    Q_EMIT executed();
-    return true;
 }
 
 bool GestureAction::blocksOtherActions() const
@@ -45,38 +36,35 @@ bool GestureAction::blocksOtherActions() const
     return m_executed && m_blockOtherActions;
 }
 
-void GestureAction::onGestureCancelled()
+void GestureAction::gestureCancelled()
 {
     if (m_on == On::Cancel || m_on == On::EndOrCancel) {
         tryExecute();
     }
 
-    m_accumulatedDelta = 0;
-    m_absoluteAccumulatedDelta = 0;
+    reset();
 }
 
-void GestureAction::onGestureEnded()
+void GestureAction::gestureEnded()
 {
     if (m_on == On::End || m_on == On::EndOrCancel) {
         tryExecute();
     }
 
-    m_accumulatedDelta = 0;
-    m_absoluteAccumulatedDelta = 0;
+    reset();
 }
 
-void GestureAction::onGestureStarted()
+void GestureAction::gestureStarted()
 {
     m_executed = false;
     if (m_on == On::Begin) {
         tryExecute();
     }
 
-    m_accumulatedDelta = 0;
-    m_absoluteAccumulatedDelta = 0;
+    reset();
 }
 
-void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
+void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
@@ -90,16 +78,16 @@ void GestureAction::onGestureUpdated(const qreal &delta, const QPointF &deltaPoi
     if (m_on != On::Update) {
         return;
     }
-    if (m_repeatInterval == 0 && std::signbit(m_repeatInterval) == std::signbit(delta)) {
+    const auto interval = m_interval.value();
+    if (interval == 0 && m_interval.matches(delta)) {
         tryExecute();
         return;
     }
 
     // Keep executing action until accumulated delta no longer exceeds the interval
-    while (((m_accumulatedDelta > 0 && m_repeatInterval > 0) || (m_accumulatedDelta < 0 && m_repeatInterval < 0))
-           && std::abs(m_accumulatedDelta / m_repeatInterval) >= 1) {
+    while (m_interval.matches(m_accumulatedDelta) && std::abs(m_accumulatedDelta / interval) >= 1) {
         tryExecute();
-        m_accumulatedDelta -= m_repeatInterval;
+        m_accumulatedDelta -= interval;
     }
 }
 
@@ -108,9 +96,9 @@ void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
     m_blockOtherActions = blockOtherActions;
 }
 
-void GestureAction::setRepeatInterval(const qreal &interval)
+void GestureAction::setRepeatInterval(const ActionInterval &interval)
 {
-    m_repeatInterval = interval;
+    m_interval = interval;
 }
 
 void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
@@ -122,6 +110,36 @@ void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
 void GestureAction::setOn(const libgestures::On &on)
 {
     m_on = on;
+}
+
+void GestureAction::reset()
+{
+    m_accumulatedDelta = 0;
+    m_absoluteAccumulatedDelta = 0;
+}
+
+bool ActionInterval::matches(const qreal &value) const
+{
+    if (m_direction == IntervalDirection::Any) {
+        return true;
+    } else {
+        return (value < 0 && m_direction == IntervalDirection::Negative) || (value > 0 && m_direction == IntervalDirection::Positive);
+    }
+}
+
+const qreal &ActionInterval::value() const
+{
+    return m_value;
+}
+
+void ActionInterval::setValue(const qreal &value)
+{
+    m_value = value;
+}
+
+void ActionInterval::setDirection(const IntervalDirection &direction)
+{
+    m_direction = direction;
 }
 
 }

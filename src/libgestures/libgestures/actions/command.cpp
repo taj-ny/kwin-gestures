@@ -5,17 +5,12 @@
 namespace libgestures
 {
 
-bool CommandGestureAction::tryExecute()
+void CommandGestureAction::execute()
 {
-    if (!GestureAction::tryExecute()) {
-        return false;
-    }
-
     std::thread thread([this]() {
         std::system(m_command.c_str());
     });
     thread.detach();
-    return true;
 }
 
 void CommandGestureAction::setCommand(const QString &command)

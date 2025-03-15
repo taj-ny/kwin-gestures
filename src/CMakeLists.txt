@@ -5,8 +5,8 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/input.cpp
     libgestures/libgestures/gestures/gesture.cpp
     libgestures/libgestures/gestures/handler.cpp
-    libgestures/libgestures/gestures/hold.h
     libgestures/libgestures/gestures/pinch.cpp
+    libgestures/libgestures/gestures/press.cpp
     libgestures/libgestures/gestures/rotate.cpp
     libgestures/libgestures/gestures/swipe.cpp
     libgestures/libgestures/gestures/wheel.cpp

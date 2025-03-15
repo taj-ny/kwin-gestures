@@ -43,9 +43,10 @@ public:
     bool pinchGestureEnd(std::chrono::microseconds time) override;
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
+    bool keyboardKey(KWin::KeyboardKeyEvent *event) override;
+
     bool pointerMotion(KWin::PointerMotionEvent *event) override;
     bool pointerButton(KWin::PointerButtonEvent *event) override;
-
 #ifdef KWIN_6_3_OR_GREATER
     bool pointerAxis(KWin::PointerAxisEvent *event) override;
 #else

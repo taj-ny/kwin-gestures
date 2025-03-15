@@ -1,5 +1,5 @@
 # KWin Gestures
-Custom touchpad gestures for Plasma 6.
+Custom mouse and touchpad gestures for Plasma 6.
 
 X11 is currently not supported.
 
@@ -8,12 +8,13 @@ https://github.com/user-attachments/assets/2c16790a-869b-44f3-a760-590137293759
 [peterfajdiga/kwin4_effect_geometry_change](https://github.com/peterfajdiga/kwin4_effect_geometry_change) was used for tile animations.
 
 # Features
-- Gestures: hold, pinch, swipe
-- Actions: run command, input (keyboard keys, mouse buttons, relative and absolute mouse movement, full control over when keys/buttons are pressed/released), invoke global shortcut
-- Override/block built-in Plasma gestures
-- Application-specific gestures
-- Trigger actions before fingers are lifted for a more responsive feel
-- Repeating actions with support for changing the direction mid-gesture
+- Mouse gestures: press, swipe (4 directions), wheel (vertical and horizontal)
+- Touchpad gestures: pinch, press, swipe (2 fingers supported), rotate
+- Actions: command, low-latency input (keyboard keys, mouse buttons, mouse movement), Plasma global shortcut
+- Application-specific gestures (based on window class)
+- Execute actions during a specific point of the gesture's lifecycle (begin, update, end, cancel)
+- Repeating actions with custom intervals
+- Bi-directional swipe gestures
 - Fast and slow gestures
 
 # Installation

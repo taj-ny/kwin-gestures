@@ -32,7 +32,7 @@ struct InputAction
 class InputGestureAction : public GestureAction
 {
 public:
-    bool tryExecute() override;
+    void execute() override;
     void setSequence(const std::vector<InputAction> &sequence);
 
 private:

@@ -1,9 +1,11 @@
 #pragma once
 
-#include "hold.h"
+#include "press.h"
 #include "pinch.h"
 #include "rotate.h"
 #include "wheel.h"
+
+#include <deque>
 
 #include <QObject>
 #include <QPointF>
@@ -24,22 +26,33 @@ enum class PinchType {
     Rotate
 };
 
-enum class GestureType {
-    Hold,
-    Pinch,
-    Rotate,
-    Swipe,
-    Wheel
+enum class GestureType : uint32_t {
+    Press = 1u << 0,
+    Pinch = 1u << 1,
+    Swipe = 1u << 2,
+    Wheel = 1u << 3,
+    Rotate = 1u << 4,
+    All = UINT32_MAX
 };
+Q_DECLARE_FLAGS(GestureTypes, GestureType)
+Q_DECLARE_OPERATORS_FOR_FLAGS(GestureTypes)
 
 enum class DeviceType {
     Mouse,
     Touchpad
 };
 
+struct GestureHandlerUpdateEvent
+{
+    bool endedPrematurely = false;
+
+};
+
+
+
 /**
- * Recognizes and handles gestures based on received input events. Can only handle one gesture at a time. Each type of
- * input device (keyboard, mouse, touchscreen) must have its own instance.
+ * Recognizes and handles gestures based on received input events. Can only handle one type of gesture at a time. Each
+ * type of input device (keyboard, mouse, touchscreen) must have its own instance.
  *
  * Supported gestures:
  *   - mouse - hold, swipe, wheel
@@ -51,6 +64,9 @@ class GestureHandler : public QObject
 public:
     GestureHandler();
 
+    /**
+     * Default device type is Touchpad.
+     */
     void setDeviceType(const DeviceType &type);
 
     /**
@@ -60,11 +76,10 @@ public:
     void registerGesture(std::shared_ptr<Gesture> gesture);
 
     /**
-     * Removes all registered gestures.
+     * @return Gestures of the specified type that satisfy begin conditions and are eligible for activation.
      */
-    void unregisterGestures();
-
-    bool hasActiveGestures();
+    std::vector<Gesture *> activatableGestures(const GestureType &type, const GestureBeginEvent &data = {});
+    bool hasActiveGestures(const GestureType &type);
 
     void setInputEventsToSample(const uint8_t &events);
     void setSwipeFastThreshold(const qreal &threshold);
@@ -74,81 +89,86 @@ public:
 
     void setDeltaMultiplier(const qreal &multiplier);
 
-    bool hasActivatableGestures(const GestureType &type, const uint8_t &fingerCount = 0);
     /**
-     * @param fingerCount Amount of fingers currently on the input device.
-     * @return Whether any gestures have been activated.
+     * Cancels all gestures and activates the specified ones.
+     * @return Whether any gestures of the specified types have been activated.
      */
-    bool gestureBegin(const GestureType &type, const uint8_t &fingerCount = 0);
+    bool gestureBegin(const GestureTypes &types, const GestureBeginEvent &data = {});
     /**
-     * @return Whether there were any active gestures before the end.
+     * Cancels all gestures and activates the specified ones.
+     * @return Whether any gestures of the specified types have been activated.
      */
-    bool gestureEnd(const GestureType &type);
-    void gestureCancel(const GestureType &type);
+    bool gestureBegin(const GestureTypes &types, const uint8_t &fingers);
+    /**
+     * Ends the specified gestures.
+     * @return Whether there were any active gestures of the specified types.
+     */
+    bool gestureEnd(const GestureTypes &types);
+    /**
+     * Cancels the specified gestures.
+     * @return Whether there were any active gestures of the specified types.
+     */
+    bool gestureCancel(const GestureTypes &types);
 
     /**
-     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
+     * @param ended Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
      * @return Whether there are currently any active swipe gestures.
      */
-    bool swipeGestureUpdate(const QPointF &delta, bool &endedPrematurely);
+    bool swipeGestureUpdate(const QPointF &delta, bool &ended);
 
     /**
-     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
+     * @param ended Whether the gesture should end immediately before the fingers have been lifted. This
      * parameter is only handled in the KWin effect to continue blocking built-in gestures.
      * @return Whether there are currently any active pinch gestures.
      */
-    bool pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &endedPrematurely);
-
-    /**
-     * @return Whether any gestures have been activated.
-     */
-    bool wheelGestureUpdate(const QPointF &delta);
+    bool pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &ended);
 
     void pointerMotion(const QPointF &delta);
-    bool pointerButton(const bool &state);
+    bool pointerButton(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state);
     bool pointerAxis(const QPointF &delta);
 
-private:
-    /**
-     * @param endedPrematurely Whether the gesture should end immediately before the fingers have been lifted. This
-     * parameter is only handled in the KWin effect to continue blocking built-in gestures.
-     */
-    void holdGestureUpdate(const qreal &delta, bool &endedPrematurely);
+    void keyboardModifier(const Qt::KeyboardModifier &modifier, const bool &state);
 
-    /**
-     * @tparam TGesture
-     * @param gestures Type of gestures eligible for activation.
-     * @param activeGestures Vector where activated gestures will be inserted.
-     * @return Whether any gestures have been activated.
-     */
-    template<class TGesture>
-    bool gestureBegin(const uint8_t &fingerCount, const GestureType &type, std::vector<std::shared_ptr<TGesture>> &activeGestures);
-    template<class TGesture>
-    bool gestureEnd(std::vector<std::shared_ptr<TGesture>> &activeGestures);
-    template<class TGesture>
-    void gestureCancel(std::vector<std::shared_ptr<TGesture>> &activeGestures);
+private:
+
+    bool shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event);
+    void pressBlockedMouseButtons();
+
+    void pressGestureUpdate(const qreal &delta);
+    bool wheelGestureUpdate(const QPointF &delta);
+
+    bool gestureEndOrCancel(const GestureTypes &types, const bool &end = true);
 
     void resetMembers();
 
     DeviceType m_deviceType = DeviceType::Touchpad;
 
     std::map<GestureType, std::vector<std::shared_ptr<Gesture>>> m_gestures;
+    std::map<GestureType, std::vector<Gesture*>> m_activeGestures;
 
-    std::vector<std::shared_ptr<SwipeGesture>> m_activeSwipeGestures;
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;
-    QTimer m_pointerAxisTimer;
+    QTimer m_pointerAxisTimeoutTimer;
+    QTimer m_mouseLongPointerAxisTimeoutTimer; // Used to block mouse buttons
 
-    std::vector<std::shared_ptr<PinchGesture>> m_activePinchGestures;
     qreal m_previousPinchScale = 1;
 
-    std::vector<std::shared_ptr<RotateGesture>> m_activeRotateGestures;
     PinchType m_pinchType = PinchType::Unknown;
     qreal m_accumulatedRotateDelta = 0;
 
-    std::vector<std::shared_ptr<HoldGesture>> m_activeHoldGestures;
-    QTimer m_holdTimer;
+    QTimer m_pressTimer;
+
+    /**
+     * Used to wait until all mouse buttons have been pressed to avoid conflicts with gestures that require more than
+     * one button.
+     */
+    QTimer m_mouseButtonTimer;
+    QTimer m_mouseTimeoutTimer;
+    GestureBeginEvent m_data;
+    bool m_instantPress = false;
+
+    QList<quint32> m_blockedMouseButtons;
 
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;

@@ -1,5 +1,7 @@
 #include "input.h"
 
+#include "libgestures/gestures/gesture.h"
+
 namespace libgestures
 {
 
@@ -11,6 +13,11 @@ Qt::KeyboardModifiers Input::keyboardModifiers() const
 Qt::MouseButtons Input::mouseButtons() const
 {
     return Qt::MouseButton::NoButton;
+}
+
+Edges Input::mouseScreenEdges(const qreal &threshold) const
+{
+    return Edge::None;
 }
 
 bool Input::isSendingInput() const

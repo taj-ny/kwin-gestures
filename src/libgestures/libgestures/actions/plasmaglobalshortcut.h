@@ -7,12 +7,12 @@ namespace libgestures
 {
 
 /**
- * Invokes a Plasma global shortcut.
+ * Invokes a Plasma global shortcut through DBus.
  */
 class PlasmaGlobalShortcutGestureAction : public GestureAction
 {
 public:
-    bool tryExecute() override;
+    void execute() override;
     void setComponent(const QString &component);
     void setShortcut(const QString &shortcut);
 

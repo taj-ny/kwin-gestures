@@ -5,94 +5,85 @@
 namespace libgestures
 {
 
-Gesture::Gesture()
+void Gesture::cancel()
 {
-    connect(this, &Gesture::cancelled, this, &Gesture::onCancelled);
-    connect(this, &Gesture::ended, this, &Gesture::onEnded);
-    connect(this, &Gesture::started, this, &Gesture::onStarted);
-    connect(this, &Gesture::updated, this, &Gesture::onUpdated);
-}
-
-void Gesture::onCancelled()
-{
-    m_absoluteAccumulatedDelta = 0;
-
-    if (!m_hasStarted)
+    if (!m_hasStarted) {
         return;
-
+    }
     m_hasStarted = false;
 
-    for (const auto &action : m_actions) {
-        Q_EMIT action->gestureCancelled();
-        if (action->blocksOtherActions())
-            break;
+    if (thresholdReached()) {
+        for (const auto &action : m_actions) {
+            action->gestureCancelled();
+            if (action->blocksOtherActions()) {
+                break;
+            }
+        }
     }
+    m_absoluteAccumulatedDelta = 0;
 }
 
-void Gesture::onEnded()
+void Gesture::end()
 {
-    m_absoluteAccumulatedDelta = 0;
-
-    if (!m_hasStarted)
+    if (!m_hasStarted) {
         return;
-
+    }
     m_hasStarted = false;
 
-    for (const auto &action : m_actions) {
-        Q_EMIT action->gestureEnded();
-        if (action->blocksOtherActions())
-            break;
+    if (thresholdReached()) {
+        for (const auto &action: m_actions) {
+            action->gestureEnded();
+            if (action->blocksOtherActions()) {
+                break;
+            }
+        }
     }
+    m_absoluteAccumulatedDelta = 0;
 }
 
-void Gesture::onStarted()
-{
-    if (!m_hasStarted)
-        return;
-
-    for (const auto &action : m_actions) {
-        Q_EMIT action->gestureStarted();
-        if (action->blocksOtherActions())
-            break;
-    }
-}
-
-void Gesture::onUpdated(const qreal &delta, const QPointF &deltaPointMultiplied, bool &endedPrematurely)
+bool Gesture::update(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_absoluteAccumulatedDelta += std::abs(delta);
-    if (!thresholdReached())
-        return;
+    if (!thresholdReached()) {
+        return true;
+    }
 
     if (!m_hasStarted) {
         m_hasStarted = true;
-        Q_EMIT started();
+        for (const auto &action : m_actions) {
+            action->gestureStarted();
+            if (action->blocksOtherActions()) {
+                break;
+            }
+        }
     }
 
     for (const auto &action : m_actions) {
-        Q_EMIT action->gestureUpdated(delta, deltaPointMultiplied);
+        action->gestureUpdated(delta, deltaPointMultiplied);
         if (action->blocksOtherActions()) {
-            endedPrematurely = true;
-            Q_EMIT ended();
-            return;
+            end();
+            return false;
         }
     }
+
+    return true;
 }
 
-bool Gesture::satisfiesBeginConditions(const uint8_t &fingerCount) const
+bool Gesture::satisfiesBeginConditions(const GestureBeginEvent &data) const
 {
-    const auto keyboardModifiers = Input::implementation()->keyboardModifiers();
-    const auto mouseButtons = Input::implementation()->mouseButtons();
-    if ((m_fingerCountIsRelevant && (m_minimumFingers > fingerCount || m_maximumFingers < fingerCount))
-        || (m_keyboardModifiers && *m_keyboardModifiers != keyboardModifiers)
-        || (m_mouseButtons && *m_mouseButtons != mouseButtons)) {
+    if ((m_fingerCountIsRelevant && (m_minimumFingers > data.fingers || m_maximumFingers < data.fingers))
+        || (m_keyboardModifiers && *m_keyboardModifiers != data.keyboardModifiers)
+        || (m_mouseButtons && *m_mouseButtons != data.mouseButtons)
+        || (m_edges && !m_edges->contains(data.edges))) {
         return false;
     }
 
     const bool satisfiesConditions = std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
         return condition->isSatisfied();
     }) != m_conditions.end();
-    if (!m_conditions.empty() && !satisfiesConditions)
+    if (!m_conditions.empty() && !satisfiesConditions) {
         return false;
+    }
 
     const bool actionSatisfiesConditions = std::find_if(m_actions.begin(), m_actions.end(), [](const std::shared_ptr<const GestureAction> &triggerAction) {
         return triggerAction->satisfiesConditions();
@@ -132,6 +123,11 @@ void Gesture::setFingerCountIsRelevant(const bool &relevant)
     m_fingerCountIsRelevant = relevant;
 }
 
+void Gesture::setEdges(const std::optional<std::set<Edges>> &edges)
+{
+    m_edges = edges;
+}
+
 void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)
 {
     m_keyboardModifiers = modifiers;
@@ -158,9 +154,19 @@ const GestureSpeed &Gesture::speed() const
     return m_speed;
 }
 
+const std::optional<std::set<Edges>> &Gesture::edges() const
+{
+    return m_edges;
+}
+
 const std::optional<Qt::KeyboardModifiers> &Gesture::keyboardModifiers() const
 {
     return m_keyboardModifiers;
+}
+
+const std::optional<Qt::MouseButtons> &Gesture::mouseButtons() const
+{
+    return m_mouseButtons;
 }
 
 }

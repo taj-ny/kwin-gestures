@@ -2,8 +2,10 @@
 
 #include "utils.h"
 
+#include "core/output.h"
 #include "keyboard_input.h"
 #include "pointer_input.h"
+#include "workspace.h"
 
 // TODO move key list
 #include "libgestures/yaml_convert.h"
@@ -84,6 +86,31 @@ void KWinInput::mouseMoveRelative(const QPointF &pos)
 Qt::MouseButtons KWinInput::mouseButtons() const
 {
     return m_pointer->buttons();
+}
+
+libgestures::Edges KWinInput::mouseScreenEdges(const qreal &threshold) const
+{
+    libgestures::Edges edges = libgestures::Edge::None;
+    const auto mousePos = m_pointer->pos();
+    for (const auto &output : KWin::workspace()->outputs()) {
+        const auto geometry = output->geometryF();
+        if (!geometry.contains(mousePos)) {
+            continue;
+        }
+
+        if (mousePos.x() - geometry.left() <= threshold) {
+            edges |= libgestures::Edge::Left;
+        } else if (geometry.right() - mousePos.x() <= threshold) {
+            edges |= libgestures::Edge::Right;
+        }
+
+        if (mousePos.y() - geometry.top() <= threshold) {
+            edges |= libgestures::Edge::Top;
+        } else if (geometry.bottom() - mousePos.y() <= threshold) {
+            edges |= libgestures::Edge::Bottom;
+        }
+    }
+    return edges;
 }
 
 bool KWinInput::isSendingInput() const
