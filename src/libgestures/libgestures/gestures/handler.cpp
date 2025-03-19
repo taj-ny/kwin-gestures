@@ -109,10 +109,17 @@ void GestureHandler::setDeltaMultiplier(const qreal &deltaMultiplier)
 
 void GestureHandler::pressGestureUpdate(const qreal &delta)
 {
-    for (const auto &gesture : m_activeGestures[GestureType::Press]) {
+    auto &activeGestures = m_activeGestures[GestureType::Press];
+    for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+        const auto gesture = dynamic_cast<PressGesture *>(*it);
         if (!gesture->update(delta)) {
             return;
         }
+        if (activeGestures.size() > 1 && gesture->shouldCancelOtherGestures()) {
+            gestureCancel(activeGestures, gesture);
+            break;
+        }
+        it++;
     }
 }
 
@@ -187,6 +194,10 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
                 ended = true;
                 return true;
             }
+            if (activeGestures.size() > 1 && gesture->shouldCancelOtherGestures()) {
+                gestureCancel(activeGestures, gesture);
+                break;
+            }
 
             it++;
         }
@@ -256,6 +267,10 @@ bool GestureHandler::swipeGestureUpdate(const QPointF &delta, bool &ended)
         if (!gesture->update(swipeAxis == Axis::Vertical ? delta.y() : delta.x(), delta * m_deltaMultiplier)) {
             ended = true;
             return true;
+        }
+        if (activeGestures.size() > 1 && gesture->shouldCancelOtherGestures()) {
+            gestureCancel(activeGestures, gesture);
+            break;
         }
 
         it++;
@@ -500,6 +515,19 @@ bool GestureHandler::gestureCancel(const GestureTypes &types)
     return gestureEndOrCancel(types, false);
 }
 
+void GestureHandler::gestureCancel(std::vector<Gesture *> &activeGestures, Gesture *except)
+{
+    for (auto it = activeGestures.begin(); it != activeGestures.end();) {
+        auto gesture = *it;
+        if (gesture != except) {
+            gesture->cancel();
+            it = activeGestures.erase(it);
+            continue;
+        }
+        it++;
+    }
+}
+
 bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &end)
 {
     m_mouseLongPointerAxisTimeoutTimer.stop();
@@ -514,8 +542,14 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         }
 
         hadActiveGestures = hadActiveGestures || !gestures.empty();
-        for (const auto &gesture : gestures) {
+        for (const auto gesture : gestures) {
             if (end) {
+                if (gesture->shouldCancelOtherGestures(true)) {
+                    gestureCancel(gestures, gesture);
+                    gesture->end();
+                    break;
+                }
+
                 gesture->end();
                 continue;
             }

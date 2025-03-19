@@ -23,7 +23,7 @@ bool GestureAction::thresholdReached() const
 
 void GestureAction::tryExecute()
 {
-    if (!satisfiesConditions() || !thresholdReached()) {
+    if (!canExecute()) {
         return;
     }
 
@@ -31,26 +31,38 @@ void GestureAction::tryExecute()
     m_executed = true;
 }
 
+const bool &GestureAction::executed() const
+{
+    return m_executed;
+}
+
+bool GestureAction::canExecute() const
+{
+    return satisfiesConditions() && thresholdReached();
+}
+
 bool GestureAction::blocksOtherActions() const
 {
     return m_executed && m_blockOtherActions;
 }
 
-void GestureAction::gestureCancelled()
+void GestureAction::gestureCancelled(const bool &execute)
 {
-    if (m_on == On::Cancel || m_on == On::EndOrCancel) {
+    if (execute && (m_on == On::Cancel || m_on == On::EndOrCancel)) {
         tryExecute();
     }
 
+    m_executed = false;
     reset();
 }
 
-void GestureAction::gestureEnded()
+void GestureAction::gestureEnded(const bool &execute)
 {
-    if (m_on == On::End || m_on == On::EndOrCancel) {
+    if (execute && (m_on == On::End || m_on == On::EndOrCancel)) {
         tryExecute();
     }
 
+    m_executed = false;
     reset();
 }
 
@@ -89,6 +101,11 @@ void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPoint
         tryExecute();
         m_accumulatedDelta -= interval;
     }
+}
+
+const On &GestureAction::on() const
+{
+    return m_on;
 }
 
 void GestureAction::setBlockOtherActions(const bool &blockOtherActions)

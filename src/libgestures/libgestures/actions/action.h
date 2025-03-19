@@ -100,17 +100,21 @@ public:
     void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
     /**
      * Called by the gesture when it has ended.
+     * @param execute Whether the action should be executed.
      */
-    void gestureEnded();
+    void gestureEnded(const bool &execute);
     /**
      * Called by the gesture when it has been cancelled.
+     * @param execute Whether the action should be executed.
      */
-    void gestureCancelled();
+    void gestureCancelled(const bool &execute);
 
     /**
      * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
      */
-    virtual void tryExecute();
+    void tryExecute();
+    const bool &executed() const;
+    bool canExecute() const;
 
     /**
      * @return Whether the action satisfies at least one condition, or no conditions have been added.
@@ -127,6 +131,8 @@ public:
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
      */
     void addCondition(const std::shared_ptr<const Condition> &condition);
+
+    const On &on() const;
 
     /**
      * @param blockOtherActions Whether this action should block all other actions, including actions belonging to

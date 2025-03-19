@@ -8,43 +8,46 @@ namespace libgestures
 void Gesture::cancel()
 {
     if (!m_hasStarted) {
+        m_absoluteAccumulatedDelta = 0;
+        m_thresholdReached = false;
         return;
     }
     m_hasStarted = false;
 
-    if (thresholdReached()) {
-        for (const auto &action : m_actions) {
-            action->gestureCancelled();
-            if (action->blocksOtherActions()) {
-                break;
-            }
+    for (const auto &action : m_actions) {
+        action->gestureCancelled(m_thresholdReached);
+        if (m_thresholdReached && action->blocksOtherActions()) {
+            break;
         }
     }
     m_absoluteAccumulatedDelta = 0;
+    m_thresholdReached = false;
 }
 
 void Gesture::end()
 {
     if (!m_hasStarted) {
+        m_absoluteAccumulatedDelta = 0;
+        m_thresholdReached = false;
         return;
     }
     m_hasStarted = false;
 
-    if (thresholdReached()) {
-        for (const auto &action: m_actions) {
-            action->gestureEnded();
-            if (action->blocksOtherActions()) {
-                break;
-            }
+    for (const auto &action : m_actions) {
+        action->gestureEnded(m_thresholdReached);
+        if (m_thresholdReached && action->blocksOtherActions()) {
+            break;
         }
     }
     m_absoluteAccumulatedDelta = 0;
+    m_thresholdReached = false;
 }
 
 bool Gesture::update(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_absoluteAccumulatedDelta += std::abs(delta);
-    if (!thresholdReached()) {
+    m_thresholdReached = thresholdReached();
+    if (!m_thresholdReached) {
         return true;
     }
 
@@ -89,6 +92,19 @@ bool Gesture::satisfiesBeginConditions(const GestureBeginEvent &data) const
         return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
+}
+
+bool Gesture::shouldCancelOtherGestures(const bool &end)
+{
+    if (!m_thresholdReached) {
+        return false;
+    }
+
+    return std::find_if(m_actions.begin(), m_actions.end(), [&end](const std::shared_ptr<const GestureAction> &action) {
+        return end
+            ? (action->on() == On::End && action->canExecute())
+            : (action->executed() || (action->on() == On::Update && action->canExecute()));
+    }) != m_actions.end();
 }
 
 bool Gesture::satisfiesUpdateConditions(const GestureSpeed &speed) const

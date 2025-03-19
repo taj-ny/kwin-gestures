@@ -138,6 +138,11 @@ private:
     void pressGestureUpdate(const qreal &delta);
     bool wheelGestureUpdate(const QPointF &delta);
 
+    /**
+     * Cancels all gestures from the specified vector of active gestures except one.
+     * @param except The gesture to not cancel.
+     */
+    void gestureCancel(std::vector<Gesture *> &activeGestures, Gesture *except);
     bool gestureEndOrCancel(const GestureTypes &types, const bool &end = true);
 
     void resetMembers();

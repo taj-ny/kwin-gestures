@@ -61,7 +61,12 @@ public:
      * @returns Whether the gesture can be activated.
      */
     bool satisfiesBeginConditions(const GestureBeginEvent &data) const;
-    bool blocksMouseButton(const Qt::MouseButton &button) const;
+
+    /**
+     * @param end Whether this method is called at the gesture end.
+     * @return Whether this gesture should cancel all other active gestures to prevent conflicts.
+     */
+    bool shouldCancelOtherGestures(const bool &end = false);
 
     /**
      * Updates the gesture. Will start it immediately or when the threshold is reached.
@@ -91,13 +96,11 @@ public:
      * @param edges
      */
     void setEdges(const std::optional<std::set<Edges>> &edges);
-
     /**
      * @param modifiers std::nullopt - ignore modifiers, Qt::KeyboardModifier::NoModifier - no modifiers, anything
      * else - all specified modifiers must be active
      */
     void setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers);
-
     /**
      * @param modifiers std::nullopt - ignore buttons, Qt::MouseButton::NoButton - no buttons, anything
      * else - all specified buttons must be pressed
@@ -122,6 +125,7 @@ private:
     uint8_t m_maximumFingers = 0;
     bool m_fingerCountIsRelevant = true;
 
+    bool m_thresholdReached = false;
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;
     GestureSpeed m_speed = GestureSpeed::Any;
