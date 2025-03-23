@@ -8,4 +8,9 @@ WheelGesture::WheelGesture()
     setFingerCountIsRelevant(false);
 }
 
+GestureType WheelGesture::type() const
+{
+    return GestureType::Wheel;
+}
+
 }

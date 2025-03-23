@@ -628,6 +628,10 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             auto pinchGesture = new libgestures::PinchGesture;
             pinchGesture->setDirection(node["direction"].as<libgestures::PinchDirection>());
             gesture.reset(pinchGesture);
+        } else if (type == "stroke") {
+            auto strokeGesture = new libgestures::StrokeGesture;
+            strokeGesture->setStroke(node["stroke"].as<libgestures::Stroke>());
+            gesture.reset(strokeGesture);
         } else if (type == "swipe") {
             auto swipeGesture = new libgestures::SwipeGesture;
             swipeGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
@@ -1084,6 +1088,30 @@ struct convert<QRegularExpression>
     static bool decode(const Node &node, QRegularExpression &regex)
     {
         regex = QRegularExpression(node.as<QString>());
+        return true;
+    }
+};
+
+template<>
+struct convert<libgestures::Stroke>
+{
+    static bool decode(const Node &node, libgestures::Stroke &stroke)
+    {
+        const auto pointsRaw = node.as<std::vector<qreal>>();
+        if (pointsRaw.size() % 4 != 0) {
+            throw Exception(node.Mark(), "Amount of numbers in stroke must be a multiple of 4");
+        }
+        std::vector<libgestures::Point> points;
+        for (size_t i = 0; i < pointsRaw.size(); i += 4) {
+            points.push_back({
+                .x = pointsRaw[i],
+                .y = pointsRaw[i + 1],
+                .t = pointsRaw[i + 2],
+                .alpha = pointsRaw[i + 3]
+            });
+        }
+        stroke = libgestures::Stroke(points);
+
         return true;
     }
 };

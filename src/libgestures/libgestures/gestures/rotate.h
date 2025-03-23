@@ -14,8 +14,10 @@ enum class RotateDirection {
 class RotateGesture : public Gesture
 {
 public:
-    bool satisfiesUpdateConditions(const GestureSpeed &speed, const RotateDirection &direction) const;
+    bool satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction) const override;
     void setDirection(const RotateDirection &direction);
+
+    GestureType type() const override;
 
 private:
     RotateDirection m_direction = RotateDirection::Clockwise;

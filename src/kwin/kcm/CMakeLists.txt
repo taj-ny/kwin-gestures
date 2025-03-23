@@ -17,6 +17,7 @@ target_link_libraries(kwin_gestures_kcm
     KF6::KCMUtils
     KF6::CoreAddons
     KF6::I18n
+    Qt6::DBus
 )
 
 install(TARGETS kwin_gestures_kcm DESTINATION ${KDE_INSTALL_PLUGINDIR}/kwin/effects/configs)

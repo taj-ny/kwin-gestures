@@ -18,11 +18,20 @@
 #define ENSURE_SESSION_UNLOCKED()
 #endif
 
+static uint32_t s_strokeRecordingTimeout = 250;
+
 GestureInputEventFilter::GestureInputEventFilter()
 #ifdef KWIN_6_2_OR_GREATER
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
+    m_strokeRecordingTimeoutTimer.setSingleShot(true);
+    connect(&m_strokeRecordingTimeoutTimer, &QTimer::timeout, this, [this] {
+        finishStrokeRecording();
+    });
+
+    m_mouseGestureRecognizer->setDeviceType(libgestures::DeviceType::Mouse);
+    m_touchpadGestureRecognizer->setDeviceType(libgestures::DeviceType::Touchpad);
 }
 
 void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
@@ -49,6 +58,11 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
 bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 {
     ENSURE_SESSION_UNLOCKED();
+
+    if (m_isRecordingStroke) {
+        finishStrokeRecording();
+        return true;
+    }
 
     if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Press)) {
         KWin::input()->processSpies([&time](auto &&spy) {
@@ -77,7 +91,11 @@ bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::mi
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Swipe, fingerCount);
+    if (m_isRecordingStroke) {
+        return true;
+    }
+
+    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Stroke | libgestures::GestureType::Swipe, fingerCount);
     return false;
 }
 
@@ -85,8 +103,13 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
 {
     ENSURE_SESSION_UNLOCKED();
 
+    if (m_isRecordingStroke) {
+        m_strokePoints.push_back(delta);
+        return true;
+    }
+
     auto ended = false;
-    const auto filter = m_touchpadGestureRecognizer->swipeGestureUpdate(delta, ended);
+    auto filter = m_touchpadGestureRecognizer->touchMotion(delta, ended);
     if (ended) {
         swipeGestureEnd(time);
         return true;
@@ -99,7 +122,12 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
 {
     ENSURE_SESSION_UNLOCKED();
 
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Swipe)) {
+    if (m_isRecordingStroke) {
+        finishStrokeRecording();
+        return true;
+    }
+
+    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Stroke | libgestures::GestureType::Swipe)) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->swipeGestureCancelled(time);
         });
@@ -190,7 +218,12 @@ bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
         return false;
     }
 
-    m_mouseGestureRecognizer->pointerMotion(event->delta);
+    if (m_isRecordingStroke) {
+        m_strokePoints.push_back(event->delta);
+        m_strokeRecordingTimeoutTimer.start(s_strokeRecordingTimeout);
+    } else {
+        m_mouseGestureRecognizer->pointerMotion(event->delta);
+    }
     return false;
 }
 
@@ -235,7 +268,16 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
         delta *= -1;
     }
 
-    return mouse ? m_mouseGestureRecognizer->pointerAxis(delta) : m_touchpadGestureRecognizer->pointerAxis(delta);
+    if (mouse) {
+        return m_mouseGestureRecognizer->pointerAxis(delta);
+    }
+
+    if (m_isRecordingStroke) {
+        m_strokePoints.push_back(delta);
+        m_strokeRecordingTimeoutTimer.start(s_strokeRecordingTimeout);
+        return true;
+    }
+    return m_touchpadGestureRecognizer->pointerAxis(delta);
 }
 
 bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
@@ -245,6 +287,18 @@ bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
 
 bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event) {
     return InputEventFilter::keyboardKey(event);
+}
+
+void GestureInputEventFilter::recordStroke()
+{
+    m_isRecordingStroke = true;
+}
+
+void GestureInputEventFilter::finishStrokeRecording()
+{
+    m_isRecordingStroke = false;
+    Q_EMIT strokeRecordingFinished(libgestures::Stroke(m_strokePoints));
+    m_strokePoints.clear();
 }
 
 #include "moc_inputfilter.cpp"

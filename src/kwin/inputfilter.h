@@ -53,11 +53,22 @@ public:
     bool wheelEvent(KWin::WheelEvent *event) override;
 #endif
 
+    void recordStroke();
+
+signals:
+    void strokeRecordingFinished(const libgestures::Stroke &stroke);
+
 private:
     bool isMouse(const KWin::InputDevice *device) const;
+
+    void finishStrokeRecording();
 
     std::shared_ptr<libgestures::GestureHandler> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
     std::shared_ptr<libgestures::GestureHandler> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
 
     bool m_pinchGestureActive = false;
+
+    bool m_isRecordingStroke = false;
+    std::vector<QPointF> m_strokePoints;
+    QTimer m_strokeRecordingTimeoutTimer;
 };

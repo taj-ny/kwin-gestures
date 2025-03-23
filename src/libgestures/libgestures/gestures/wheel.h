@@ -9,6 +9,8 @@ class WheelGesture : public SwipeGesture
 {
 public:
     WheelGesture();
+
+    GestureType type() const override;
 };
 
 }

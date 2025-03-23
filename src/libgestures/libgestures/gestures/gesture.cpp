@@ -107,7 +107,7 @@ bool Gesture::shouldCancelOtherGestures(const bool &end)
     }) != m_actions.end();
 }
 
-bool Gesture::satisfiesUpdateConditions(const GestureSpeed &speed) const
+bool Gesture::satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction) const
 {
     return m_speed == GestureSpeed::Any || m_speed == speed;
 }
@@ -183,6 +183,11 @@ const std::optional<Qt::KeyboardModifiers> &Gesture::keyboardModifiers() const
 const std::optional<Qt::MouseButtons> &Gesture::mouseButtons() const
 {
     return m_mouseButtons;
+}
+
+GestureType Gesture::type() const
+{
+    return GestureType(0);
 }
 
 }

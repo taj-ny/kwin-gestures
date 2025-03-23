@@ -27,6 +27,19 @@ enum class GestureSpeed {
     Fast
 };
 
+enum class GestureType : uint32_t {
+    Pinch = 1u << 0,
+    Press = 1u << 1,
+    Rotate = 1u << 2,
+    Stroke = 1u << 3,
+    Swipe = 1u << 4,
+    Wheel = 1u << 5,
+
+    All = UINT32_MAX
+};
+Q_DECLARE_FLAGS(GestureTypes, GestureType)
+Q_DECLARE_OPERATORS_FOR_FLAGS(GestureTypes)
+
 struct GestureBeginEvent
 {
     uint8_t fingers = 1;
@@ -83,6 +96,8 @@ public:
      */
     void cancel();
 
+    virtual GestureType type() const;
+
     const GestureSpeed &speed() const;
     const std::optional<std::set<Edges>> &edges() const;
     const std::optional<Qt::KeyboardModifiers> &keyboardModifiers() const;
@@ -107,12 +122,13 @@ public:
      */
     void setMouseButtons(const std::optional<Qt::MouseButtons> &buttons);
 
-protected:
     /**
      * @return Whether the gesture can be updated.
      */
-    bool satisfiesUpdateConditions(const GestureSpeed &speed) const;
+    virtual bool satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction = 0) const;
 
+
+protected:
     void setFingerCountIsRelevant(const bool &relevant);
 
 private:

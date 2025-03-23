@@ -8,10 +8,12 @@ set(libgestures_SRCS
     libgestures/libgestures/gestures/pinch.cpp
     libgestures/libgestures/gestures/press.cpp
     libgestures/libgestures/gestures/rotate.cpp
+    libgestures/libgestures/gestures/stroke.cpp
     libgestures/libgestures/gestures/swipe.cpp
     libgestures/libgestures/gestures/wheel.cpp
     libgestures/libgestures/condition.cpp
     libgestures/libgestures/input.cpp
+        libgestures/libgestures/logging.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 

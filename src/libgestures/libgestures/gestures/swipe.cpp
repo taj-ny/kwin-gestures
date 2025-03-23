@@ -3,20 +3,26 @@
 namespace libgestures
 {
 
-bool SwipeGesture::satisfiesUpdateConditions(const GestureSpeed &speed, const SwipeDirection &direction) const
+bool SwipeGesture::satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction) const
 {
     if (!Gesture::satisfiesUpdateConditions(speed)) {
         return false;
     }
 
-    return m_direction == SwipeDirection::Any || m_direction == direction
-        || (m_direction == SwipeDirection::LeftRight && (direction == SwipeDirection::Left || direction == SwipeDirection::Right))
-        || (m_direction == SwipeDirection::UpDown && (direction == SwipeDirection::Up || direction == SwipeDirection::Down));
+    const auto castedDirection = static_cast<SwipeDirection>(direction);
+    return m_direction == SwipeDirection::Any || m_direction == castedDirection
+        || (m_direction == SwipeDirection::LeftRight && (castedDirection == SwipeDirection::Left || castedDirection == SwipeDirection::Right))
+        || (m_direction == SwipeDirection::UpDown && (castedDirection == SwipeDirection::Up || castedDirection == SwipeDirection::Down));
 }
 
 void SwipeGesture::setDirection(const libgestures::SwipeDirection &direction)
 {
     m_direction = direction;
+}
+
+GestureType SwipeGesture::type() const
+{
+    return GestureType::Swipe;
 }
 
 }

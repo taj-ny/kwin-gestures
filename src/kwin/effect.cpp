@@ -1,6 +1,8 @@
 #include "effect.h"
 #include "libgestures/yaml_convert.h"
 
+#include "effect/effecthandler.h"
+
 #include <QDir>
 #include <QLoggingCategory>
 
