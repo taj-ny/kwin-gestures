@@ -5,7 +5,7 @@
 > [!IMPORTANT]
 > Until v1.0.0 is released, breaking changes may be introduced at any time.
 
-This page only explains the configuration structure, to learn how certain features of the plugin actually work, see [docs/index.md](docs/index.md).
+This page only explains the configuration structure, to learn how certain features of the plugin actually work, see [index.md](index.md).
 
 There is currently no configuration UI. The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the plugin is loaded. The plugin should be reconfigured when the file changes. If it doesn't, disable and enable it manually or run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures``.
 
