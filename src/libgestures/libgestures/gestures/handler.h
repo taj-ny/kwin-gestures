@@ -124,7 +124,7 @@ public:
      */
     bool pointerAxis(const QPointF &delta);
 
-    void keyboardModifier(const Qt::KeyboardModifier &modifier, const bool &state);
+    void keyboardKey(const Qt::Key &key, const bool &state);
 
     bool shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event);
     void pressBlockedMouseButtons();
@@ -155,14 +155,8 @@ public:
 
     DeviceType m_deviceType = DeviceType::Touchpad;
 
-    /**
-     * Used to keep track of gesture order.
-     */
     std::vector<std::shared_ptr<Gesture>> m_gestures;
     std::vector<Gesture *> m_activeGestures;
-
-//    std::map<GestureType, std::vector<std::shared_ptr<Gesture>>> m_gestures;
-//    std::map<GestureType, std::vector<Gesture*>> m_activeGestures;
 
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;

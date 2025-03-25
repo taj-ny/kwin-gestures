@@ -384,6 +384,8 @@ void GestureHandler::pointerMotion(const QPointF &delta)
             qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "NoMotionGestures";
             pressBlockedMouseButtons();
         }
+    } else if (!hasActiveGestures(GestureType::Stroke | GestureType::Swipe) && Input::implementation()->keyboardModifiers()) {
+        gestureBegin(GestureType::Stroke | GestureType::Swipe);
     }
 
     const auto hadActiveGestures = hasActiveGestures(GestureType::Stroke | GestureType::Swipe);
@@ -495,6 +497,16 @@ bool GestureHandler::pointerAxis(const QPointF &delta)
     }
     m_pointerAxisTimeoutTimer.stop();
     return false;
+}
+
+void GestureHandler::keyboardKey(const Qt::Key &key, const bool &state)
+{
+    // Lazy way to check for modifier release to end mouse motion gestures
+    if (Input::implementation()->isSendingInput() || m_deviceType != DeviceType::Mouse || state) {
+        return;
+    }
+
+    gestureEnd(GestureType::All);
 }
 
 bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event)

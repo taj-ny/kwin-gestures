@@ -285,8 +285,10 @@ bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
     return device->isPointer() && !device->isTouch() && !device->isTouchpad();
 }
 
-bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event) {
-    return InputEventFilter::keyboardKey(event);
+bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
+{
+    m_mouseGestureRecognizer->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
+    return false;
 }
 
 void GestureInputEventFilter::recordStroke()
