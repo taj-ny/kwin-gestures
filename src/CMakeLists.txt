@@ -13,7 +13,7 @@ set(libgestures_SRCS
     libgestures/libgestures/gestures/wheel.cpp
     libgestures/libgestures/condition.cpp
     libgestures/libgestures/input.cpp
-        libgestures/libgestures/logging.cpp
+    libgestures/libgestures/logging.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 

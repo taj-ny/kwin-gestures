@@ -10,6 +10,7 @@
 
 namespace libgestures
 {
+Q_NAMESPACE
 
 enum class Edge {
     None = 0,
@@ -18,6 +19,7 @@ enum class Edge {
     Top = 1u << 2,
     Bottom = 1u << 3
 };
+Q_ENUM_NS(Edge)
 Q_DECLARE_FLAGS(Edges, Edge)
 Q_DECLARE_OPERATORS_FOR_FLAGS(Edges)
 
@@ -37,6 +39,7 @@ enum class GestureType : uint32_t {
 
     All = UINT32_MAX
 };
+Q_ENUM_NS(GestureType)
 Q_DECLARE_FLAGS(GestureTypes, GestureType)
 Q_DECLARE_OPERATORS_FOR_FLAGS(GestureTypes)
 
@@ -97,6 +100,8 @@ public:
     void cancel();
 
     virtual GestureType type() const;
+
+    const QString name() const { return "name"; }
 
     const GestureSpeed &speed() const;
     const std::optional<std::set<Edges>> &edges() const;
