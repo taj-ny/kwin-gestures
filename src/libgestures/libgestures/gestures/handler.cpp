@@ -83,7 +83,7 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
     for (const auto &[type, _] : events) {
         types |= type;
     }
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "GesturesUpdating(types: " << types << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Updating gestures (types: " << types << ")";
 
     auto hasGestures = false;
     for (auto it = m_activeGestures.begin(); it != m_activeGestures.end();) {
@@ -99,7 +99,7 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
             gesture->cancel();
             it = m_activeGestures.erase(it);
             continue;
-        }
+        }    bool filter = false;
 
         if (!gesture->update(event.delta, event.deltaPointMultiplied)) {
             *event.ended = true;
@@ -118,12 +118,9 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
 
 bool GestureHandler::hasActiveGestures(const GestureTypes &types)
 {
-    for (const auto &gesture : m_activeGestures) {
-        if (types & gesture->type()) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(m_activeGestures.begin(), m_activeGestures.end(), [&types](const auto &gesture) {
+        return types & gesture->type();
+    });
 }
 
 void GestureHandler::setInputEventsToSample(const uint8_t &events)
@@ -158,8 +155,11 @@ void GestureHandler::setDeltaMultiplier(const qreal &deltaMultiplier)
 
 void GestureHandler::pressGestureUpdate(const qreal &delta)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<Press>(delta: " << delta << ")";
-    auto start = std::chrono::steady_clock::now();
+    if (!hasActiveGestures(GestureType::Press)) {
+        return;
+    }
+
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Press event (delta: " << delta << ")";
 
     bool _ = false;
     const auto hasGestures = updateGesture(GestureType::Press, {
@@ -167,14 +167,16 @@ void GestureHandler::pressGestureUpdate(const qreal &delta)
         .ended = &_
     });
 
-    auto end = std::chrono::steady_clock::now();
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "EventProcessed<Press>(hasGestures: " << hasGestures << ", time: " << since(start, end) << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Press event processed (hasGestures: " << hasGestures << ")";
 }
 
 bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta, bool &ended)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<Pinch>(scale: " << scale << ", angleDelta: " << angleDelta << ", delta: " << delta << ")";
-    auto start = std::chrono::steady_clock::now();
+    if (!hasActiveGestures(GestureType::Pinch | GestureType::Rotate)) {
+        return false;
+    }
+
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Pinch event (scale: " << scale << ", angleDelta: " << angleDelta << ", delta: " << delta << ")";
 
     const auto pinchDelta = -(m_previousPinchScale - scale);
     m_previousPinchScale = scale;
@@ -186,16 +188,15 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
 
     if (m_pinchType == PinchType::Unknown) {
         if (m_accumulatedRotateDelta >= 10) {
-            qCDebug(LIBGESTURES_GESTURE_HANDLER) << "PinchTypeDetermined(type: rotate)";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "Determined pinch type (rotate)");
             m_pinchType = PinchType::Rotate;
             gestureCancel(GestureType::Pinch);
         } else if (std::abs(1.0 - scale) >= 0.2) {
-            qCDebug(LIBGESTURES_GESTURE_HANDLER) << "PinchTypeDetermined(type: pinch)";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "Determined pinch type (pinch)");
             m_pinchType = PinchType::Pinch;
             gestureCancel(GestureType::Rotate);
         } else {
-            auto end = std::chrono::steady_clock::now();
-            qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace().noquote() << "EventProcessed<Pinch>(status: DeterminingType, time: " << since(start, end) << ")";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "Event processed (type: Pinch, status: DeterminingType)");
             return true;
         }
     }
@@ -204,8 +205,7 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
         ? m_rotateFastThreshold
         : (scale < 1 ? m_pinchInFastThreshold : m_pinchOutFastThreshold);
     if (!determineSpeed(std::abs(m_pinchType == PinchType::Rotate ? angleDelta : pinchDelta), speedThreshold)) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace().noquote() << "EventProcessed<Pinch>(status: DeterminingSpeed, time: " << since(start, end) << ")";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Event processed (type: Pinch, status: DeterminingSpeed)");
         return true;
     }
 
@@ -224,8 +224,7 @@ bool GestureHandler::pinchGestureUpdate(const qreal &scale, const qreal &angleDe
         });
     }
 
-    auto end = std::chrono::steady_clock::now();
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace().noquote() << "EventProcessed<Pinch>(hasGestures: " << hasGestures << ", time: " << since(start, end) << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event processed (type: Pinch, hasGestures: " << hasGestures << ")";
     return false;
 }
 
@@ -238,7 +237,7 @@ bool GestureHandler::determineSpeed(const qreal &delta, const qreal &fastThresho
     if (m_sampledInputEvents++ != m_inputEventsToSample) {
         m_accumulatedAbsoluteSampledDelta += delta;
         qCDebug(LIBGESTURES_GESTURE_HANDLER)
-            << qPrintable(QString("SpeedDetermining(event: %1/%2, delta: %3/%4)")
+            << qPrintable(QString("Determining speed (event: %1/%2, delta: %3/%4)")
                 .arg(QString::number(m_sampledInputEvents), QString::number(m_inputEventsToSample), QString::number(m_accumulatedAbsoluteSampledDelta), QString::number(fastThreshold)));
         return false;
     }
@@ -247,38 +246,32 @@ bool GestureHandler::determineSpeed(const qreal &delta, const qreal &fastThresho
     m_speed = (m_accumulatedAbsoluteSampledDelta / m_inputEventsToSample) >= fastThreshold
         ? GestureSpeed::Fast
         : GestureSpeed::Slow;
-    qCDebug(LIBGESTURES_GESTURE_HANDLER) << qPrintable(QString("SpeedDetermined(speed: %1)").arg(m_speed == GestureSpeed::Fast ? "fast" : "slow"));
+    qCDebug(LIBGESTURES_GESTURE_HANDLER) << qPrintable(QString("Speed determined (speed: %1)").arg(m_speed == GestureSpeed::Fast ? "fast" : "slow"));
     return true;
 }
 
 bool GestureHandler::touchMotion(const QPointF &delta, bool &ended)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<Motion>(delta: " << delta << ")";
-    auto start = std::chrono::steady_clock::now();
-
     if (!hasActiveGestures(GestureType::Stroke | GestureType::Swipe)) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace().noquote() << "EventProcessed<Motion>(status: NoGestures, time: " << since(start, end) << ")";
         return false;
     }
 
-    const auto hasStroke = hasActiveGestures(GestureType::Stroke);
-//    if (hasStroke) {
-        m_stroke.push_back(delta);
-//    } else {
-        m_currentSwipeDelta += delta;
-//    }
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: Motion, delta: " << delta << ")";
 
-    const auto deltaTotal = std::sqrt(std::pow(delta.x(), 2) + std::pow(delta.y(), 2));
+    const auto hasStroke = hasActiveGestures(GestureType::Stroke);
+    if (hasStroke) {
+        m_stroke.push_back(delta);
+    }
+    m_currentSwipeDelta += delta;
+
+    const auto deltaTotal = std::hypot(delta.x(), delta.y());
     if (!determineSpeed(deltaTotal, m_swipeGestureFastThreshold)) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace().noquote() << "EventProcessed<Motion>(status: DeterminingSpeed, time: " << since(start, end) << ")";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Event processed (type: Motion, status: DeterminingSpeed)");
         return true;
     }
 
     std::map<GestureType, GestureUpdateEvent> events;
 
-    bool filter = false;
     if (hasActiveGestures(GestureType::Swipe)) {
         SwipeDirection direction; // Overall direction
         Axis swipeAxis;
@@ -326,18 +319,16 @@ bool GestureHandler::touchMotion(const QPointF &delta, bool &ended)
     }
 
     const auto ret = updateGesture(events);
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "EventProcessed<Motion>(hasGestures: " << ret << ", time: " << since(start) << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event processed (type: Motion, hasGestures: " << ret << ")";
     return ret;
 }
 
 bool GestureHandler::wheelGestureUpdate(const QPointF &delta)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<Wheel>(delta: " << delta << ")";
-    auto start = std::chrono::steady_clock::now();
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: Wheel, delta: " << delta << ")";
 
     if (!hasActiveGestures(GestureType::Wheel)) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "EventProcessed<Wheel>(status: NoGestures, time: " << since(start, end) << ")";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Event processed (type: Wheel, status: NoGestures)");
         return false;
     }
 
@@ -357,21 +348,18 @@ bool GestureHandler::wheelGestureUpdate(const QPointF &delta)
         .ended = &_
     });
 
-    auto end = std::chrono::steady_clock::now();
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "EventProcessed<Wheel>(hasGestures: " << ret << ", time: " << since(start, end) << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Event processed (type: Wheel, hasGestures: " << ret << ")";
     return ret;
 }
 
 void GestureHandler::pointerMotion(const QPointF &delta)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<PointerMotion>(delta: " << delta << ")";
-    auto start = std::chrono::steady_clock::now();
-
     if (Input::implementation()->isSendingInput()) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "EventProcessed<PointerMotion>(status: Ignored, time: " << since(start, end) << ")";
         return;
     }
+
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: PointerMotion, delta: " << delta << ")";
+
 
     if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
         gestureCancel(GestureType::All);
@@ -379,12 +367,13 @@ void GestureHandler::pointerMotion(const QPointF &delta)
         m_mouseButtonTimer.stop();
         m_mouseTimeoutTimer.stop();
 
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "ActivatingMotionGestures";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse motion gestures");
         if (!gestureBegin(GestureType::Stroke | GestureType::Swipe)) {
-            qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "NoMotionGestures";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "No motion gestures");
             pressBlockedMouseButtons();
         }
     } else if (!hasActiveGestures(GestureType::Stroke | GestureType::Swipe) && Input::implementation()->keyboardModifiers()) {
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Keyboard modifiers present, attempting to start mouse motion gestures");
         gestureBegin(GestureType::Stroke | GestureType::Swipe);
     }
 
@@ -392,6 +381,7 @@ void GestureHandler::pointerMotion(const QPointF &delta)
     bool _ = false;
     touchMotion(delta, _);
     if (hadActiveGestures && !hasActiveGestures(GestureType::Stroke | GestureType::Swipe)) {
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Mouse motion gesture ended/cancelled during motion");
         // Swipe gesture cancelled due to wrong speed or direction
         pressBlockedMouseButtons();
     }
@@ -399,14 +389,11 @@ void GestureHandler::pointerMotion(const QPointF &delta)
 
 bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event<PointerButton>(button: " << button << ", state: " << state << ")";
-    auto start = std::chrono::steady_clock::now();
-
     if (Input::implementation()->isSendingInput()) {
-        auto end = std::chrono::steady_clock::now();
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "EventProcessed<PointerButton>(status: Ignored, time: " << since(start, end) << ")";
         return false;
     }
+
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: PointerMotion, button: " << button << ", state: " << state << ")";
 
     if (state) {
         gestureCancel(GestureType::All);
@@ -417,6 +404,7 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         m_instantPress = false;
         for (const auto &gesture : gestures(GestureType::Press, m_data)) {
             if (dynamic_cast<PressGesture *>(gesture)->instant()) {
+                qCDebug(LIBGESTURES_GESTURE_HANDLER, "Press gesture is instant");
                 m_instantPress = true;
                 break;
             }
@@ -426,7 +414,9 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         disconnect(&m_mouseTimeoutTimer, nullptr, nullptr, nullptr);
         connect(&m_mouseButtonTimer, &QTimer::timeout, this, [this] {
             const auto swipeTimeout = [this] {
+                qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse wheel and press gestures");
                 if (!hasActiveGestures(GestureType::Wheel) && !gestureBegin(GestureType::Press, m_data)) {
+                    qCDebug(LIBGESTURES_GESTURE_HANDLER, "No wheel or press mouse gestures");
                     pressBlockedMouseButtons();
                 }
             };
@@ -437,11 +427,14 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
             }
 
             connect(&m_mouseTimeoutTimer, &QTimer::timeout, [swipeTimeout] {
+                qCDebug(LIBGESTURES_GESTURE_HANDLER, "No mouse motion");
                 swipeTimeout();
             });
             m_mouseTimeoutTimer.start(200);
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "Waiting for mouse motion");
         });
         m_mouseButtonTimer.start(50);
+        qCDebug(LIBGESTURES_GESTURE_HANDLER, "Waiting for all mouse buttons");
 
         if (shouldBlockMouseButton(button, m_data)) {
             m_blockedMouseButtons.push_back(nativeButton);
@@ -483,7 +476,6 @@ bool GestureHandler::pointerAxis(const QPointF &delta)
         }
         return false;
     }
-    const auto mouse = m_deviceType == DeviceType::Mouse;
 
     if (!m_pointerAxisTimeoutTimer.isActive()) {
         gestureBegin(GestureType::Stroke | GestureType::Swipe, 2);
@@ -520,7 +512,7 @@ bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button, const
             continue;
         }
         if (gestureButtons && (*gestureButtons & button)) {
-            qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "MouseButtonBlocked(button: " << button << ", gesture: " << gesture->name() << ")";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Mouse button blocked (button: " << button << ", gesture: " << gesture->name() << ")";
             return true;
         }
     }
@@ -530,8 +522,8 @@ bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button, const
 void GestureHandler::pressBlockedMouseButtons()
 {
     for (const auto &button : m_blockedMouseButtons) {
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "MouseButtonUnblocking(button: " << button << ")";
         Input::implementation()->mouseButton(button, true);
+        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Mouse button unblocked (button: " << button << ")";
     }
     m_blockedMouseButtons.clear();
 }
@@ -545,7 +537,7 @@ bool GestureHandler::gestureBegin(const GestureTypes &types, const uint8_t &fing
 
 bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginEvent &data)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "GesturesActivating(types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", edges: " << data.edges << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activating (types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", edges: " << data.edges << ")";
     gestureCancel(GestureType::All);
     resetMembers();
 
@@ -560,14 +552,14 @@ bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginE
         hasKeyboardModifiers = hasKeyboardModifiers || (gesture->keyboardModifiers() && *gesture->keyboardModifiers() != Qt::KeyboardModifier::NoModifier);
 
         m_activeGestures.push_back(gesture);
-        qCDebug(LIBGESTURES_GESTURE_HANDLER) << qPrintable(QString("GestureActivated(name: \"%1\"").arg(gesture->name()));
+        qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote() << QString("Gesture activated (name: %1)").arg(gesture->name());
     }
     if (hasKeyboardModifiers) {
         Input::implementation()->keyboardClearModifiers();
     }
 
     const auto gestures = m_activeGestures.size();
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "GesturesActivated(count: " << gestures << ", hasSpeed: " << m_isDeterminingSpeed << ", hasModifiers: " << hasKeyboardModifiers << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activated (count: " << gestures << ", hasSpeed: " << m_isDeterminingSpeed << ", hasModifiers: " << hasKeyboardModifiers << ")";
     return gestures != 0;
 }
 
@@ -583,7 +575,7 @@ bool GestureHandler::gestureCancel(const GestureTypes &types)
 
 void GestureHandler::gestureCancel(Gesture *except)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "GesturesCancelling(except: " << except->name() << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Cancelling gestures (except: " << except->name() << ")";
     for (auto it = m_activeGestures.begin(); it != m_activeGestures.end();) {
         auto gesture = *it;
         if (gesture != except) {
@@ -597,10 +589,14 @@ void GestureHandler::gestureCancel(Gesture *except)
 
 bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &end)
 {
+    if (!hasActiveGestures(types)) {
+        return false;
+    }
+
     if (end) {
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "GesturesEnding(types: " << types << ")";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Ending gestures (types: " << types << ")";
     } else {
-        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "GesturesCancelling(types: " << types << ")";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Cancelling gestures (types: " << types << ")";
     }
 
     m_mouseLongPointerAxisTimeoutTimer.stop();
@@ -609,20 +605,18 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
     auto hadActiveGestures = !active.empty();
 
     if (types & GestureType::Press && m_pressTimer.isActive()) {
-        qCDebug(LIBGESTURES_GESTURE_HANDLER) << "HoldTimerStopped";
+        qCDebug(LIBGESTURES_GESTURE_HANDLER) << "Stopping hold timer";
         m_pressTimer.stop();
     }
-    if (end && types & GestureType::Stroke) {
-        auto start = std::chrono::steady_clock::now();
+    if (end && types & GestureType::Stroke && !m_stroke.empty()) {
         const Stroke stroke(m_stroke);
         qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote()
-            << QString("StrokeConstructed(points: %1, deltas: %2, time: %3)").arg(QString::number(stroke.points().size()), QString::number(m_stroke.size()), since(start));
+            << QString("Stroke constructed (points: %1, deltas: %2)").arg(QString::number(stroke.points().size()), QString::number(m_stroke.size()));
 
         Gesture *bestGesture = nullptr;
         double bestScore = 0;
         const auto &gestures = activeGestures(GestureType::Stroke);
 
-        start = std::chrono::steady_clock::now();
         for (const auto &gesture : activeGestures(GestureType::Stroke)) {
             const auto score = stroke.compare(static_cast<StrokeGesture *>(gesture)->stroke());
             if (score > bestScore) {
@@ -631,10 +625,10 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
             }
         }
         qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote()
-            << QString("StrokeCompared(strokes: %1, bestScore: %2, time: %3)").arg(QString::number(gestures.size()), QString::number(bestScore), since(start));
+            << QString("Stroke compared (strokes: %1, bestScore: %2)").arg(QString::number(gestures.size()), QString::number(bestScore));
 
-        gestureCancel(bestGesture);
         if (bestGesture != nullptr && bestScore >= Stroke::min_matching_score()) {
+            gestureCancel(bestGesture);
             bestGesture->end();
         }
     }
@@ -654,6 +648,7 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
                 break;
             }
 
+            gesture->end();
             continue;
         }
 

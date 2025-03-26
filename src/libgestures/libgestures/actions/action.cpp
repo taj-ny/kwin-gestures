@@ -1,5 +1,7 @@
 #include "action.h"
 
+#include "libgestures/logging.h"
+
 namespace libgestures
 {
 
@@ -27,6 +29,7 @@ void GestureAction::tryExecute()
         return;
     }
 
+    qCDebug(LIBGESTURES_ACTION).noquote() << QString("Action executed (name: %1)").arg(m_name);
     execute();
     m_executed = true;
 }
@@ -82,10 +85,12 @@ void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPoint
     if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
         // Direction changed
         m_accumulatedDelta = delta;
+        qCDebug(LIBGESTURES_ACTION).noquote() << QString("Gesture direction changed (name: %1)").arg(m_name);
     } else {
         m_accumulatedDelta += delta;
         m_absoluteAccumulatedDelta += std::abs(delta);
     }
+    qCDebug(LIBGESTURES_ACTION()).noquote() << QString("Action updated (name: %1, accumulatedDelta: %2)").arg(m_name, QString::number(m_accumulatedDelta));
 
     if (m_on != On::Update) {
         return;
@@ -101,6 +106,16 @@ void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPoint
         tryExecute();
         m_accumulatedDelta -= interval;
     }
+}
+
+const QString &GestureAction::name() const
+{
+    return m_name;
+}
+
+void GestureAction::setName(const QString &name)
+{
+    m_name = name;
 }
 
 const On &GestureAction::on() const

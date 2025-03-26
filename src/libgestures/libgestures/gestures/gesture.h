@@ -30,6 +30,7 @@ enum class GestureSpeed {
 };
 
 enum class GestureType : uint32_t {
+    None = 0,
     Pinch = 1u << 0,
     Press = 1u << 1,
     Rotate = 1u << 2,
@@ -101,7 +102,8 @@ public:
 
     virtual GestureType type() const;
 
-    const QString name() const { return "name"; }
+    const QString &name() const;
+    void setName(const QString &name);
 
     const GestureSpeed &speed() const;
     const std::optional<std::set<Edges>> &edges() const;
@@ -141,6 +143,8 @@ private:
      * @return Whether the accumulated delta fits within the specified range.
      */
     bool thresholdReached() const;
+
+    QString m_name = "none";
 
     uint8_t m_minimumFingers = 0;
     uint8_t m_maximumFingers = 0;

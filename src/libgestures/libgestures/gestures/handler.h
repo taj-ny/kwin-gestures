@@ -47,6 +47,8 @@ struct GestureUpdateEvent
  * Supported gestures:
  *   - mouse - hold, swipe, wheel
  *   - touchpad - hold, pinch, swipe, rotate
+ *
+ * TODO Requires a major refactor
  */
 class GestureHandler : public QObject
 {

@@ -132,7 +132,14 @@ public:
      */
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
+    const QString &name() const;
+    void setName(const QString &name);
+
     const On &on() const;
+    /**
+     * @param on The point during the gesture at which the action should be executed.
+     */
+    void setOn(const On &on);
 
     /**
      * @param blockOtherActions Whether this action should block all other actions, including actions belonging to
@@ -152,11 +159,6 @@ public:
      */
     void setThresholds(const qreal &minimum, const qreal &maximum);
 
-    /**
-     * @param on The point during the gesture at which the action should be executed.
-     */
-    void setOn(const On &on);
-
 protected:
     GestureAction() = default;
 
@@ -175,6 +177,8 @@ private:
     bool thresholdReached() const;
 
     void reset();
+
+    QString m_name = "none";
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 

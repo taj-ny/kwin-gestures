@@ -648,6 +648,8 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             throw Exception(node.Mark(), "Invalid gesture type");
         }
 
+        gesture->setName(node["name"].as<QString>(gesture->name()));
+
         const auto fingersRaw = node["fingers"].as<QString>("1");
         range fingers;
         if (fingersRaw.contains("-")) {
@@ -737,6 +739,8 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
         } else {
             throw Exception(node.Mark(), "Action has no valid action property");
         }
+
+        action->setName(node["name"].as<QString>(action->name()));
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
         range threshold(0, 0);

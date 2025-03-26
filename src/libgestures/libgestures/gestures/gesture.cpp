@@ -1,12 +1,14 @@
 #include "gesture.h"
 
 #include "libgestures/input.h"
+#include "libgestures/logging.h"
 
 namespace libgestures
 {
 
 void Gesture::cancel()
 {
+    qCDebug(LIBGESTURES_GESTURE).noquote() << QString("Gesture cancelled (name: %1)").arg(m_name);
     if (!m_hasStarted) {
         m_absoluteAccumulatedDelta = 0;
         m_thresholdReached = false;
@@ -26,6 +28,7 @@ void Gesture::cancel()
 
 void Gesture::end()
 {
+    qCDebug(LIBGESTURES_GESTURE).noquote() << QString("Gesture ended (name: %1)").arg(m_name);
     if (!m_hasStarted) {
         m_absoluteAccumulatedDelta = 0;
         m_thresholdReached = false;
@@ -48,10 +51,16 @@ bool Gesture::update(const qreal &delta, const QPointF &deltaPointMultiplied)
     m_absoluteAccumulatedDelta += std::abs(delta);
     m_thresholdReached = thresholdReached();
     if (!m_thresholdReached) {
+        qCDebug(LIBGESTURES_GESTURE).noquote()
+            << QString("Threshold not reached (name: %1, current: %2, min: %3, max: %4")
+                .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_minimumThreshold), QString::number(m_maximumThreshold));
         return true;
     }
 
+    qCDebug(LIBGESTURES_GESTURE).noquote() << QString("Gesture updated (name: %1, delta: %2)").arg(m_name, QString::number(delta));
+
     if (!m_hasStarted) {
+        qCDebug(LIBGESTURES_GESTURE).noquote() << QString("Gesture started (name: %1)").arg(m_name);
         m_hasStarted = true;
         for (const auto &action : m_actions) {
             action->gestureStarted();
@@ -188,6 +197,16 @@ const std::optional<Qt::MouseButtons> &Gesture::mouseButtons() const
 GestureType Gesture::type() const
 {
     return GestureType(0);
+}
+
+const QString &Gesture::name() const
+{
+    return m_name;
+}
+
+void Gesture::setName(const QString &name)
+{
+    m_name = name;
 }
 
 }
