@@ -6,11 +6,11 @@
 - end
 - cancel - The gesture's update conditions were not satisfied, the finger count has changed, or there is a gesture conflict (see section below). Cancel actions are only executed if the gesture has began.
 
-## Conflicts
+## Conflict resolution
 In order to avoid conflicts, only one gesture may be active at a time. Internally it works in a different way, but that's not important. All other gestures are cancelled immediately when:
 - a gesture is updated, and has any action that has been executed, or has an update action that can be executed (satisfies conditions and thresholds) but hasn't been yet (the interval hadn't been reached)
 - a gesture ends, and has an end action that can be executed
-- a stroke gesture is 
+- a stroke gesture is active (in this case only swipe gestures are cancelled)
 
 Gestures are updated in order as specified in the configuration file.
 

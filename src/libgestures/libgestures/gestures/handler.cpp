@@ -99,19 +99,26 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
             gesture->cancel();
             it = m_activeGestures.erase(it);
             continue;
-        }    bool filter = false;
+        }
 
+        hasGestures = true;
         if (!gesture->update(event.delta, event.deltaPointMultiplied)) {
             *event.ended = true;
             return true;
         }
-        if (m_activeGestures.size() > 1 && gesture->shouldCancelOtherGestures()) {
-            gestureCancel(gesture);
-            break;
+
+        if (!m_conflictsResolved && m_activeGestures.size() > 1) {
+            m_conflictsResolved = true;
+            if (gesture->shouldCancelOtherGestures()) {
+                gestureCancel(gesture);
+                break;
+            } else if (types & (GestureType::Stroke | GestureType::Swipe)) {
+                gestureCancel(GestureType::Swipe);
+                break;
+            }
         }
 
         it++;
-        hasGestures = hasGestures || !m_activeGestures.empty();
     }
     return hasGestures;
 }
@@ -671,6 +678,7 @@ void GestureHandler::resetMembers()
     m_currentSwipeAxis = Axis::None;
     m_currentSwipeDelta = QPointF();
     m_speed = GestureSpeed::Any;
+    m_conflictsResolved = false;
 }
 
 }

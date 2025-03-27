@@ -198,6 +198,8 @@ public:
 
     qreal m_deltaMultiplier = 1.0;
 
+    bool m_conflictsResolved = false;
+
     friend struct YAML::convert<std::shared_ptr<GestureHandler>>;
     friend class TestGestureRecognizer;
 };
