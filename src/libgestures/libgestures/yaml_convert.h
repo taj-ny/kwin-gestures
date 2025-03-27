@@ -622,7 +622,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         const auto type = node["type"].as<QString>();
         if (type == "hold" || type == "press") {
             auto pressGesture = new libgestures::PressGesture;
-            pressGesture->setInstant(node["press_instant"].as<bool>(false));
+            pressGesture->setInstant(node["instant"].as<bool>(false));
             gesture.reset(pressGesture);
         } else if (type == "pinch") {
             auto pinchGesture = new libgestures::PinchGesture;

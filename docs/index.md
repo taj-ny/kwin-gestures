@@ -58,7 +58,9 @@ Input events are sent at blocked at compositor level, therefore applications tha
 # Devices
 ## Mouse
 ### Press gestures
-Mouse press gestures start immediately by default, preventing swipe gestures or normal clicks from being performed. If this behavior is not desired, *Gesture.press_instant* should be set to false.
+Mouse press gestures do not start immediately by default, allowing swipe gestures or normal clicks to be performed. 
+
+If this behavior is not desired, *Gesture.instant* should be set to true. The property is set per-gesture, but affects all activated press gestures.
 
 ### Wheel gestures
 Wheel gestures begin, update and end instantly on every single scroll event, therefore they do not support thresholds and speed.

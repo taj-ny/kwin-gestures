@@ -79,29 +79,27 @@ See [example_gestures.md](example_gestures.md) for examples.
 | edges              | ``flags(left, right, top, bottom, top_left, top_right, bottom_right, bottom_left)`` | List of screen edges/corners, at least one of which the cursor must touch in order for the gesture to be activated.<br><br>Examples:<br>``[ top, left ]`` - Either the top or left edge must be touched, won't work in the top left corner<br>``[ top_left ]`` - Both top and left edge must be touched (top left corner)           |         | 
 | fingers            | ``uint`` (exact amount) or ``range(uint)``                                          | The exact amount or range of fingers required to trigger this gesture. Does not apply to mouse gestures. <br><br>Minimum value: *1* for *press* gestures, *2* for *pinch*, *rotate*, *stroke* and *swipe* gestures.<br>Maximum value: Depends on how many fingers the device can detect.                                            | *1*     |
 | keyboard_modifiers | ``flags(alt, ctrl, meta, shift)`` or ``enum(any, none)``                            | *any* - Modifiers are ignored<br>*none* - No modifier keys must be pressed<br><br>Keyboard modifiers, all of which must be pressed in order for the gesture to be activated.<br><br>When any gesture with keyboard modifiers is activated, **all** pressed modifiers are released in order to prevent conflicts with input actions. | *any*   |
-| name               | ``string``                                                                          | Visible in debug logs.                                                                                                                                                                                                                                                                                                              |         |
 | mouse_buttons      | ``flags(left, middle, right, back, forward)``                                       | Mouse buttons, all of which must be pressed in order for the gesture to be activated.                                                                                                                                                                                                                                               |         |
+| name               | ``string``                                                                          | Visible in debug logs.                                                                                                                                                                                                                                                                                                              |         |
 | speed              | ``enum(fast, slow)``                                                                | The speed at which the gesture must be performed. Does not apply to press gestures.                                                                                                                                                                                                                                                 |         |
 | threshold          | ``float`` (min) or ``range(float)`` (min and max)                                   | How far this gesture needs to progress in order to begin.<br><br>Gestures with *begin* or *update* actions can't have maximum thresholds.                                                                                                                                                                                           |         |
 
-
-### Rotate gesture
+### Rotate
 | Property      | Type                                       | Description                                                                         |  Default |
 |---------------|--------------------------------------------|-------------------------------------------------------------------------------------|----------|
 | **direction** | ``enum(clockwise, counterclockwise, any)`` | *any* is a bi-directional gesture. The direction can be changed during the gesture. |          |
 
-### Pinch gesture
+### Pinch
 | Property      | Type                   | Description                                                                         |  Default |
 |---------------|------------------------|-------------------------------------------------------------------------------------|----------|
 | **direction** | ``enum(in, out, any)`` | *any* is a bi-directional gesture. The direction can be changed during the gesture. |          |
 
-### Press gesture
-| Property      | Type     | Description                                                                                                                                       | Default |
-|---------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| press_instant | ``bool`` | Whether a press gesture should begin immediately. By default, there is a delay to prevent conflicts with normal clicks and stroke/swipe gestures. | *false* |
+### Press
+| Property | Type     | Description                                                                                                                                                                                       | Default |
+|----------|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| instant  | ``bool`` | Whether the gesture should begin immediately. By default, there is a delay to prevent conflicts with normal clicks and stroke/swipe gestures.<br><br>Currently only supported for mouse gestures. | *false* |
 
-
-### Stroke gesture
+### Stroke
 | Property   | Type            | Description                                                   |  Default |
 |------------|-----------------|---------------------------------------------------------------|----------|
 | **stroke** | ``list(float)`` | Strokes can be obtained from the stroke recorder in settings. |          |
