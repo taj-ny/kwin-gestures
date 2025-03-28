@@ -4,6 +4,7 @@
 
 #include "keyboard_input.h"
 #include "pointer_input.h"
+#include "workspace.h"
 
 // TODO move key list
 #include "libgestures/yaml_convert.h"
@@ -42,6 +43,13 @@ Qt::KeyboardModifiers KWinInput::keyboardModifiers() const
 
 void KWinInput::keyboardClearModifiers()
 {
+    // Prevent modifier-only global shortcuts from being triggered. Clients will still see the event and may perform
+    // actions.
+    const auto globalShortcutsDisabled = KWin::workspace()->globalShortcutsDisabled();
+    if (!globalShortcutsDisabled) {
+        KWin::workspace()->disableGlobalShortcutsForClient(true);
+    }
+
     // These events will belong to a different device, which wouldn't work with normal keys, but it works with modifiers.
     // The user should be able to start the gesture again while still having the modifiers pressed, so the previous
     // ones must be kept track of.
@@ -53,6 +61,10 @@ void KWinInput::keyboardClearModifiers()
     keyboardKey(KEY_RIGHTCTRL, false);
     keyboardKey(KEY_RIGHTMETA, false);
     keyboardKey(KEY_RIGHTSHIFT, false);
+
+    if (!globalShortcutsDisabled) {
+        KWin::workspace()->disableGlobalShortcutsForClient(false);
+    }
 }
 
 void KWinInput::mouseButton(const uint32_t &button, const bool &state)
