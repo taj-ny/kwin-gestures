@@ -16,7 +16,8 @@ KWinInput::KWinInput()
     m_pointer = m_input->pointer();
     m_keyboard = m_input->keyboard();
 
-    connect(m_input, &KWin::InputRedirection::keyboardModifiersChanged, this, &KWinInput::slotKeyboardModifiersChanged);
+    // KWin::InputRedirection::keyboardModifiersChanged sometimes doesn't get emitted and I have no idea why, this one
+    // works though.
     connect(m_input, &KWin::InputRedirection::keyStateChanged, this, &KWinInput::slotKeyStateChanged);
 }
 
@@ -72,29 +73,43 @@ void KWinInput::mouseMoveRelative(const QPointF &pos)
     m_pointer->processFrame(m_device.get());
 }
 
-void KWinInput::slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods)
+void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
 {
     if (m_ignoreModifierUpdates) {
         return;
     }
 
-    m_modifiers = newMods;
-}
-
-void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
-{
-    if (m_ignoreModifierUpdates || state != KeyboardKeyStateReleased) {
-        return;
+    Qt::KeyboardModifier modifier;
+    switch (keyCode) {
+        case KEY_LEFTALT:
+        case KEY_RIGHTALT:
+            modifier = Qt::KeyboardModifier::AltModifier;
+            break;
+        case KEY_LEFTCTRL:
+        case KEY_RIGHTCTRL:
+            modifier = Qt::KeyboardModifier::ControlModifier;
+            break;
+        case KEY_LEFTMETA:
+        case KEY_RIGHTMETA:
+            modifier = Qt::KeyboardModifier::MetaModifier;
+            break;
+        case KEY_LEFTSHIFT:
+        case KEY_RIGHTSHIFT:
+            modifier = Qt::KeyboardModifier::ShiftModifier;
+            break;
+        default:
+            return;
     }
 
-    if (keyCode == KEY_LEFTALT || keyCode == KEY_RIGHTALT) {
-        m_modifiers &= ~Qt::KeyboardModifier::AltModifier;
-    } else if (keyCode == KEY_LEFTCTRL || keyCode == KEY_RIGHTCTRL) {
-        m_modifiers &= ~Qt::KeyboardModifier::ControlModifier;
-    } else if (keyCode == KEY_LEFTMETA || keyCode == KEY_RIGHTMETA) {
-        m_modifiers &= ~Qt::KeyboardModifier::MetaModifier;
-    } else if (keyCode == KEY_LEFTSHIFT || keyCode == KEY_RIGHTSHIFT) {
-        m_modifiers &= ~Qt::KeyboardModifier::ShiftModifier;
+    switch (state) {
+        case KeyboardKeyStatePressed:
+            m_modifiers |= modifier;
+            break;
+        case KeyboardKeyStateReleased:
+            m_modifiers &= ~modifier;
+            break;
+        default:
+            break;
     }
 }
 
