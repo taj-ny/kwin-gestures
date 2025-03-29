@@ -59,15 +59,16 @@ touchpad:
 | speed            | *<a href="#speed">Speed</a>*           | Settings for how gesture speed is determined. |         |
 
 ### Mouse
-| Property        | Type   | Description                                                                                                                                                                                                                              | Default |
-|-----------------|--------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| gesture_timeout | *time* | The time during which a swipe or wheel gesture must be performed. If not, a press gesture will be started. If no press gestures are activated, all pressed mouse buttons will actually be pressed, after having been blocked previously. | *200*   |
-| press_timeout   | *time* | The time during which press gestures are not started in case the user presses more than one mouse button.<br><br>Swipe and wheel gesture aren't affected by this option.                                                                 | *50*    |
+| Property       | Type   | Description                                                                                                                                                                                                                      | Default |
+|----------------|--------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| motion_timeout | *time* | The time during which a motion gesture must be performed. If not, a press gesture will be started. If no press gestures are activated, all pressed mouse buttons will actually be pressed, after having been blocked previously. | *200*   |
+| press_timeout  | *time* | The time during which press gestures are not started in case the user presses more than one mouse button.<br><br>Swipe and wheel gesture aren't affected by this option.                                                         | *50*    |
 
 ### Touchpad
-| Property         | Type    | Description                                                    | Default |
-|------------------|---------|----------------------------------------------------------------|---------|
-| delta_multiplier | *float* | Delta multiplier used for *move_by_delta* mouse input actions. | *1.0*   |
+| Property         | Type    | Description                                                                | Default |
+|------------------|---------|----------------------------------------------------------------------------|---------|
+| delta_multiplier | *float* | Delta multiplier used for *move_by_delta* mouse input actions.             | *1.0*   |
+| scroll_timeout   | *time*  | The time of inactivity after which 2-finger motion gestures will be ended. | *100*   |
 
 ## Speed
 The defaults may not work for everyone, as they depend on the device's sensitivity and size.
@@ -85,7 +86,7 @@ See [example_gestures.md](example_gestures.md) for examples.
 
 | Property           | Type                                                                              | Description                                                                                                                                                                                                                                                                                                                         | Default |
 |--------------------|-----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| **type**           | *enum(pinch, press, rotate, stroke, swipe)*                                       | *hold* is a deprecated alias for *press*.                                                                                                                                                                                                                                                                                           |         |
+| **type**           | *enum(pinch, press, rotate, stroke, swipe, wheel)*                                | *hold* is a deprecated alias for *press*.                                                                                                                                                                                                                                                                                           |         |
 | actions            | *list(<a href="#action">Action</a>)*                                              |                                                                                                                                                                                                                                                                                                                                     |         |
 | conditions         | *list(<a href="#condition">Condition</a>)*                                        | At least one condition (or 0 if none specified) must be satisfied in order for this gesture to be triggered.                                                                                                                                                                                                                        |         |
 | edges              | *flags(left, right, top, bottom, top_left, top_right, bottom_right, bottom_left)* | List of screen edges/corners, at least one of which the cursor must touch in order for the gesture to be activated.<br><br>Examples:<br>``[ top, left ]`` - Either the top or left edge must be touched, won't work in the top left corner<br>``[ top_left ]`` - Both top and left edge must be touched (top left corner)           |         | 
@@ -112,11 +113,11 @@ See [example_gestures.md](example_gestures.md) for examples.
 | instant  | *bool* | Whether the gesture should begin immediately. By default, there is a delay to prevent conflicts with normal clicks and stroke/swipe gestures.<br><br>Currently only supported for mouse gestures. | *false* |
 
 ### Stroke
-| Property   | Type          | Description                                                   |  Default |
-|------------|---------------|---------------------------------------------------------------|----------|
-| **stroke** | *list(float)* | Strokes can be obtained from the stroke recorder in settings. |          |
+| Property   | Type     | Description                                                                                                    |  Default |
+|------------|----------|----------------------------------------------------------------------------------------------------------------|----------|
+| **stroke** | *string* | A base64-encoded string containing the processed stroke. Can be obtained from the stroke recorder in settings. |          |
 
-### Swipe
+### Swipe, Wheel
 | Property      | Type                                                    | Description                                                                                                     |  Default |
 |---------------|---------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|----------|
 | **direction** | *enum(left, right, up, down, left_right, up_down, any)* | *any*, *left_right* and *up_down* are bi-directional gestures. The direction can be changed during the gesture. |          |

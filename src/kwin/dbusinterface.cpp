@@ -28,31 +28,17 @@ void DBusInterface::recordStroke(const QDBusMessage &message)
     auto reply = message.createReply();
 
     connect(m_filter, &GestureInputEventFilter::strokeRecordingFinished, this, [this, reply](const auto &stroke) {
-        auto format = [](const qreal &x) {
-            return QString::number(x, 'f', 2)
-                .remove(QRegularExpression("0+$"))
-                .remove(QRegularExpression("\\.$"))
-                .replace("0.", ".");
-        };
-
-        QString s;
-        s.append("[");
+        QByteArray bytes;
         const auto &points = stroke.points();
         for (size_t i = 0; i < points.size(); i++) {
-            s.append(format(points[i].x));
-            s.append(",");
-            s.append(format(points[i].y));
-            s.append(",");
-            s.append(format(points[i].t));
-            s.append(",");
-            s.append(format(points[i].alpha));
-            if (i < points.size() - 1) {
-                s.append(",");
-            }
+            // All values range from -1 to 1
+            bytes.push_back(static_cast<char>(points[i].x * 100));
+            bytes.push_back(static_cast<char>(points[i].y * 100));
+            bytes.push_back(static_cast<char>(points[i].t * 100));
+            bytes.push_back(static_cast<char>(points[i].alpha * 100));
         }
-        s.append("]");
 
-        static_cast<QDBusMessage>(reply) << s; // wtf
+        static_cast<QDBusMessage>(reply) << QString("'%1'").arg(bytes.toBase64()); // wtf
         m_bus.send(reply);
 
         KWin::effects->hideOnScreenMessage();

@@ -1101,17 +1101,17 @@ struct convert<libgestures::Stroke>
 {
     static bool decode(const Node &node, libgestures::Stroke &stroke)
     {
-        const auto pointsRaw = node.as<std::vector<qreal>>();
-        if (pointsRaw.size() % 4 != 0) {
-            throw Exception(node.Mark(), "Amount of numbers in stroke must be a multiple of 4");
+        const auto bytes = QByteArray::fromBase64(node.as<QString>().toUtf8());
+        if (bytes.size() % 4 != 0) {
+            throw Exception(node.Mark(), "Invalid stroke");
         }
         std::vector<libgestures::Point> points;
-        for (size_t i = 0; i < pointsRaw.size(); i += 4) {
+        for (qsizetype i = 0; i < bytes.size(); i += 4) {
             points.push_back({
-                .x = pointsRaw[i],
-                .y = pointsRaw[i + 1],
-                .t = pointsRaw[i + 2],
-                .alpha = pointsRaw[i + 3]
+                .x = bytes[i] / 100.0,
+                .y = bytes[i + 1] / 100.0,
+                .t = bytes[i + 2] / 100.0,
+                .alpha = bytes[i + 3] / 100.0
             });
         }
         stroke = libgestures::Stroke(points);
