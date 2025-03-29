@@ -4,15 +4,10 @@
 namespace libgestures
 {
 
-bool PlasmaGlobalShortcutGestureAction::tryExecute()
+void PlasmaGlobalShortcutGestureAction::execute()
 {
-    if (!GestureAction::tryExecute()) {
-        return false;
-    }
-
     QDBusInterface interface("org.kde.kglobalaccel", m_path, "org.kde.kglobalaccel.Component");
     interface.call("invokeShortcut", m_shortcut);
-    return true;
 }
 
 void PlasmaGlobalShortcutGestureAction::setComponent(const QString &component)

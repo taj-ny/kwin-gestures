@@ -13,7 +13,7 @@ namespace libgestures
 class CommandGestureAction : public GestureAction
 {
 public:
-    bool tryExecute() override;
+    void execute() override;
     void setCommand(const QString &command);
 
 private:

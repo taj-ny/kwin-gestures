@@ -38,19 +38,83 @@ enum On {
     EndOrCancel
 };
 
-/**
- * Executed at a particular point during the gesture if the specified conditions are met.
- */
-class GestureAction : public QObject
+enum class IntervalDirection
 {
-    Q_OBJECT
-
-public:
     /**
-     * Executes the action if conditions are satisfied and the threshold reached. Does nothing otherwise.
-     * @return Whether the action has been executed.
+     * The update delta can be either positive or negative.
      */
-    virtual bool tryExecute();
+    Any,
+    /**
+     * The update delta must be positive.
+     */
+    Positive,
+    /**
+     * The update delta must be negative.
+     */
+    Negative
+};
+
+/**
+ * Represents how often an action should repeat.
+ */
+class ActionInterval
+{
+public:
+    const qreal &value() const;
+
+    /**
+     * @return Whether the specified delta matches the interval's direction.
+     */
+    bool matches(const qreal &delta) const;
+
+    /**
+     * @param value Will be converted to an absolute value. 0 means execute exactly once per input event, direction
+     * still applies. Default is 0.
+     */
+    void setValue(const qreal &value);
+    /**
+     * @param direction Default is Any.
+     */
+    void setDirection(const IntervalDirection &direction);
+
+private:
+    qreal m_value = 0;
+    IntervalDirection m_direction = IntervalDirection::Any;
+};
+
+/**
+ * Executed at a specific point during the gesture if the specified conditions are met.
+ */
+class GestureAction
+{
+public:
+    virtual ~GestureAction() = default;
+
+    /**
+     * Called by the gesture when it is started.
+     */
+    void gestureStarted();
+    /**
+     * Called by the gesture when it is updated.
+     */
+    void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    /**
+     * Called by the gesture when it has ended.
+     * @param execute Whether the action should be executed.
+     */
+    void gestureEnded(const bool &execute);
+    /**
+     * Called by the gesture when it has been cancelled.
+     * @param execute Whether the action should be executed.
+     */
+    void gestureCancelled(const bool &execute);
+
+    /**
+     * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
+     */
+    void tryExecute();
+    const bool &executed() const;
+    bool canExecute() const;
 
     /**
      * @return Whether the action satisfies at least one condition, or no conditions have been added.
@@ -68,6 +132,15 @@ public:
      */
     void addCondition(const std::shared_ptr<const Condition> &condition);
 
+    const QString &name() const;
+    void setName(const QString &name);
+
+    const On &on() const;
+    /**
+     * @param on The point during the gesture at which the action should be executed.
+     */
+    void setOn(const On &on);
+
     /**
      * @param blockOtherActions Whether this action should block all other actions, including actions belonging to
      * other custom and built-in gestures, from being executed during the gesture, if the action is executed.
@@ -76,11 +149,8 @@ public:
 
     /**
      * @param interval How often an update action should repeat.
-     * If 0, the action will be executed exactly once per input event.
-     * If not 0, the action will only be executed when the accumulated delta reaches this interval, and will keep
-     * being executed until the delta is smaller than the interval.
      */
-    void setRepeatInterval(const qreal &interval);
+    void setRepeatInterval(const ActionInterval &interval);
 
     /**
      * Sets how far the gesture needs to progress in order for the action to be executed. Thresholds are always
@@ -89,53 +159,26 @@ public:
      */
     void setThresholds(const qreal &minimum, const qreal &maximum);
 
-    /**
-     * @param on The point during the gesture at which the action should be executed.
-     */
-    void setOn(const On &on);
-signals:
-    /**
-     * Emitted when the action has been executed.
-     */
-    void executed();
-
-    /**
-     * Emitted when the gesture this action belongs to has been cancelled.
-     */
-    void gestureCancelled();
-
-    /*
-     * Emitted when the gesture this action belongs to has ended.
-     */
-    void gestureEnded();
-
-    /**
-     * Emitted when the gesture this action belongs has began, its threshold reached and the action's conditions
-     * satisfied.
-     */
-    void gestureStarted();
-
-    /**
-     * Emitted when the gesture this action belongs to has been updated.
-     */
-    void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
-
 protected:
-    GestureAction();
+    GestureAction() = default;
+
+    /**
+     * Executes the action without checking conditions.
+     */
+    virtual void execute() { };
 
     // This is just a quick way to get directionless swipe gestures working
     QPointF m_currentDeltaPointMultiplied;
-private slots:
-    void onGestureCancelled();
-    void onGestureEnded();
-    void onGestureStarted();
-    void onGestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
 
 private:
     /**
      * @return Whether the accumulated delta fits within the specified range.
      */
     bool thresholdReached() const;
+
+    void reset();
+
+    QString m_name = "none";
 
     std::vector<std::shared_ptr<const Condition>> m_conditions;
 
@@ -155,7 +198,7 @@ private:
      */
     bool m_executed = false;
 
-    qreal m_repeatInterval = 0;
+    ActionInterval m_interval;
     bool m_blockOtherActions = false;
     qreal m_minimumThreshold = 0;
     qreal m_maximumThreshold = 0;

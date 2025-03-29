@@ -3,12 +3,8 @@
 namespace libgestures
 {
 
-bool InputGestureAction::tryExecute()
+void InputGestureAction::execute()
 {
-    if (!GestureAction::tryExecute()) {
-        return false;
-    }
-
     const auto input = libgestures::Input::implementation();
     for (const auto &action : m_sequence) {
         for (const auto &key : action.keyboardPress) {
@@ -35,8 +31,6 @@ bool InputGestureAction::tryExecute()
             input->mouseMoveRelative(m_currentDeltaPointMultiplied);
         }
     }
-
-    return true;
 }
 
 void InputGestureAction::setSequence(const std::vector<InputAction> &sequence)

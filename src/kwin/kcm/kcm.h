@@ -14,6 +14,10 @@ class KWinGesturesKCM : public KCModule
 public:
     explicit KWinGesturesKCM(QObject *parent, const KPluginMetaData &data);
 
+private slots:
+    void slotCopyPoints();
+    void slotRecordStroke();
+
 private:
     ::Ui::KWinGesturesKCM ui;
 };

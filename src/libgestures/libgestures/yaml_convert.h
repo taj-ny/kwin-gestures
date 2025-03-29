@@ -3,7 +3,7 @@
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
 #include "libgestures/actions/plasmaglobalshortcut.h"
-#include "libgestures/gestures/gesturerecognizer.h"
+#include "libgestures/gestures/handler.h"
 
 #include <QRegularExpression>
 #include <QVector>
@@ -620,12 +620,18 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
     static bool decode(const Node &node, std::shared_ptr<libgestures::Gesture> &gesture)
     {
         const auto type = node["type"].as<QString>();
-        if (type == "hold") {
-            gesture = std::make_shared<libgestures::HoldGesture>();
+        if (type == "hold" || type == "press") {
+            auto pressGesture = new libgestures::PressGesture;
+            pressGesture->setInstant(node["instant"].as<bool>(false));
+            gesture.reset(pressGesture);
         } else if (type == "pinch") {
             auto pinchGesture = new libgestures::PinchGesture;
             pinchGesture->setDirection(node["direction"].as<libgestures::PinchDirection>());
             gesture.reset(pinchGesture);
+        } else if (type == "stroke") {
+            auto strokeGesture = new libgestures::StrokeGesture;
+            strokeGesture->setStroke(node["stroke"].as<libgestures::Stroke>());
+            gesture.reset(strokeGesture);
         } else if (type == "swipe") {
             auto swipeGesture = new libgestures::SwipeGesture;
             swipeGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
@@ -634,15 +640,17 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             auto rotateGesture = new libgestures::RotateGesture;
             rotateGesture->setDirection(node["direction"].as<libgestures::RotateDirection>());
             gesture.reset(rotateGesture);
+        } else if (type == "wheel") {
+            auto wheelGesture = new libgestures::WheelGesture;
+            wheelGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
+            gesture.reset(wheelGesture);
         } else {
             throw Exception(node.Mark(), "Invalid gesture type");
         }
 
-        const auto fingersNode = node["fingers"];
-        if (!fingersNode) {
-            throw Exception(node.Mark(), "Finger count not specified");
-        }
-        const auto fingersRaw = fingersNode.as<QString>();
+        gesture->setName(node["name"].as<QString>(gesture->name()));
+
+        const auto fingersRaw = node["fingers"].as<QString>("1");
         range fingers;
         if (fingersRaw.contains("-")) {
             const auto split = fingersRaw.split("-");
@@ -651,6 +659,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         } else {
             fingers.min = fingers.max = fingersRaw.toUInt();
         }
+        gesture->setFingers(fingers.min, fingers.max);
 
         const auto thresholdRaw = node["threshold"].as<QString>("");
         range threshold(0, 0);
@@ -662,7 +671,6 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             threshold.min = thresholdRaw.toFloat();
         }
 
-        gesture->setFingers(fingers.min, fingers.max);
         gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
         gesture->setThresholds(threshold.min, threshold.max);
 
@@ -681,6 +689,12 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
                     throw Exception(node.Mark(), "Invalid keyboard modifier");
                 }
             }
+        }
+        if (const auto mouseButtonsNode = node["mouse_buttons"]) {
+            gesture->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton));
+        }
+        if (const auto edgesNode = node["edges"]) {
+            gesture->setEdges(edgesNode.as<std::set<libgestures::Edges>>());
         }
 
         for (const auto &conditionNode : node["conditions"]) {
@@ -726,6 +740,8 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
             throw Exception(node.Mark(), "Action has no valid action property");
         }
 
+        action->setName(node["name"].as<QString>(action->name()));
+
         const auto thresholdRaw = node["threshold"].as<QString>("");
         range threshold(0, 0);
         if (!thresholdRaw.isEmpty()) {
@@ -744,7 +760,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 
         action->setOn(on);
         action->setThresholds(threshold.min, threshold.max);
-        action->setRepeatInterval(node["interval"].as<qreal>(0));
+        action->setRepeatInterval(node["interval"].as<libgestures::ActionInterval>(libgestures::ActionInterval()));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
         for (const auto &conditionNode : node["conditions"]) {
             action->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
@@ -755,16 +771,39 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 };
 
 template<>
-struct convert<std::shared_ptr<libgestures::GestureRecognizer>>
+struct convert<libgestures::ActionInterval>
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer)
+    static bool decode(const Node &node, libgestures::ActionInterval &interval)
+    {
+        const auto intervalRaw = node.as<QString>();
+        if (intervalRaw == "+") {
+            interval.setDirection(libgestures::IntervalDirection::Positive);
+            return true;
+        } else if (intervalRaw == "-") {
+            interval.setDirection(libgestures::IntervalDirection::Negative);
+            return true;
+        }
+
+        if (const auto value = node.as<qreal>()) {
+            interval.setValue(value);
+            interval.setDirection(value < 0 ? libgestures::IntervalDirection::Negative : libgestures::IntervalDirection::Positive);
+        }
+
+        return true;
+    }
+};
+
+template<>
+struct convert<std::shared_ptr<libgestures::GestureHandler>>
+{
+    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
     {
         const auto gesturesNode = node["gestures"];
         if (!gesturesNode.IsDefined()) {
             throw Exception(node.Mark(), "No gestures specified");
         }
 
-        gestureRecognizer = std::make_unique<libgestures::GestureRecognizer>();
+        gestureRecognizer = std::make_unique<libgestures::GestureHandler>();
         for (const auto gestureNode : gesturesNode) {
             gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
         }
@@ -870,6 +909,34 @@ struct convert<libgestures::SwipeDirection>
             direction = libgestures::SwipeDirection::Any;
         } else {
             throw Exception(node.Mark(), "Invalid swipe direction");
+        }
+
+        return true;
+    }
+};
+
+static const std::unordered_map<QString, libgestures::Edges> s_edges = {
+    {"none", libgestures::Edge::None},
+    {"left", libgestures::Edge::Left},
+    {"right", libgestures::Edge::Right},
+    {"top", libgestures::Edge::Top},
+    {"bottom", libgestures::Edge::Bottom},
+    {"top_left", libgestures::Edge::Top | libgestures::Edge::Left},
+    {"top_right", libgestures::Edge::Top | libgestures::Edge::Right},
+    {"bottom_right", libgestures::Edge::Bottom | libgestures::Edge::Right},
+    {"bottom_left", libgestures::Edge::Bottom | libgestures::Edge::Left},
+};
+template<>
+struct convert<std::set<libgestures::Edges>>
+{
+    static bool decode(const Node &node, std::set<libgestures::Edges> &edges)
+    {
+        for (const auto edge : node.as<QStringList>()) {
+            if (s_edges.contains(edge)) {
+                edges.insert(s_edges.at(edge));
+            } else {
+                throw Exception(node.Mark(), "Invalid edge");
+            }
         }
 
         return true;
@@ -1030,6 +1097,30 @@ struct convert<QRegularExpression>
 };
 
 template<>
+struct convert<libgestures::Stroke>
+{
+    static bool decode(const Node &node, libgestures::Stroke &stroke)
+    {
+        const auto bytes = QByteArray::fromBase64(node.as<QString>().toUtf8());
+        if (bytes.size() % 4 != 0) {
+            throw Exception(node.Mark(), "Invalid stroke");
+        }
+        std::vector<libgestures::Point> points;
+        for (qsizetype i = 0; i < bytes.size(); i += 4) {
+            points.push_back({
+                .x = bytes[i] / 100.0,
+                .y = bytes[i + 1] / 100.0,
+                .t = bytes[i + 2] / 100.0,
+                .alpha = bytes[i + 3] / 100.0
+            });
+        }
+        stroke = libgestures::Stroke(points);
+
+        return true;
+    }
+};
+
+template<>
 struct convert<Qt::KeyboardModifiers>
 {
     static bool decode(const Node &node, Qt::KeyboardModifiers &modifiers)
@@ -1046,6 +1137,28 @@ struct convert<Qt::KeyboardModifiers>
     }
 };
 
+static const std::unordered_map<QString, Qt::MouseButton> s_mouseButtons = {
+    {"left", Qt::MouseButton::LeftButton},
+    {"middle", Qt::MouseButton::MiddleButton},
+    {"right", Qt::MouseButton::RightButton},
+    {"back", Qt::MouseButton::ExtraButton1},
+    {"forward", Qt::MouseButton::ExtraButton2},
+};
+template<>
+struct convert<Qt::MouseButtons>
+{
+    static bool decode(const Node &node, Qt::MouseButtons &buttons)
+    {
+        for (const auto &buttonRaw : node.as<QStringList>()) {
+            if (s_mouseButtons.contains(buttonRaw)) {
+                buttons |= s_mouseButtons.at(buttonRaw);
+            } else {
+                throw Exception(node.Mark(), "Invalid mouse button");
+            }
+        }
 
+        return true;
+    }
+};
 
 }

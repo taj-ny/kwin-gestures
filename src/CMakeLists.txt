@@ -4,13 +4,16 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
     libgestures/libgestures/gestures/gesture.cpp
-    libgestures/libgestures/gestures/gesturerecognizer.cpp
-    libgestures/libgestures/gestures/holdgesture.h
-    libgestures/libgestures/gestures/pinchgesture.cpp
-    libgestures/libgestures/gestures/rotategesture.cpp
-    libgestures/libgestures/gestures/swipegesture.cpp
+    libgestures/libgestures/gestures/handler.cpp
+    libgestures/libgestures/gestures/pinch.cpp
+    libgestures/libgestures/gestures/press.cpp
+    libgestures/libgestures/gestures/rotate.cpp
+    libgestures/libgestures/gestures/stroke.cpp
+    libgestures/libgestures/gestures/swipe.cpp
+    libgestures/libgestures/gestures/wheel.cpp
     libgestures/libgestures/condition.cpp
     libgestures/libgestures/input.cpp
+    libgestures/libgestures/logging.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 

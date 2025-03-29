@@ -2,14 +2,11 @@
     "KPlugin": {
         "Authors": [
             {
-                "Name": "KWin development team"
-            },
-            {
                 "Name": "taj_ny"
             }
         ],
         "Category": "Tools",
-        "Description": "Custom touchpad gestures",
+        "Description": "Mouse and touchpad gestures",
         "EnabledByDefault": false,
         "License": "GPL",
         "Name": "Gestures"

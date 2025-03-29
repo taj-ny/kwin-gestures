@@ -20,6 +20,7 @@ endif()
 set(kwin_gestures_SOURCES
     impl/kwininput.cpp
     impl/kwinwindowinfoprovider.cpp
+        dbusinterface.cpp
     effect.cpp
     inputfilter.cpp
     main.cpp
