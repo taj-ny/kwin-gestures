@@ -625,14 +625,16 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         const auto &gestures = activeGestures(GestureType::Stroke);
 
         for (const auto &gesture : activeGestures(GestureType::Stroke)) {
-            const auto score = stroke.compare(static_cast<StrokeGesture *>(gesture)->stroke());
-            if (score > bestScore && score > Stroke::min_matching_score()) {
-                bestGesture = gesture;
-                bestScore = score;
+            for (const auto &gestureStroke : static_cast<StrokeGesture *>(gesture)->strokes()) {
+                const auto score = stroke.compare(gestureStroke);
+                if (score > bestScore && score > Stroke::min_matching_score()) {
+                    bestGesture = gesture;
+                    bestScore = score;
+                }
             }
         }
         qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote()
-            << QString("Stroke compared (strokes: %1, bestScore: %2)").arg(QString::number(gestures.size()), QString::number(bestScore));
+            << QString("Stroke compared (bestScore: %2)").arg(QString::number(bestScore));
 
         if (bestGesture) {
             gestureCancel(bestGesture);

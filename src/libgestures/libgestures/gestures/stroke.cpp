@@ -26,14 +26,14 @@
 namespace libgestures
 {
 
-void StrokeGesture::setStroke(const Stroke &stroke)
+void StrokeGesture::setStrokes(const std::vector<Stroke> &strokes)
 {
-    m_stroke = stroke;
+    m_strokes = strokes;
 }
 
-const Stroke &StrokeGesture::stroke() const
+const std::vector<Stroke> &StrokeGesture::strokes() const
 {
-    return m_stroke;
+    return m_strokes;
 }
 
 GestureType StrokeGesture::type() const

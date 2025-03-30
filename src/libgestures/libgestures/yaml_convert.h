@@ -630,7 +630,7 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
             gesture.reset(pinchGesture);
         } else if (type == "stroke") {
             auto strokeGesture = new libgestures::StrokeGesture;
-            strokeGesture->setStroke(node["stroke"].as<libgestures::Stroke>());
+            strokeGesture->setStrokes(node["strokes"].as<std::vector<libgestures::Stroke>>());
             gesture.reset(strokeGesture);
         } else if (type == "swipe") {
             auto swipeGesture = new libgestures::SwipeGesture;

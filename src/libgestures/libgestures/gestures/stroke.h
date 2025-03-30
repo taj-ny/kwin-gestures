@@ -82,13 +82,13 @@ private:
 class StrokeGesture : public Gesture
 {
 public:
-    const Stroke &stroke() const;
-    void setStroke(const Stroke &stroke);
+    const std::vector<Stroke> &strokes() const;
+    void setStrokes(const std::vector<Stroke> &strokes);
 
     GestureType type() const override;
 
 private:
-    Stroke m_stroke;
+    std::vector<Stroke> m_strokes;
 };
 
 }
