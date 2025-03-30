@@ -2,12 +2,12 @@
 Highly-customizable input handler built on top of libinput and KWin that executes actions on input. It is currently in a very early stage of development.
 
 # Features
-- Mouse gestures: press, strokes, swipe, wheel
+- Mouse gestures: press, stroke, swipe, wheel
   - Activated by pressing mouse button(s), keyboard modifier(s) or both
   - Customizable start positions (edge, corner, middle, quadrant etc.)
   - Mouse buttons can still be used for normal clicks and swipes (a small delay is introduced)
   - Supports horizontal scrolling wheels
-- Touchpad gestures: pinch, press, rotate, strokes, swipe
+- Touchpad gestures: pinch, press, rotate, stroke, swipe
   - Supports 2-finger strokes and swipes by reinterpreting scroll events
 - Actions: run command, simulate input (low-latency, no external tools or input group required), invoke Plasma global shortcut
   - Can be executed at a specific point of the gesture's lifecycle (begin, update, end, cancel), allowing for complex gestures like 3-finger window drag or alt+tab window switching without them being hard-coded
