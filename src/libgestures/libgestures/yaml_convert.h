@@ -553,32 +553,36 @@ static const std::unordered_map<QString, Qt::KeyboardModifier> s_keyboardModifie
 namespace YAML
 {
 
-struct range
+template<typename T>
+struct convert<libgestures::Range<T>>
 {
-    qreal min = 0.0;
-    qreal max = 0.0;
-
-    range() = default;
-    range(qreal min, qreal max)
+    static bool decode(const Node &node, libgestures::Range<T> &range)
     {
-        this->min = min;
-        this->max = max;
+        const auto rangeRaw = node.as<QString>().replace(" ", "");
+        if (rangeRaw.contains("-")) {
+            const auto split = rangeRaw.split("-");
+            range = libgestures::Range<T>(split[0].toDouble(), split[1].toDouble());
+        } else {
+            range = libgestures::Range<T>(rangeRaw.toDouble(), rangeRaw.toDouble());
+        }
+
+        return true;
     }
 };
 
 template<>
-struct convert<range>
+struct convert<libgestures::Range<QPointF>>
 {
-    static bool decode(const Node &node, range &range)
+    static bool decode(const Node &node, libgestures::Range<QPointF> &range)
     {
-        const auto rangeRaw = node.as<QString>();
-        if (rangeRaw.contains("-")) {
-            const auto split = rangeRaw.split("-");
-            range.min = split[0].toDouble();
-            range.max = split[1].toDouble();
-        } else {
-            range.min = range.max = rangeRaw.toDouble();
+        const auto raw = node.as<QString>().replace(" ", "").split("-");
+        if (raw.size() != 2) {
+            throw Exception(node.Mark(), "Invalid start position");
         }
+
+        const auto rawMin = raw[0].split(";");
+        const auto rawMax = raw[1].split(";");
+        range = libgestures::Range<QPointF>(QPointF(rawMin[0].toDouble(), rawMin[1].toDouble()), QPointF(rawMax[0].toDouble(), rawMax[1].toDouble()));
 
         return true;
     }
@@ -650,29 +654,10 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
 
         gesture->setName(node["name"].as<QString>(gesture->name()));
 
-        const auto fingersRaw = node["fingers"].as<QString>("1");
-        range fingers;
-        if (fingersRaw.contains("-")) {
-            const auto split = fingersRaw.split("-");
-            fingers.min = split[0].toUInt();
-            fingers.max = split[1].toUInt();
-        } else {
-            fingers.min = fingers.max = fingersRaw.toUInt();
-        }
-        gesture->setFingers(fingers.min, fingers.max);
-
-        const auto thresholdRaw = node["threshold"].as<QString>("");
-        range threshold(0, 0);
-        if (thresholdRaw.contains("-")) {
-            const auto split = thresholdRaw.split("-");
-            threshold.min = split[0].toFloat();
-            threshold.max = split[1].toFloat();
-        } else {
-            threshold.min = thresholdRaw.toFloat();
-        }
+        gesture->setFingers(node["fingers"].as<libgestures::Range<uint8_t>>(1));
+        gesture->setThreshold(node["threshold"].as<libgestures::Range<qreal>>(0));
 
         gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
-        gesture->setThresholds(threshold.min, threshold.max);
 
         if (const auto modifiersNode = node["keyboard_modifiers"]) {
             if (modifiersNode.IsSequence()) {
@@ -693,8 +678,8 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         if (const auto mouseButtonsNode = node["mouse_buttons"]) {
             gesture->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton));
         }
-        if (const auto edgesNode = node["edges"]) {
-            gesture->setEdges(edgesNode.as<std::set<libgestures::Edges>>());
+        if (const auto startPositionsNode = node["start_positions"]) {
+            gesture->setStartPositions(startPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
         }
 
         for (const auto &conditionNode : node["conditions"]) {
@@ -742,24 +727,15 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
 
         action->setName(node["name"].as<QString>(action->name()));
 
-        const auto thresholdRaw = node["threshold"].as<QString>("");
-        range threshold(0, 0);
-        if (!thresholdRaw.isEmpty()) {
-            if (thresholdRaw.contains("-")) {
-                const auto split = thresholdRaw.split("-");
-                threshold.min = split[0].toFloat();
-                threshold.max = split[1].toFloat();
-            } else {
-                threshold.min = thresholdRaw.toFloat();
-            }
-        }
+        const auto threshold = node["threshold"].as<libgestures::Range<qreal>>(0);
+        action->setThreshold(threshold);
+
         const auto on = node["on"].as<libgestures::On>(libgestures::On::End);
-        if (on == libgestures::On::Begin && (threshold.min != 0 || threshold.max != 0)) {
+        if (on == libgestures::On::Begin && (threshold.min() != 0 || threshold.max() != 0)) {
             throw Exception(node.Mark(), "Begin actions can't have thresholds");
         }
 
         action->setOn(on);
-        action->setThresholds(threshold.min, threshold.max);
         action->setRepeatInterval(node["interval"].as<libgestures::ActionInterval>(libgestures::ActionInterval()));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
         for (const auto &conditionNode : node["conditions"]) {
@@ -915,33 +891,6 @@ struct convert<libgestures::SwipeDirection>
     }
 };
 
-static const std::unordered_map<QString, libgestures::Edges> s_edges = {
-    {"none", libgestures::Edge::None},
-    {"left", libgestures::Edge::Left},
-    {"right", libgestures::Edge::Right},
-    {"top", libgestures::Edge::Top},
-    {"bottom", libgestures::Edge::Bottom},
-    {"top_left", libgestures::Edge::Top | libgestures::Edge::Left},
-    {"top_right", libgestures::Edge::Top | libgestures::Edge::Right},
-    {"bottom_right", libgestures::Edge::Bottom | libgestures::Edge::Right},
-    {"bottom_left", libgestures::Edge::Bottom | libgestures::Edge::Left},
-};
-template<>
-struct convert<std::set<libgestures::Edges>>
-{
-    static bool decode(const Node &node, std::set<libgestures::Edges> &edges)
-    {
-        for (const auto edge : node.as<QStringList>()) {
-            if (s_edges.contains(edge)) {
-                edges.insert(s_edges.at(edge));
-            } else {
-                throw Exception(node.Mark(), "Invalid edge");
-            }
-        }
-
-        return true;
-    }
-};
 
 template<>
 struct convert<libgestures::WindowStates>

@@ -53,7 +53,7 @@ bool Gesture::update(const qreal &delta, const QPointF &deltaPointMultiplied)
     if (!m_thresholdReached) {
         qCDebug(LIBGESTURES_GESTURE).noquote()
             << QString("Threshold not reached (name: %1, current: %2, min: %3, max: %4")
-                .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_minimumThreshold), QString::number(m_maximumThreshold));
+                .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_threshold.min()), QString::number(m_threshold.max()));
         return true;
     }
 
@@ -83,10 +83,12 @@ bool Gesture::update(const qreal &delta, const QPointF &deltaPointMultiplied)
 
 bool Gesture::satisfiesBeginConditions(const GestureBeginEvent &data) const
 {
-    if ((m_fingerCountIsRelevant && (m_minimumFingers > data.fingers || m_maximumFingers < data.fingers))
-        || (m_keyboardModifiers && *m_keyboardModifiers != data.keyboardModifiers)
-        || (m_mouseButtons && *m_mouseButtons != data.mouseButtons)
-        || (m_edges && !m_edges->contains(data.edges))) {
+    if ((m_fingerCountIsRelevant && data.fingers && !m_fingers.contains(*data.fingers))
+        || (m_keyboardModifiers && data.keyboardModifiers && *m_keyboardModifiers != data.keyboardModifiers)
+        || (m_mouseButtons && data.mouseButtons && *m_mouseButtons != data.mouseButtons)
+        || (m_startPositions && data.position && std::find_if(m_startPositions->begin(), m_startPositions->end(), [&data](const auto &position) {
+            return position.contains(*data.position);
+        }) == m_startPositions->end())) {
         return false;
     }
 
@@ -131,16 +133,14 @@ void Gesture::addCondition(const std::shared_ptr<const Condition> &condition)
     m_conditions.push_back(condition);
 }
 
-void Gesture::setThresholds(const qreal &minimum, const qreal &maximum)
+void Gesture::setThreshold(const Range<qreal> &threshold)
 {
-    m_minimumThreshold = minimum;
-    m_maximumThreshold = maximum;
+    m_threshold = threshold;
 }
 
-void Gesture::setFingers(const uint8_t &minimum, const uint8_t &maximum)
+void Gesture::setFingers(const Range<uint8_t> &fingers)
 {
-    m_minimumFingers = minimum;
-    m_maximumFingers = maximum;
+    m_fingers = fingers;
 }
 
 void Gesture::setFingerCountIsRelevant(const bool &relevant)
@@ -148,9 +148,9 @@ void Gesture::setFingerCountIsRelevant(const bool &relevant)
     m_fingerCountIsRelevant = relevant;
 }
 
-void Gesture::setEdges(const std::optional<std::set<Edges>> &edges)
+void Gesture::setStartPositions(const std::optional<std::vector<Range<QPointF>>> &positions)
 {
-    m_edges = edges;
+    m_startPositions = positions;
 }
 
 void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)
@@ -165,8 +165,8 @@ void Gesture::setMouseButtons(const std::optional<Qt::MouseButtons> &buttons)
 
 bool Gesture::thresholdReached() const
 {
-    return ((m_minimumThreshold == 0 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
-            && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold));
+    return (m_threshold.min() == 0 || m_absoluteAccumulatedDelta >= m_threshold.min())
+        && (m_threshold.max() == 0 || m_absoluteAccumulatedDelta <= m_threshold.max());
 }
 
 void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
@@ -177,11 +177,6 @@ void Gesture::setSpeed(const libgestures::GestureSpeed &speed)
 const GestureSpeed &Gesture::speed() const
 {
     return m_speed;
-}
-
-const std::optional<std::set<Edges>> &Gesture::edges() const
-{
-    return m_edges;
 }
 
 const std::optional<Qt::KeyboardModifiers> &Gesture::keyboardModifiers() const

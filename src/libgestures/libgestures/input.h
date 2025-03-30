@@ -7,9 +7,6 @@
 namespace libgestures
 {
 
-enum class Edge;
-typedef QFlags<Edge> Edges;
-
 /**
  * Provides access to input.
  */
@@ -37,7 +34,7 @@ public:
     virtual void mouseMoveAbsolute(const QPointF &pos) { };
     virtual void mouseMoveRelative(const QPointF &pos) { };
     virtual Qt::MouseButtons mouseButtons() const;
-    virtual Edges mouseScreenEdges(const qreal &threshold) const;
+    virtual QPointF mousePosition() const;
 
     virtual bool isSendingInput() const;
 

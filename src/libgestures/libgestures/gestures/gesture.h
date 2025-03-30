@@ -5,23 +5,9 @@
 
 #include <QRegularExpression>
 
-#include <set>
-#include <vector>
-
 namespace libgestures
 {
 Q_NAMESPACE
-
-enum class Edge {
-    None = 0,
-    Left = 1u << 0,
-    Right = 1u << 1,
-    Top = 1u << 2,
-    Bottom = 1u << 3
-};
-Q_ENUM_NS(Edge)
-Q_DECLARE_FLAGS(Edges, Edge)
-Q_DECLARE_OPERATORS_FOR_FLAGS(Edges)
 
 enum class GestureSpeed {
     Any,
@@ -44,12 +30,15 @@ Q_ENUM_NS(GestureType)
 Q_DECLARE_FLAGS(GestureTypes, GestureType)
 Q_DECLARE_OPERATORS_FOR_FLAGS(GestureTypes)
 
+/**
+ * Fields set to std::nullopt will not be checked.
+ */
 struct GestureBeginEvent
 {
-    uint8_t fingers = 1;
-    Qt::KeyboardModifiers keyboardModifiers = Input::implementation()->keyboardModifiers();
-    Qt::MouseButtons mouseButtons = Input::implementation()->mouseButtons();
-    Edges edges = Input::implementation()->mouseScreenEdges(10);
+    std::optional<uint8_t> fingers = 1;
+    std::optional<Qt::KeyboardModifiers> keyboardModifiers = Input::implementation()->keyboardModifiers();
+    std::optional<Qt::MouseButtons> mouseButtons = Input::implementation()->mouseButtons();
+    std::optional<QPointF> position = Input::implementation()->mousePosition();
 };
 
 /**
@@ -106,18 +95,14 @@ public:
     void setName(const QString &name);
 
     const GestureSpeed &speed() const;
-    const std::optional<std::set<Edges>> &edges() const;
     const std::optional<Qt::KeyboardModifiers> &keyboardModifiers() const;
     const std::optional<Qt::MouseButtons> &mouseButtons() const;
 
     void setSpeed(const GestureSpeed &speed);
-    void setThresholds(const qreal &minimum, const qreal &maximum);
-    void setFingers(const uint8_t &minimum, const uint8_t &maximum);
+    void setThreshold(const Range<qreal> &threshold);
+    void setFingers(const Range<uint8_t> &fingers);
 
-    /**
-     * @param edges
-     */
-    void setEdges(const std::optional<std::set<Edges>> &edges);
+    void setStartPositions(const std::optional<std::vector<Range<QPointF>>> &positions);
     /**
      * @param modifiers std::nullopt - ignore modifiers, Qt::KeyboardModifier::NoModifier - no modifiers, anything
      * else - all specified modifiers must be active
@@ -146,16 +131,14 @@ private:
 
     QString m_name = "none";
 
-    uint8_t m_minimumFingers = 0;
-    uint8_t m_maximumFingers = 0;
+    Range<uint8_t> m_fingers{0};
     bool m_fingerCountIsRelevant = true;
 
     bool m_thresholdReached = false;
-    qreal m_minimumThreshold = 0;
-    qreal m_maximumThreshold = 0;
+    Range<qreal> m_threshold{0};
     GestureSpeed m_speed = GestureSpeed::Any;
 
-    std::optional<std::set<Edges>> m_edges;
+    std::optional<std::vector<Range<QPointF>>> m_startPositions;
     std::optional<Qt::KeyboardModifiers> m_keyboardModifiers;
     std::optional<Qt::MouseButtons> m_mouseButtons;
 

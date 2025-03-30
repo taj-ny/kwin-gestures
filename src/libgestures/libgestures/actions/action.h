@@ -1,6 +1,7 @@
 #pragma once
 
 #include "libgestures/condition.h"
+#include "libgestures/range.h"
 
 #include <QPointF>
 
@@ -157,7 +158,7 @@ public:
      * positive no matter the direction. 0 - no threshold.
      * @remark Begin actions can't have thresholds. Set the threshold on the gesture instead.
      */
-    void setThresholds(const qreal &minimum, const qreal &maximum);
+    void setThreshold(const Range<qreal> &threshold);
 
 protected:
     GestureAction() = default;
@@ -200,8 +201,7 @@ private:
 
     ActionInterval m_interval;
     bool m_blockOtherActions = false;
-    qreal m_minimumThreshold = 0;
-    qreal m_maximumThreshold = 0;
+    Range<qreal> m_threshold{0};
     On m_on = On::Update;
 
     friend class TestGestureRecognizer;

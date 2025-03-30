@@ -58,7 +58,7 @@ public:
     void mouseMoveAbsolute(const QPointF &pos) override;
     void mouseMoveRelative(const QPointF &pos) override;
     Qt::MouseButtons mouseButtons() const override;
-    libgestures::Edges mouseScreenEdges(const qreal &threshold) const override;
+    QPointF mousePosition() const override;
 
     bool isSendingInput() const override;
 

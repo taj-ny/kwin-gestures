@@ -14,6 +14,7 @@ set(libgestures_SRCS
     libgestures/libgestures/condition.cpp
     libgestures/libgestures/input.cpp
     libgestures/libgestures/logging.cpp
+    libgestures/libgestures/range.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 
@@ -22,7 +23,6 @@ target_link_libraries(libgestures PRIVATE
     Qt6::Core
     Qt6::DBus
 )
-
 
 find_package(yaml-cpp REQUIRED)
 target_link_libraries(libgestures PRIVATE yaml-cpp)

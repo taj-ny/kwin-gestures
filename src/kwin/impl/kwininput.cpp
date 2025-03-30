@@ -88,29 +88,21 @@ Qt::MouseButtons KWinInput::mouseButtons() const
     return m_pointer->buttons();
 }
 
-libgestures::Edges KWinInput::mouseScreenEdges(const qreal &threshold) const
+QPointF KWinInput::mousePosition() const
 {
-    libgestures::Edges edges = libgestures::Edge::None;
-    const auto mousePos = m_pointer->pos();
+    QPointF position;
+    const auto rawPosition = m_pointer->pos();
     for (const auto &output : KWin::workspace()->outputs()) {
         const auto geometry = output->geometryF();
-        if (!geometry.contains(mousePos)) {
+        if (!geometry.contains(rawPosition)) {
             continue;
         }
 
-        if (mousePos.x() - geometry.left() <= threshold) {
-            edges |= libgestures::Edge::Left;
-        } else if (geometry.right() - mousePos.x() <= threshold) {
-            edges |= libgestures::Edge::Right;
-        }
-
-        if (mousePos.y() - geometry.top() <= threshold) {
-            edges |= libgestures::Edge::Top;
-        } else if (geometry.bottom() - mousePos.y() <= threshold) {
-            edges |= libgestures::Edge::Bottom;
-        }
+        const auto translatedPosition = rawPosition - geometry.topLeft();
+        position.setX(translatedPosition.x() / geometry.width());
+        position.setY(translatedPosition.y() / geometry.height());
     }
-    return edges;
+    return position;
 }
 
 bool KWinInput::isSendingInput() const

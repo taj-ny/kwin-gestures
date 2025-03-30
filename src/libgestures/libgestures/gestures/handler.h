@@ -128,7 +128,7 @@ public:
 
     void keyboardKey(const Qt::Key &key, const bool &state);
 
-    bool shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event);
+    bool shouldBlockMouseButton(const Qt::MouseButton &button);
     void pressBlockedMouseButtons();
 
     void pressGestureUpdate(const qreal &delta);

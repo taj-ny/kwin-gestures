@@ -15,9 +15,9 @@ Qt::MouseButtons Input::mouseButtons() const
     return Qt::MouseButton::NoButton;
 }
 
-Edges Input::mouseScreenEdges(const qreal &threshold) const
+QPointF Input::mousePosition() const
 {
-    return Edge::None;
+    return {};
 }
 
 bool Input::isSendingInput() const

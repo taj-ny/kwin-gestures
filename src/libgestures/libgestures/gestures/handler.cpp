@@ -443,7 +443,7 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         m_mouseButtonTimer.start(50);
         qCDebug(LIBGESTURES_GESTURE_HANDLER, "Waiting for all mouse buttons");
 
-        if (shouldBlockMouseButton(button, m_data)) {
+        if (shouldBlockMouseButton(button)) {
             m_blockedMouseButtons.push_back(nativeButton);
             return true;
         }
@@ -508,16 +508,17 @@ void GestureHandler::keyboardKey(const Qt::Key &key, const bool &state)
     gestureEnd(GestureType::All);
 }
 
-bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button, const GestureBeginEvent &event)
+bool GestureHandler::shouldBlockMouseButton(const Qt::MouseButton &button)
 {
+    const GestureBeginEvent event{
+        .mouseButtons = std::nullopt
+    };
     for (const auto &gesture : m_gestures) {
-        const auto gestureModifiers = gesture->keyboardModifiers();
-        const auto gestureButtons = gesture->mouseButtons();
-        const auto gestureEdges = gesture->edges();
-        if ((gestureModifiers && *gestureModifiers != event.keyboardModifiers)
-            || (gestureEdges && !gestureEdges->contains(event.edges))) {
+        if (!gesture->satisfiesBeginConditions(event)) {
             continue;
         }
+
+        const auto gestureButtons = gesture->mouseButtons();
         if (gestureButtons && (*gestureButtons & button)) {
             qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Mouse button blocked (button: " << button << ", gesture: " << gesture->name() << ")";
             return true;
@@ -544,7 +545,7 @@ bool GestureHandler::gestureBegin(const GestureTypes &types, const uint8_t &fing
 
 bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginEvent &data)
 {
-    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activating (types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", edges: " << data.edges << ")";
+    qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activating (types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", position: " << data.position << ")";
     gestureCancel(GestureType::All);
     resetMembers();
 

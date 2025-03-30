@@ -19,8 +19,8 @@ bool GestureAction::satisfiesConditions() const
 
 bool GestureAction::thresholdReached() const
 {
-    return (m_minimumThreshold == 0 || m_absoluteAccumulatedDelta >= m_minimumThreshold)
-        && (m_maximumThreshold == 0 || m_absoluteAccumulatedDelta <= m_maximumThreshold);
+    return (m_threshold.min() == 0 || m_absoluteAccumulatedDelta >= m_threshold.min())
+        && (m_threshold.max() == 0 || m_absoluteAccumulatedDelta <= m_threshold.max());
 }
 
 void GestureAction::tryExecute()
@@ -133,10 +133,9 @@ void GestureAction::setRepeatInterval(const ActionInterval &interval)
     m_interval = interval;
 }
 
-void GestureAction::setThresholds(const qreal &minimum, const qreal &maximum)
+void GestureAction::setThreshold(const Range<qreal> &threshold)
 {
-    m_minimumThreshold = minimum;
-    m_maximumThreshold = maximum;
+    m_threshold = threshold;
 }
 
 void GestureAction::setOn(const libgestures::On &on)
