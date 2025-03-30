@@ -1,34 +1,27 @@
 # KWin Gestures
-Mouse and touchpad gestures for Plasma 6.
-
-X11 is currently not supported.
-
-https://github.com/user-attachments/assets/2c16790a-869b-44f3-a760-590137293759
-
-[peterfajdiga/kwin4_effect_geometry_change](https://github.com/peterfajdiga/kwin4_effect_geometry_change) was used for tile animations.
+Highly-customizable input handler built on top of libinput and KWin that executes actions on input. It is currently in a very early stage of development.
 
 # Features
-- Mouse gestures: press, stroke, swipe, wheel
+- Mouse gestures: press, strokes, swipe, wheel
   - Activated by pressing mouse button(s), keyboard modifier(s) or both
-  - Mouse button events are blocked when a gesture is activated
-  - Mouse buttons can still be used for normal clicks (a small delay is introduced)
-  - Restrict gestures to specific screen edges/corners
+  - Customizable start positions (edge, corner, middle, quadrant etc.)
+  - Mouse buttons can still be used for normal clicks and swipes (a small delay is introduced)
   - Supports horizontal scrolling wheels
-- Touchpad gestures: pinch, press, rotate, stroke, swipe
+- Touchpad gestures: pinch, press, rotate, strokes, swipe
   - Supports 2-finger strokes and swipes by reinterpreting scroll events
-- Actions: run command, simulate input (keyboard keys, mouse buttons, mouse movement), invoke Plasma global shortcut
+- Actions: run command, simulate input (low-latency, no external tools or input group required), invoke Plasma global shortcut
   - Can be executed at a specific point of the gesture's lifecycle (begin, update, end, cancel), allowing for complex gestures like 3-finger window drag or alt+tab window switching without them being hard-coded
   - Update actions can repeat at a specified interval
-- Application-specific gestures (based on window class)
+- Conditions: Window class, state
+- Specify how a gesture should be performed
+  - Pressed keyboard modifiers
+  - Pressed mouse buttons
+  - Speed: fast, slow
+  - Start position (mouse only for now): Rectangle(s) where the gesture must be started, specified as percentages of the device's size
+  - Threshold (min and/or max): Time for press gestures, distance for all others
 - Bi-directional pinch/rotate/swipe gestures - change direction during a gesture and start executing different update actions - useful for gestures like volume control
-- Keyboard modifiers - only activate a gesture when all specified modifiers (alt, control, meta, shift) are pressed
 - Overrides built-in Plasma gestures if a custom one is activated
-- Speed - only activate a gesture when performed at a specific speed
-  - Two speed levels: slow, fast
-  - Adjustable thresholds
 - Stroke gestures - draw any shape
-- Thresholds - only execute actions if the total distance fits within the specified range
-  - Can be used to create short/long swipe gestures
 
 # Installation
 <details>
@@ -132,5 +125,5 @@ Remove the *build* directory when rebuilding the effect.
 Before reporting any issues related to gesture recognition, run ``libinput debug-events`` as root and ensure the gesture is recognized properly. If it's not, there's nothing I can do.
 
 # Credits
-- [KWin](https://invent.kde.org/plasma/kwin) - Gesture handling code (heavily modified and extended)
 - [Strokognition](https://invent.kde.org/jpetso/strokognition), [wstroke](https://github.com/dkondor/wstroke), [easystroke](https://github.com/thjaeger/easystroke) - Stroke gestures
+- [KWin](https://invent.kde.org/plasma/kwin) - Gesture handling code (heavily extended and modified)
