@@ -7,6 +7,7 @@
 , qttools
 , kglobalacceld
 , yaml-cpp
+, debug ? false
 }:
 
 stdenv.mkDerivation rec {
@@ -26,6 +27,10 @@ stdenv.mkDerivation rec {
     qttools
     kglobalacceld
     yaml-cpp
+  ];
+
+  cmakeFlags = lib.optionals debug [
+    "-DCMAKE_BUILD_TYPE=DEBUG"
   ];
 
   meta = with lib; {
