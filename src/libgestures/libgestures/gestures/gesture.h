@@ -41,6 +41,11 @@ struct GestureBeginEvent
     std::optional<QPointF> position = Input::implementation()->mousePosition();
 };
 
+struct GestureEndEvent
+{
+    std::optional<QPointF> position = Input::implementation()->mousePosition();
+};
+
 /**
  * Gestures are handled by GestureHandler, which notifies them of update, end and cancellation events.
  *
@@ -67,6 +72,14 @@ public:
      * @returns Whether the gesture can be activated.
      */
     bool satisfiesBeginConditions(const GestureBeginEvent &data) const;
+    /**
+    * @return Whether the gesture can be updated.
+    */
+    virtual bool satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction = 0) const;
+    /**
+     * @return Whether the gesture can be ended.
+     */
+    bool satisfiesEndConditions(const GestureEndEvent &event) const;
 
     /**
      * @param end Whether this method is called at the gesture end.
@@ -102,7 +115,8 @@ public:
     void setThreshold(const Range<qreal> &threshold);
     void setFingers(const Range<uint8_t> &fingers);
 
-    void setStartPositions(const std::optional<std::vector<Range<QPointF>>> &positions);
+    void setBeginPositions(const std::optional<std::vector<Range<QPointF>>> &positions);
+    void setEndPositions(const std::optional<std::vector<Range<QPointF>>> &positions);
     /**
      * @param modifiers std::nullopt - ignore modifiers, Qt::KeyboardModifier::NoModifier - no modifiers, anything
      * else - all specified modifiers must be active
@@ -113,11 +127,6 @@ public:
      * else - all specified buttons must be pressed
      */
     void setMouseButtons(const std::optional<Qt::MouseButtons> &buttons);
-
-    /**
-     * @return Whether the gesture can be updated.
-     */
-    virtual bool satisfiesUpdateConditions(const GestureSpeed &speed, const uint32_t &direction = 0) const;
 
 
 protected:
@@ -138,7 +147,8 @@ private:
     Range<qreal> m_threshold{0};
     GestureSpeed m_speed = GestureSpeed::Any;
 
-    std::optional<std::vector<Range<QPointF>>> m_startPositions;
+    std::optional<std::vector<Range<QPointF>>> m_beginPositions;
+    std::optional<std::vector<Range<QPointF>>> m_endPositions;
     std::optional<Qt::KeyboardModifiers> m_keyboardModifiers;
     std::optional<Qt::MouseButtons> m_mouseButtons;
 

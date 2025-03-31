@@ -575,14 +575,14 @@ struct convert<libgestures::Range<QPointF>>
 {
     static bool decode(const Node &node, libgestures::Range<QPointF> &range)
     {
-        const auto raw = node.as<QString>().replace(" ", "").split("-");
+        const auto raw = node.as<QString>().replace(" ", "").replace("%", "").split("-");
         if (raw.size() != 2) {
             throw Exception(node.Mark(), "Invalid start position");
         }
 
         const auto rawMin = raw[0].split(";");
         const auto rawMax = raw[1].split(";");
-        range = libgestures::Range<QPointF>(QPointF(rawMin[0].toDouble(), rawMin[1].toDouble()), QPointF(rawMax[0].toDouble(), rawMax[1].toDouble()));
+        range = libgestures::Range<QPointF>(QPointF(rawMin[0].toDouble(), rawMin[1].toDouble()) / 100.0, QPointF(rawMax[0].toDouble(), rawMax[1].toDouble()) / 100.0);
 
         return true;
     }
@@ -678,8 +678,11 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
         if (const auto mouseButtonsNode = node["mouse_buttons"]) {
             gesture->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton));
         }
-        if (const auto startPositionsNode = node["start_positions"]) {
-            gesture->setStartPositions(startPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
+        if (const auto startPositionsNode = node["begin_positions"]) {
+            gesture->setBeginPositions(startPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
+        }
+        if (const auto endPositionsNode = node["end_positions"]) {
+            gesture->setEndPositions(endPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
         }
 
         for (const auto &conditionNode : node["conditions"]) {

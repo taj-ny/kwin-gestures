@@ -86,9 +86,9 @@ bool Gesture::satisfiesBeginConditions(const GestureBeginEvent &data) const
     if ((m_fingerCountIsRelevant && data.fingers && !m_fingers.contains(*data.fingers))
         || (m_keyboardModifiers && data.keyboardModifiers && *m_keyboardModifiers != data.keyboardModifiers)
         || (m_mouseButtons && data.mouseButtons && *m_mouseButtons != data.mouseButtons)
-        || (m_startPositions && data.position && std::find_if(m_startPositions->begin(), m_startPositions->end(), [&data](const auto &position) {
+        || (m_beginPositions && data.position && std::find_if(m_beginPositions->begin(), m_beginPositions->end(), [&data](const auto &position) {
             return position.contains(*data.position);
-        }) == m_startPositions->end())) {
+        }) == m_beginPositions->end())) {
         return false;
     }
 
@@ -103,6 +103,17 @@ bool Gesture::satisfiesBeginConditions(const GestureBeginEvent &data) const
         return triggerAction->satisfiesConditions();
     }) != m_actions.end();
     return m_actions.empty() || actionSatisfiesConditions;
+}
+
+bool Gesture::satisfiesEndConditions(const GestureEndEvent &event) const
+{
+    if (m_endPositions && event.position && std::find_if(m_endPositions->begin(), m_endPositions->end(), [&event](const auto &position) {
+        return position.contains(*event.position);
+    }) == m_endPositions->end()) {
+        return false;
+    }
+
+    return true;
 }
 
 bool Gesture::shouldCancelOtherGestures(const bool &end)
@@ -148,9 +159,14 @@ void Gesture::setFingerCountIsRelevant(const bool &relevant)
     m_fingerCountIsRelevant = relevant;
 }
 
-void Gesture::setStartPositions(const std::optional<std::vector<Range<QPointF>>> &positions)
+void Gesture::setBeginPositions(const std::optional<std::vector<Range<QPointF>>> &positions)
 {
-    m_startPositions = positions;
+    m_beginPositions = positions;
+}
+
+void Gesture::setEndPositions(const std::optional<std::vector<Range<QPointF>>> &positions)
+{
+    m_endPositions = positions;
 }
 
 void Gesture::setKeyboardModifiers(const std::optional<Qt::KeyboardModifiers> &modifiers)

@@ -108,11 +108,12 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
         }
 
         if (!m_conflictsResolved && m_activeGestures.size() > 1) {
+            qCDebug(LIBGESTURES_GESTURE_HANDLER, "Cancelling conflicting gestures");
             m_conflictsResolved = true;
             if (gesture->shouldCancelOtherGestures()) {
                 gestureCancel(gesture);
                 break;
-            } else if (types & (GestureType::Stroke | GestureType::Swipe)) {
+            } else if (types.testFlags(GestureType::Swipe | GestureType::Stroke)) {
                 gestureCancel(GestureType::Swipe);
                 break;
             }
@@ -611,6 +612,7 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
 
     auto active = activeGestures(types);
     auto hadActiveGestures = !active.empty();
+    GestureEndEvent event;
 
     if (types & GestureType::Press && m_pressTimer.isActive()) {
         qCDebug(LIBGESTURES_GESTURE_HANDLER) << "Stopping hold timer";
@@ -626,6 +628,10 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         const auto &gestures = activeGestures(GestureType::Stroke);
 
         for (const auto &gesture : activeGestures(GestureType::Stroke)) {
+            if (!gesture->satisfiesEndConditions(event)) {
+                continue;
+            }
+
             for (const auto &gestureStroke : static_cast<StrokeGesture *>(gesture)->strokes()) {
                 const auto score = stroke.compare(gestureStroke);
                 if (score > bestScore && score > Stroke::min_matching_score()) {
@@ -644,6 +650,7 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         gestureCancel(GestureType::Stroke); // TODO Double cancellation
     }
 
+
     for (auto it = m_activeGestures.begin(); it != m_activeGestures.end();) {
         auto gesture = *it;
         if (!(types & gesture->type())) {
@@ -652,7 +659,7 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         }
 
         it = m_activeGestures.erase(it);
-        if (end) {
+        if (end && gesture->satisfiesEndConditions(event)) {
             if (gesture->shouldCancelOtherGestures(true)) {
                 gestureCancel(gesture);
                 gesture->end();
