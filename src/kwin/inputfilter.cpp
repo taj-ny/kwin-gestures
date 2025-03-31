@@ -209,10 +209,9 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
     return false;
 }
 
+#ifdef KWIN_6_3_OR_GREATER
 bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 {
-    ENSURE_SESSION_UNLOCKED();
-
     const auto device = event->device;
     if (!device || !isMouse(event->device)) {
         return false;
@@ -229,14 +228,19 @@ bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 
 bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 {
-    ENSURE_SESSION_UNLOCKED();
-
     if (!event->device || !isMouse(event->device)) {
         return false;
     }
 
     return m_mouseGestureRecognizer->pointerButton(event->button, event->nativeButton, event->state == PointerButtonStatePressed);
 }
+
+bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
+{
+    m_mouseGestureRecognizer->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
+    return false;
+}
+#endif
 
 #ifdef KWIN_6_3_OR_GREATER
 bool GestureInputEventFilter::pointerAxis(KWin::PointerAxisEvent *event)
@@ -285,11 +289,6 @@ bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
     return device->isPointer() && !device->isTouch() && !device->isTouchpad();
 }
 
-bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
-{
-    m_mouseGestureRecognizer->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
-    return false;
-}
 
 void GestureInputEventFilter::recordStroke()
 {

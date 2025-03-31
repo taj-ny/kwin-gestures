@@ -57,6 +57,8 @@ Input events are sent at blocked at compositor level, therefore applications tha
 
 # Devices
 ## Mouse
+Mouse gestures are only supported on Plasma 6.3
+
 ### Press gestures
 Mouse press gestures do not start immediately by default, allowing swipe gestures or normal clicks to be performed. 
 

@@ -1,8 +1,11 @@
-# KWin Gestures
-Highly-customizable input handler built on top of libinput and KWin that executes actions on input. It is currently in a very early stage of development.
+# Input Actions
+Highly customizable input handler built on top of libinput and KWin. It is currently in a very early stage of development.
+
+Supported environments: Plasma 6 Wayland
 
 # Features
 - Mouse gestures: press, stroke, swipe, wheel
+  - Requires Plasma 6.3
   - Activated by pressing mouse button(s), keyboard modifier(s) or both
   - Customizable start positions (edge, corner, middle, quadrant etc.)
   - Mouse buttons can still be used for normal clicks and swipes (a small delay is introduced)
