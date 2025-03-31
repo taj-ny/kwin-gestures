@@ -802,6 +802,13 @@ struct convert<std::shared_ptr<libgestures::GestureHandler>>
                 speedNode["rotate_threshold"].as<qreal>(gestureRecognizer->m_rotateFastThreshold));
         }
 
+        if (const auto motionTimeoutNode = node["motion_timeout"]) {
+            gestureRecognizer->setMotionTimeout(motionTimeoutNode.as<qreal>());
+        }
+        if (const auto pressTimeoutNode = node["press_timeout"]) {
+            gestureRecognizer->setPressTimeout(pressTimeoutNode.as<qreal>());
+        }
+
         return true;
     }
 };

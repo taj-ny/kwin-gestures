@@ -24,11 +24,11 @@ GestureHandler::GestureHandler()
         gestureEnd(GestureType::Stroke | GestureType::Swipe | GestureType::Wheel);
     });
 
-    m_mouseButtonTimer.setTimerType(Qt::TimerType::PreciseTimer);
-    m_mouseButtonTimer.setSingleShot(true);
+    m_pressTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_pressTimeoutTimer.setSingleShot(true);
 
-    m_mouseTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
-    m_mouseTimeoutTimer.setSingleShot(true);
+    m_motionTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
+    m_motionTimeoutTimer.setSingleShot(true);
 
     m_mouseLongPointerAxisTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
     m_mouseLongPointerAxisTimeoutTimer.setSingleShot(true);
@@ -160,6 +160,16 @@ void GestureHandler::setRotateFastThreshold(const qreal &threshold)
 void GestureHandler::setDeltaMultiplier(const qreal &deltaMultiplier)
 {
     m_deltaMultiplier = deltaMultiplier;
+}
+
+void GestureHandler::setMotionTimeout(const qreal &timeout)
+{
+    m_motionTimeout = timeout;
+}
+
+void GestureHandler::setPressTimeout(const qreal &timeout)
+{
+    m_pressTimeout = timeout;
 }
 
 void GestureHandler::pressGestureUpdate(const qreal &delta)
@@ -375,11 +385,11 @@ void GestureHandler::pointerMotion(const QPointF &delta)
         return;
     }
 
-    if (m_mouseTimeoutTimer.isActive()) {
+    if (m_pressTimeoutTimer.isActive() || m_motionTimeoutTimer.isActive()) {
         gestureCancel(GestureType::All);
 
-        m_mouseButtonTimer.stop();
-        m_mouseTimeoutTimer.stop();
+        m_pressTimeoutTimer.stop();
+        m_motionTimeoutTimer.stop();
 
         qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse motion gestures");
         if (!gestureBegin(GestureType::Stroke | GestureType::Swipe)) {
@@ -425,9 +435,9 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
             }
         }
 
-        disconnect(&m_mouseButtonTimer, nullptr, nullptr, nullptr);
-        disconnect(&m_mouseTimeoutTimer, nullptr, nullptr, nullptr);
-        connect(&m_mouseButtonTimer, &QTimer::timeout, this, [this] {
+        disconnect(&m_pressTimeoutTimer, nullptr, nullptr, nullptr);
+        disconnect(&m_motionTimeoutTimer, nullptr, nullptr, nullptr);
+        connect(&m_pressTimeoutTimer, &QTimer::timeout, this, [this] {
             const auto swipeTimeout = [this] {
                 qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse wheel and press gestures");
                 if (!hasActiveGestures(GestureType::Wheel) && !gestureBegin(GestureType::Press, m_data)) {
@@ -441,14 +451,14 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
                 return;
             }
 
-            connect(&m_mouseTimeoutTimer, &QTimer::timeout, [swipeTimeout] {
+            connect(&m_motionTimeoutTimer, &QTimer::timeout, [swipeTimeout] {
                 qCDebug(LIBGESTURES_GESTURE_HANDLER, "No mouse motion");
                 swipeTimeout();
             });
-            m_mouseTimeoutTimer.start(200);
+            m_motionTimeoutTimer.start(m_motionTimeout);
             qCDebug(LIBGESTURES_GESTURE_HANDLER, "Waiting for mouse motion");
         });
-        m_mouseButtonTimer.start(50);
+        m_pressTimeoutTimer.start(m_pressTimeout);
         qCDebug(LIBGESTURES_GESTURE_HANDLER, "Waiting for all mouse buttons");
 
         if (shouldBlockMouseButton(button)) {
@@ -459,9 +469,9 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         gestureEnd(libgestures::GestureType::All);
 
         // Prevent gesture skipping when clicking rapidly
-        if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
-            m_mouseButtonTimer.stop();
-            m_mouseTimeoutTimer.stop();
+        if (m_pressTimeoutTimer.isActive() || m_motionTimeoutTimer.isActive()) {
+            m_pressTimeoutTimer.stop();
+            m_motionTimeoutTimer.stop();
 
             if (m_instantPress) {
                 gestureBegin(GestureType::Press, m_data);

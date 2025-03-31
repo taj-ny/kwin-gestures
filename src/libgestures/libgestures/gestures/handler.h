@@ -82,6 +82,9 @@ public:
 
     void setDeltaMultiplier(const qreal &multiplier);
 
+    void setMotionTimeout(const qreal &timeout);
+    void setPressTimeout(const qreal &timeout);
+
     /**
      * Cancels all gestures and activates the specified ones.
      * @return Whether any gestures of the specified types have been activated.
@@ -178,11 +181,18 @@ public:
      * Used to wait until all mouse buttons have been pressed to avoid conflicts with gestures that require more than
      * one button.
      */
-    QTimer m_mouseButtonTimer;
-    QTimer m_mouseTimeoutTimer;
+    QTimer m_pressTimeoutTimer;
+    qreal m_pressTimeout = 50;
+    QTimer m_motionTimeoutTimer;
+    qreal m_motionTimeout = 200;
     GestureBeginEvent m_data;
     bool m_instantPress = false;
-
+    qreal m_mouseMotionSinceButtonPress = 0;
+    /**
+     * Set to true when any gesture is updated, prevents mouse buttons from being unblocked. Reset when all buttons
+     * are released.
+     */
+    bool m_dontUnblockMouseButtons = false;
     QList<quint32> m_blockedMouseButtons;
 
     uint8_t m_inputEventsToSample = 3;
@@ -196,12 +206,7 @@ public:
     uint8_t m_sampledInputEvents = 0;
     qreal m_accumulatedAbsoluteSampledDelta = 0;
 
-    qreal m_mouseMotionSinceButtonPress = 0;
-    /**
-     * Set to true when any gesture is updated, prevents mouse buttons from being unblocked. Reset when all buttons
-     * are released.
-     */
-    bool m_dontUnblockMouseButtons = false;
+
 
     qreal m_deltaMultiplier = 1.0;
 
