@@ -63,7 +63,6 @@ public:
     bool isSendingInput() const override;
 
 private slots:
-    void slotKeyboardModifiersChanged(Qt::KeyboardModifiers newMods, Qt::KeyboardModifiers oldMods);
     void slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state);
 
 private:
