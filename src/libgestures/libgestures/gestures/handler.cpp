@@ -102,6 +102,7 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
         }
 
         hasGestures = true;
+        m_dontUnblockMouseButtons = true;
         if (!gesture->update(event.delta, event.deltaPointMultiplied)) {
             *event.ended = true;
             return true;
@@ -368,8 +369,13 @@ void GestureHandler::pointerMotion(const QPointF &delta)
 
     qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: PointerMotion, delta: " << delta << ")";
 
+    m_mouseMotionSinceButtonPress += std::hypot(delta.x(), delta.y());
+    if (m_mouseMotionSinceButtonPress < 5) {
+        qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Insufficient movement to start mouse motion gestures (delta: " << delta << ")";
+        return;
+    }
 
-    if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
+    if (m_mouseTimeoutTimer.isActive()) {
         gestureCancel(GestureType::All);
 
         m_mouseButtonTimer.stop();
@@ -401,6 +407,7 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         return false;
     }
 
+    m_mouseMotionSinceButtonPress = 0;
     qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: PointerMotion, button: " << button << ", state: " << state << ")";
 
     if (state) {
@@ -449,8 +456,7 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
             return true;
         }
     } else {
-        auto hadGesture = gestureEnd(libgestures::GestureType::All)
-            || m_mouseLongPointerAxisTimeoutTimer.isActive();
+        gestureEnd(libgestures::GestureType::All);
 
         // Prevent gesture skipping when clicking rapidly
         if (m_mouseButtonTimer.isActive() || m_mouseTimeoutTimer.isActive()) {
@@ -460,13 +466,18 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
             if (m_instantPress) {
                 gestureBegin(GestureType::Press, m_data);
                 pressGestureUpdate(s_holdDelta);
-                hadGesture = gestureEnd(GestureType::Press) || hadGesture;
+                gestureEnd(GestureType::Press);
             }
         }
 
-        if (m_blockedMouseButtons.removeAll(nativeButton) && !hadGesture) {
+        if (m_blockedMouseButtons.removeAll(nativeButton) && !m_dontUnblockMouseButtons) {
+            qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Mouse button pressed and released (button: " << nativeButton << ")";
             Input::implementation()->mouseButton(nativeButton, true);
             Input::implementation()->mouseButton(nativeButton, false);
+        }
+
+        if (m_blockedMouseButtons.empty()) {
+            m_dontUnblockMouseButtons = false;
         }
     }
 
@@ -548,6 +559,7 @@ bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginE
 {
     qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activating (types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", position: " << data.position << ")";
     gestureCancel(GestureType::All);
+    m_dontUnblockMouseButtons = false;
     resetMembers();
 
     auto hasKeyboardModifiers = false;
@@ -625,8 +637,6 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
 
         Gesture *bestGesture = nullptr;
         double bestScore = 0;
-        const auto &gestures = activeGestures(GestureType::Stroke);
-
         for (const auto &gesture : activeGestures(GestureType::Stroke)) {
             if (!gesture->satisfiesEndConditions(event)) {
                 continue;
