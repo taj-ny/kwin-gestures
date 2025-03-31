@@ -29,9 +29,6 @@ GestureHandler::GestureHandler()
 
     m_motionTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
     m_motionTimeoutTimer.setSingleShot(true);
-
-    m_mouseLongPointerAxisTimeoutTimer.setTimerType(Qt::TimerType::PreciseTimer);
-    m_mouseLongPointerAxisTimeoutTimer.setSingleShot(true);
 }
 
 void GestureHandler::setDeviceType(const DeviceType &type)
@@ -102,7 +99,7 @@ bool GestureHandler::updateGesture(const std::map<GestureType, GestureUpdateEven
         }
 
         hasGestures = true;
-        m_dontUnblockMouseButtons = true;
+        m_hadMouseGestureSinceButtonPress = true;
         if (!gesture->update(event.delta, event.deltaPointMultiplied)) {
             *event.ended = true;
             return true;
@@ -417,12 +414,13 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         return false;
     }
 
-    m_mouseMotionSinceButtonPress = 0;
     qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Event (type: PointerMotion, button: " << button << ", state: " << state << ")";
 
     if (state) {
-        gestureCancel(GestureType::All);
+        m_mouseMotionSinceButtonPress = 0;
+        m_hadMouseGestureSinceButtonPress = false;
 
+        gestureCancel(GestureType::All);
         m_data = {};
 
         // This should be per-gesture instead of global, but it's good enough
@@ -439,8 +437,13 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
         disconnect(&m_motionTimeoutTimer, nullptr, nullptr, nullptr);
         connect(&m_pressTimeoutTimer, &QTimer::timeout, this, [this] {
             const auto swipeTimeout = [this] {
-                qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse wheel and press gestures");
-                if (!hasActiveGestures(GestureType::Wheel) && !gestureBegin(GestureType::Press, m_data)) {
+                if (m_hadMouseGestureSinceButtonPress) {
+                    qCDebug(LIBGESTURES_GESTURE_HANDLER, "Mouse gesture updated before motion timeout");
+                    return;
+                }
+
+                qCDebug(LIBGESTURES_GESTURE_HANDLER, "Attempting to activate mouse press gestures");
+                if (!gestureBegin(GestureType::Press, m_data)) {
                     qCDebug(LIBGESTURES_GESTURE_HANDLER, "No wheel or press mouse gestures");
                     pressBlockedMouseButtons();
                 }
@@ -480,14 +483,14 @@ bool GestureHandler::pointerButton(const Qt::MouseButton &button, const quint32 
             }
         }
 
-        if (m_blockedMouseButtons.removeAll(nativeButton) && !m_dontUnblockMouseButtons) {
+        if (m_blockedMouseButtons.removeAll(nativeButton) && !m_hadMouseGestureSinceButtonPress) {
             qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Mouse button pressed and released (button: " << nativeButton << ")";
             Input::implementation()->mouseButton(nativeButton, true);
             Input::implementation()->mouseButton(nativeButton, false);
         }
 
         if (m_blockedMouseButtons.empty()) {
-            m_dontUnblockMouseButtons = false;
+            m_hadMouseGestureSinceButtonPress = false;
         }
     }
 
@@ -499,11 +502,7 @@ bool GestureHandler::pointerAxis(const QPointF &delta)
     if (m_deviceType == DeviceType::Mouse) {
         gestureBegin(GestureType::Wheel);
         wheelGestureUpdate(delta);
-        if (gestureEnd(GestureType::Wheel)) {
-            m_mouseLongPointerAxisTimeoutTimer.start(s_longPointerAxisTimeout);
-            return true;
-        }
-        return false;
+        return gestureEnd(GestureType::Wheel);
     }
 
     if (!m_pointerAxisTimeoutTimer.isActive()) {
@@ -522,7 +521,7 @@ bool GestureHandler::pointerAxis(const QPointF &delta)
 
 void GestureHandler::keyboardKey(const Qt::Key &key, const bool &state)
 {
-    // Lazy way to check for modifier release to end mouse motion gestures
+    // Lazy way of detecting modifier release during mouse gestures
     if (Input::implementation()->isSendingInput() || m_deviceType != DeviceType::Mouse || state) {
         return;
     }
@@ -569,13 +568,12 @@ bool GestureHandler::gestureBegin(const GestureTypes &types, const GestureBeginE
 {
     qCDebug(LIBGESTURES_GESTURE_HANDLER).noquote().nospace() << "Gestures activating (types: " << types << ", fingers: " << data.fingers << ", mouseButtons: " << data.mouseButtons << ", keyboardModifiers: " << data.keyboardModifiers << ", position: " << data.position << ")";
     gestureCancel(GestureType::All);
-    m_dontUnblockMouseButtons = false;
     resetMembers();
 
     auto hasKeyboardModifiers = false;
     for (auto &gesture : gestures(types, data)) {
         if (gesture->type() == GestureType::Press && !m_pressTimer.isActive()) {
-            qCDebug(LIBGESTURES_GESTURE_HANDLER) << "PressTimerStarted";
+            qCDebug(LIBGESTURES_GESTURE_HANDLER) << "Starting press timer";
             m_pressTimer.start(s_holdDelta);
         }
 
@@ -630,8 +628,6 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         qCDebug(LIBGESTURES_GESTURE_HANDLER).nospace() << "Cancelling gestures (types: " << types << ")";
     }
 
-    m_mouseLongPointerAxisTimeoutTimer.stop();
-
     auto active = activeGestures(types);
     auto hadActiveGestures = !active.empty();
     GestureEndEvent event;
@@ -669,7 +665,6 @@ bool GestureHandler::gestureEndOrCancel(const GestureTypes &types, const bool &e
         }
         gestureCancel(GestureType::Stroke); // TODO Double cancellation
     }
-
 
     for (auto it = m_activeGestures.begin(); it != m_activeGestures.end();) {
         auto gesture = *it;

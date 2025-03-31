@@ -166,7 +166,6 @@ public:
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;
     QTimer m_pointerAxisTimeoutTimer;
-    QTimer m_mouseLongPointerAxisTimeoutTimer; // Used to block mouse buttons
 
     qreal m_previousPinchScale = 1;
 
@@ -188,11 +187,7 @@ public:
     GestureBeginEvent m_data;
     bool m_instantPress = false;
     qreal m_mouseMotionSinceButtonPress = 0;
-    /**
-     * Set to true when any gesture is updated, prevents mouse buttons from being unblocked. Reset when all buttons
-     * are released.
-     */
-    bool m_dontUnblockMouseButtons = false;
+    bool m_hadMouseGestureSinceButtonPress = false;
     QList<quint32> m_blockedMouseButtons;
 
     uint8_t m_inputEventsToSample = 3;
