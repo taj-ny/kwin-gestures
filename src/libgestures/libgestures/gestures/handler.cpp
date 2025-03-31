@@ -9,8 +9,6 @@ namespace libgestures
 {
 
 static qreal s_holdDelta = 5; // 200 Hz
-static uint32_t s_touchpadPointerAxisTimeout = 100;
-static uint32_t s_longPointerAxisTimeout = 2000;
 
 GestureHandler::GestureHandler()
 {
@@ -19,8 +17,8 @@ GestureHandler::GestureHandler()
         pressGestureUpdate(s_holdDelta);
     });
 
-    m_pointerAxisTimeoutTimer.setSingleShot(true);
-    connect(&m_pointerAxisTimeoutTimer, &QTimer::timeout, this, [this] {
+    m_touchpadScrollTimeoutTimer.setSingleShot(true);
+    connect(&m_touchpadScrollTimeoutTimer, &QTimer::timeout, this, [this] {
         gestureEnd(GestureType::Stroke | GestureType::Swipe | GestureType::Wheel);
     });
 
@@ -167,6 +165,11 @@ void GestureHandler::setMotionTimeout(const qreal &timeout)
 void GestureHandler::setPressTimeout(const qreal &timeout)
 {
     m_pressTimeout = timeout;
+}
+
+void GestureHandler::setTouchpadScrollTimeout(const qreal &timeout)
+{
+    m_touchpadScrollTimeout = timeout;
 }
 
 void GestureHandler::pressGestureUpdate(const qreal &delta)
@@ -505,17 +508,17 @@ bool GestureHandler::pointerAxis(const QPointF &delta)
         return gestureEnd(GestureType::Wheel);
     }
 
-    if (!m_pointerAxisTimeoutTimer.isActive()) {
+    if (!m_touchpadScrollTimeoutTimer.isActive()) {
         gestureBegin(GestureType::Stroke | GestureType::Swipe, 2);
     }
-    m_pointerAxisTimeoutTimer.stop();
-    m_pointerAxisTimeoutTimer.start(s_touchpadPointerAxisTimeout);
+    m_touchpadScrollTimeoutTimer.stop();
+    m_touchpadScrollTimeoutTimer.start(m_touchpadScrollTimeout);
 
     bool _ = false;
     if (touchMotion(delta, _)) {
         return true;
     }
-    m_pointerAxisTimeoutTimer.stop();
+    m_touchpadScrollTimeoutTimer.stop();
     return false;
 }
 

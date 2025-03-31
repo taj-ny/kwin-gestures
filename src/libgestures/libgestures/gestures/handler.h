@@ -84,6 +84,7 @@ public:
 
     void setMotionTimeout(const qreal &timeout);
     void setPressTimeout(const qreal &timeout);
+    void setTouchpadScrollTimeout(const qreal &timeout);
 
     /**
      * Cancels all gestures and activates the specified ones.
@@ -165,7 +166,7 @@ public:
 
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;
-    QTimer m_pointerAxisTimeoutTimer;
+    QTimer m_touchpadScrollTimeoutTimer;
 
     qreal m_previousPinchScale = 1;
 
@@ -189,6 +190,8 @@ public:
     qreal m_mouseMotionSinceButtonPress = 0;
     bool m_hadMouseGestureSinceButtonPress = false;
     QList<quint32> m_blockedMouseButtons;
+
+    qreal m_touchpadScrollTimeout = 100;
 
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;

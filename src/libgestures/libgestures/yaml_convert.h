@@ -808,6 +808,9 @@ struct convert<std::shared_ptr<libgestures::GestureHandler>>
         if (const auto pressTimeoutNode = node["press_timeout"]) {
             gestureRecognizer->setPressTimeout(pressTimeoutNode.as<qreal>());
         }
+        if (const auto scrollTimeoutNode = node["scroll_timeout"]) {
+            gestureRecognizer->setTouchpadScrollTimeout(scrollTimeoutNode.as<qreal>());
+        }
 
         return true;
     }
