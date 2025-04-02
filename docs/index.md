@@ -45,7 +45,7 @@ Swipe gestures are limited to 4 directions. The direction is determined during t
 ## Stroke gestures
 Stroke gestures allow you to draw any shape. The performed stroke is compared against all gestures and the one with the highest match (must be ≥0.7) is ended, while all others are cancelled. 
 
-Strokes can be recorded using the stroke recorder at *System Settings* -> *Desktop Effects* -> *Gestures (configure)* or DBus: ``qdbus dev.taj-ny.kwin-gestures /KWinGestures recordStroke``.
+Strokes can be recorded using the stroke recorder at *System Settings* -> *Desktop Effects* -> *Gestures (configure)* or DBus: ``qdbus org.inputactions / recordStroke``.
 
 Only *end* actions are supported.
 

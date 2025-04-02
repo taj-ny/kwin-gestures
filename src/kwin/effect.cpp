@@ -6,7 +6,7 @@
 #include <QDir>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(KWIN_GESTURES, "kwin_gestures", QtWarningMsg)
+Q_LOGGING_CATEGORY(INPUTACTIONS_KWIN, "inputactions", QtWarningMsg)
 
 const QString configFile = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/kwingestures.yml";
 
@@ -75,7 +75,7 @@ void Effect::reconfigure(ReconfigureFlags flags)
             m_inputEventFilter->setTouchpadGestureRecognizer(config["touchpad"].as<std::shared_ptr<libgestures::GestureHandler>>());
         }
     } catch (const YAML::Exception &e) {
-        qCritical(KWIN_GESTURES).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
+        qCritical(INPUTACTIONS_KWIN).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
                 + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
     }
 }

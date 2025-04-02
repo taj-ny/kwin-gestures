@@ -1,30 +1,29 @@
 # Input Actions
-Highly customizable input handler built on top of libinput and KWin. It is currently in a very early stage of development.
+Customizable input handler built on top of libinput and KWin. It is currently in a very early stage of development.
 
 Supported environments: Plasma 6 Wayland
 
 # Features
 - Mouse gestures: press, stroke, swipe, wheel
-  - Requires Plasma 6.3
+  - **Requires Plasma 6.3**
   - Activated by pressing mouse button(s), keyboard modifier(s) or both
-  - Customizable start positions (edge, corner, middle, quadrant etc.)
-  - Mouse buttons can still be used for normal clicks and swipes (a small delay is introduced)
+  - Mouse buttons can still be used for normal clicks and motion (a small delay for button presses is introduced, can be changed)
   - Supports horizontal scrolling wheels
 - Touchpad gestures: pinch, press, rotate, stroke, swipe
-  - Supports 2-finger strokes and swipes by reinterpreting scroll events
-- Actions: run command, simulate input (low-latency, no external tools or input group required), invoke Plasma global shortcut
-  - Can be executed at a specific point of the gesture's lifecycle (begin, update, end, cancel), allowing for complex gestures like 3-finger window drag or alt+tab window switching without them being hard-coded
-  - Update actions can repeat at a specified interval
-- Conditions: Window class, state
-- Specify how a gesture should be performed
+  - Supports 2-finger motion gestures by treating scroll events as swipe events
+- Many different ways of performing gestures, can be combined
+  - Begin/end position(s) (mouse only for now): Rectangle(s) where the gesture must begin and/or end
   - Pressed keyboard modifiers
   - Pressed mouse buttons
   - Speed: fast, slow
-  - Start position (mouse only for now): Rectangle(s) where the gesture must be started, specified as percentages of the device's size
   - Threshold (min and/or max): Time for press gestures, distance for all others
-- Bi-directional pinch/rotate/swipe gestures - change direction during a gesture and start executing different update actions - useful for gestures like volume control
-- Overrides built-in Plasma gestures if a custom one is activated
-- Stroke gestures - draw any shape
+- Stroke gestures: draw any shape
+- Actions: run command, simulate input (low-latency, no external tools or input group required), invoke Plasma global shortcut
+  - Executed at a specific point of the gesture's lifecycle (begin, update, end, cancel), allowing for complex gestures like 3-finger window drag or alt+tab without them being hard-coded
+  - Update actions can repeat at a specified interval
+- Bi-directional motion gestures: change direction during a gesture and start executing different update actions - useful for gestures like volume control
+- Conditions: Window class, state
+- Blocks input events when necessary
 
 # Installation
 <details>
@@ -37,8 +36,8 @@ Supported environments: Plasma 6 Wayland
     inputs = {
       nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-      kwin-gestures = {
-        url = "github:taj-ny/kwin-gestures";
+      inputactions = {
+        url = "github:taj-ny/InputActions";
         inputs.nixpkgs.follows = "nixpkgs";
       };
     };
@@ -50,7 +49,7 @@ Supported environments: Plasma 6 Wayland
 
   {
     environment.systemPackages = [
-      inputs.kwin-gestures.packages.${pkgs.system}.default
+      inputs.inputactions.packages.${pkgs.system}.inputactions-kwin
     ];
   }
   ```
@@ -103,8 +102,8 @@ Supported environments: Plasma 6 Wayland
 
 ### Building
 ```sh
-git clone https://github.com/taj-ny/kwin-gestures
-cd kwin-gestures
+git clone https://github.com/taj-ny/InputActions
+cd InputActions
 mkdir build
 cd build
 cmake ../ -DCMAKE_INSTALL_PREFIX=/usr
@@ -120,12 +119,9 @@ Remove the *build* directory when rebuilding the effect.
 
 1. Install the plugin.
 2. Open the Desktop Effects page in System Settings.
-3. Enable the *Gestures* effect in the *Tools* category.
+3. Enable the *Input Actions* effect in the *Tools* category.
 
 [Documentation](docs/index.md)
-
-# Gesture recognition issues
-Before reporting any issues related to gesture recognition, run ``libinput debug-events`` as root and ensure the gesture is recognized properly. If it's not, there's nothing I can do.
 
 # Credits
 - [Strokognition](https://invent.kde.org/jpetso/strokognition), [wstroke](https://github.com/dkondor/wstroke), [easystroke](https://github.com/thjaeger/easystroke) - Stroke gestures

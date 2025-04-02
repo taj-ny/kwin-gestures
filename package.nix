@@ -11,8 +11,8 @@
 }:
 
 stdenv.mkDerivation rec {
-  pname = "kwin-gestures";
-  version = "0.5.1";
+  pname = "inputactions-kwin";
+  version = "0.6.0";
 
   src = ./.;
 
@@ -36,6 +36,6 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Custom touchpad gestures for Plasma 6";
     license = licenses.gpl3;
-    homepage = "https://github.com/taj-ny/kwin-gestures";
+    homepage = "https://github.com/taj-ny/InputActions";
   };
 }

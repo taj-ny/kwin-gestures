@@ -9,9 +9,9 @@ This page only explains the configuration structure, to learn how certain featur
 
 There is currently no configuration UI. The configuration file is located at ``~/.config/kwingestures.yml``. It is created automatically when the plugin is loaded. The plugin should be reconfigured when the file changes. If it doesn't, disable and enable it manually or run ``qdbus org.kde.KWin /Effects org.kde.kwin.Effects.reconfigureEffect kwin_gestures``.
 
-When the configuration fails to load, the error will be logged. To see it, run ``journalctl --boot=0 -g "kwin_gestures:" -n 5``. The message should contain the approximate position of where the error has occurred.
+When the configuration fails to load, the error will be logged. To see it, run ``journalctl --boot=0 -g "inputactions:" -n 5``. The message should contain the approximate position of where the error has occurred.
 ```
-kwin_gestures: Failed to load configuration: Invalid swipe direction (line 4, column 17)
+inputactions: Failed to load configuration: Invalid swipe direction (line 4, column 17)
 ```
 
 # Configuration file structure

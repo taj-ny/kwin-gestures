@@ -4,8 +4,8 @@
 
 #include "effect/effecthandler.h"
 
-static QString s_service = "dev.taj-ny.kwin-gestures";
-static QString s_path = "/KWinGestures";
+static QString s_service = "org.inputactions";
+static QString s_path = "/";
 
 DBusInterface::DBusInterface(GestureInputEventFilter *filter)
     : m_filter(filter)
@@ -22,7 +22,7 @@ DBusInterface::~DBusInterface()
 
 void DBusInterface::recordStroke(const QDBusMessage &message)
 {
-    KWin::effects->showOnScreenMessage("KWin Gestures is recording input. Perform a stroke gesture by moving your mouse or performing a touchpad swipe. Recording will end after 250 ms of inactivity.");
+    KWin::effects->showOnScreenMessage("Input Actions is recording input. Perform a stroke gesture by moving your mouse or performing a touchpad swipe. Recording will end after 250 ms of inactivity.");
 
     message.setDelayedReply(true);
     auto reply = message.createReply();

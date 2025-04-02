@@ -18,11 +18,11 @@ KWinGesturesKCM::KWinGesturesKCM(QObject *parent, const KPluginMetaData &data)
     ui.setupUi(widget());
     setButtons(Button::NoAdditionalButton);
 
-    QFile about(":/effects/kwin_gestures/kcm/about.html");
+    QFile about(":/effects/inputactions_kwin/kcm/about.html");
     if (about.open(QIODevice::ReadOnly)) {
         const auto html = about.readAll()
                               .replace("${version}", ABOUT_VERSION_STRING)
-                              .replace("${repo}", "https://github.com/taj-ny/kwin-gestures");
+                              .replace("${repo}", "https://github.com/taj-ny/InputActions");
         ui.aboutText->setHtml(html);
     }
 
@@ -37,7 +37,7 @@ void KWinGesturesKCM::slotCopyPoints()
 
 void KWinGesturesKCM::slotRecordStroke()
 {
-    QDBusInterface interface("dev.taj-ny.kwin-gestures", "/KWinGestures");
+    QDBusInterface interface("org.inputactions", "/");
     auto call = interface.asyncCall("recordStroke");
     call.waitForFinished();
     ui.strokePoints->setText(call.reply().arguments().at(0).toString());

@@ -164,7 +164,7 @@ void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
 
 QString InputDevice::name() const
 {
-    return "kwin_gestures";
+    return "inputactions";
 }
 
 bool InputDevice::isEnabled() const
