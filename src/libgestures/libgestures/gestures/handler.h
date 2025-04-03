@@ -15,23 +15,6 @@
 namespace libgestures
 {
 
-enum class Axis {
-    Horizontal,
-    Vertical,
-    None
-};
-
-enum class PinchType {
-    Unknown,
-    Pinch,
-    Rotate
-};
-
-enum class DeviceType {
-    Mouse,
-    Touchpad
-};
-
 struct GestureUpdateEvent
 {
     qreal delta = 0;
@@ -55,24 +38,6 @@ class GestureHandler : public QObject
     Q_OBJECT
 public:
     GestureHandler();
-
-    /**
-     * Default device type is Touchpad.
-     */
-    void setDeviceType(const DeviceType &type);
-
-    /**
-     * Adds a gesture to the end of the gesture list.
-     * @remark This method doesn't prevent duplicate gestures from being added.
-     */
-    void registerGesture(std::shared_ptr<Gesture> gesture);
-
-    /**
-     * @return Gestures of the specified type that satisfy begin conditions and are eligible for activation.
-     */
-    std::vector<Gesture *> gestures(const GestureTypes &types, const std::optional<GestureBeginEvent> &data = std::nullopt);
-    std::vector<Gesture *> activeGestures(const GestureTypes &types);
-    bool hasActiveGestures(const GestureTypes &types);
 
     void setInputEventsToSample(const uint8_t &events);
     void setSwipeFastThreshold(const qreal &threshold);
@@ -159,56 +124,11 @@ public:
     bool determineSpeed(const qreal &delta, const qreal &fastThreshold);
     void resetMembers();
 
-    DeviceType m_deviceType = DeviceType::Touchpad;
-
-    std::vector<std::shared_ptr<Gesture>> m_gestures;
-    std::vector<Gesture *> m_activeGestures;
-
-    Axis m_currentSwipeAxis = Axis::None;
-    QPointF m_currentSwipeDelta;
-    QTimer m_touchpadScrollTimeoutTimer;
-
-    qreal m_previousPinchScale = 1;
-
-    PinchType m_pinchType = PinchType::Unknown;
-    qreal m_accumulatedRotateDelta = 0;
-
-    QTimer m_pressTimer;
-
-    std::vector<QPointF> m_stroke;
-
-    /**
-     * Used to wait until all mouse buttons have been pressed to avoid conflicts with gestures that require more than
-     * one button.
-     */
-    QTimer m_pressTimeoutTimer;
-    qreal m_pressTimeout = 50;
-    QTimer m_motionTimeoutTimer;
-    qreal m_motionTimeout = 200;
-    GestureBeginEvent m_data;
-    bool m_instantPress = false;
-    qreal m_mouseMotionSinceButtonPress = 0;
-    bool m_hadMouseGestureSinceButtonPress = false;
-    QList<quint32> m_blockedMouseButtons;
-
-    qreal m_touchpadScrollTimeout = 100;
-
     uint8_t m_inputEventsToSample = 3;
     qreal m_swipeGestureFastThreshold = 20;
     qreal m_pinchInFastThreshold = 0.04;
     qreal m_pinchOutFastThreshold = 0.08;
     qreal m_rotateFastThreshold = 5;
-
-    GestureSpeed m_speed = GestureSpeed::Any;
-    bool m_isDeterminingSpeed = false;
-    uint8_t m_sampledInputEvents = 0;
-    qreal m_accumulatedAbsoluteSampledDelta = 0;
-
-
-
-    qreal m_deltaMultiplier = 1.0;
-
-    bool m_conflictsResolved = false;
 
     friend struct YAML::convert<std::shared_ptr<GestureHandler>>;
     friend class TestGestureRecognizer;

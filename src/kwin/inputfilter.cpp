@@ -29,9 +29,6 @@ GestureInputEventFilter::GestureInputEventFilter()
     connect(&m_strokeRecordingTimeoutTimer, &QTimer::timeout, this, [this] {
         finishStrokeRecording();
     });
-
-    m_mouseGestureRecognizer->setDeviceType(libgestures::DeviceType::Mouse);
-    m_touchpadGestureRecognizer->setDeviceType(libgestures::DeviceType::Touchpad);
 }
 
 void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
@@ -51,7 +48,7 @@ bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::mic
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Press, fingerCount);
+    m_touchpadTriggerHandler->holdBegin(fingerCount);
     return false;
 }
 
@@ -59,12 +56,7 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 {
     ENSURE_SESSION_UNLOCKED();
 
-    if (m_isRecordingStroke) {
-        finishStrokeRecording();
-        return true;
-    }
-
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Press)) {
+    if (m_touchpadTriggerHandler->holdEnd()) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->holdGestureCancelled(time);
         });
@@ -82,7 +74,7 @@ bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds tim
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Press);
+    m_touchpadTriggerHandler->holdCancel();
     return false;
 }
 
@@ -95,7 +87,7 @@ bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::mi
         return true;
     }
 
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Stroke | libgestures::GestureType::Swipe, fingerCount);
+    m_touchpadTriggerHandler->swipeBegin(fingerCount);
     return false;
 }
 
@@ -108,14 +100,7 @@ bool GestureInputEventFilter::swipeGestureUpdate(const QPointF &delta, std::chro
         return true;
     }
 
-    auto ended = false;
-    auto filter = m_touchpadGestureRecognizer->touchMotion(delta, ended);
-    if (ended) {
-        swipeGestureEnd(time);
-        return true;
-    }
-
-    return filter;
+    return m_touchpadTriggerHandler->swipeUpdate(delta);
 }
 
 bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
@@ -127,7 +112,7 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
         return true;
     }
 
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Stroke | libgestures::GestureType::Swipe)) {
+    if (m_touchpadTriggerHandler->swipeEnd()) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->swipeGestureCancelled(time);
         });
@@ -145,7 +130,7 @@ bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds ti
     Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
-    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Swipe);
+    m_touchpadTriggerHandler->swipeCancel();
     return false;
 }
 
@@ -155,7 +140,7 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = true;
-    m_touchpadGestureRecognizer->gestureBegin(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate, fingerCount);
+    m_touchpadTriggerHandler->pinchBegin(fingerCount);
     return false;
 }
 
@@ -170,14 +155,7 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
         pinchGestureBegin(2, time);
     }
 
-    auto ended = false;
-    const auto filter = m_touchpadGestureRecognizer->pinchGestureUpdate(scale, angleDelta, delta, ended);
-    if (ended) {
-        pinchGestureEnd(time);
-        return true;
-    }
-
-    return filter;
+    return m_touchpadTriggerHandler->pinchUpdate(scale, angleDelta, delta);
 }
 
 bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
@@ -186,7 +164,7 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    if (m_touchpadGestureRecognizer->gestureEnd(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate)) {
+    if (m_touchpadTriggerHandler->pinchEnd()) {
         KWin::input()->processSpies([&time](auto &&spy) {
             spy->pinchGestureCancelled(time);
         });
@@ -205,7 +183,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
-    m_touchpadGestureRecognizer->gestureCancel(libgestures::GestureType::Pinch | libgestures::GestureType::Rotate);
+    m_touchpadTriggerHandler->pinchCancel();
     return false;
 }
 
@@ -221,7 +199,7 @@ bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
         m_strokePoints.push_back(event->delta);
         m_strokeRecordingTimeoutTimer.start(s_strokeRecordingTimeout);
     } else {
-        m_mouseGestureRecognizer->pointerMotion(event->delta);
+        m_mouseTriggerHandler->motion(event->delta);
     }
     return false;
 }
@@ -232,13 +210,14 @@ bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
         return false;
     }
 
-    return m_mouseGestureRecognizer->pointerButton(event->button, event->nativeButton, event->state == PointerButtonStatePressed);
+    return m_mouseTriggerHandler->button(event->button, event->nativeButton, event->state == PointerButtonStatePressed);
 }
 
 bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
 {
-    m_mouseGestureRecognizer->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
-    return false;
+    m_mouseTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
+    m_touchpadTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
+return false;
 }
 #endif
 
@@ -273,7 +252,7 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
     }
 
     if (mouse) {
-        return m_mouseGestureRecognizer->pointerAxis(delta);
+        return m_mouseTriggerHandler->wheel(eventDelta, orientation);
     }
 
     if (m_isRecordingStroke) {
@@ -281,14 +260,13 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
         m_strokeRecordingTimeoutTimer.start(s_strokeRecordingTimeout);
         return true;
     }
-    return m_touchpadGestureRecognizer->pointerAxis(delta);
+    return m_touchpadTriggerHandler->scroll(eventDelta, orientation, inverted);
 }
 
 bool GestureInputEventFilter::isMouse(const KWin::InputDevice *device) const
 {
     return device->isPointer() && !device->isTouch() && !device->isTouchpad();
 }
-
 
 void GestureInputEventFilter::recordStroke()
 {

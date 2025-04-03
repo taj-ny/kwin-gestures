@@ -4,7 +4,8 @@
 
 #include "impl/kwininput.h"
 
-#include "libgestures/gestures/handler.h"
+#include "libgestures/handlers/devices/mousetriggerhandler.h"
+#include "libgestures/handlers/devices/touchpadtriggerhandler.h"
 
 #include <QTimer>
 
@@ -63,8 +64,8 @@ private:
 
     void finishStrokeRecording();
 
-    std::shared_ptr<libgestures::GestureHandler> m_mouseGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
-    std::shared_ptr<libgestures::GestureHandler> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureHandler>();
+    std::unique_ptr<libgestures::MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libgestures::MouseTriggerHandler>();
+    std::unique_ptr<libgestures::TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libgestures::TouchpadTriggerHandler>();
 
     bool m_pinchGestureActive = false;
 

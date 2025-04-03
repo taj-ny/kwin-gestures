@@ -1,17 +1,15 @@
 #pragma once
 
-#include "gesture.h"
+#include "trigger.h"
 
 namespace libgestures
 {
 
-class PressGesture : public Gesture
+class PressTrigger : public Trigger
 {
 public:
     const bool &instant() const;
     void setInstant(const bool &instant);
-
-    GestureType type() const override;
 
 private:
     bool m_instant = false;

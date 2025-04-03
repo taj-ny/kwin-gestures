@@ -26,24 +26,18 @@
 namespace libgestures
 {
 
-void StrokeGesture::setStrokes(const std::vector<Stroke> &strokes)
+void StrokeTrigger::setStrokes(const std::vector<Stroke> &strokes)
 {
     m_strokes = strokes;
 }
 
-const std::vector<Stroke> &StrokeGesture::strokes() const
+const std::vector<Stroke> &StrokeTrigger::strokes() const
 {
     return m_strokes;
 }
 
-GestureType StrokeGesture::type() const
-{
-    return GestureType::Stroke;
-}
-
 constexpr double stroke_infinity = 0.2;
 #define EPS 0.000001
-
 
 Stroke::Stroke(const std::vector<QPointF> &deltas)
 {

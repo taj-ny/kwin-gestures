@@ -23,7 +23,6 @@ enum class GestureType : uint32_t {
     Stroke = 1u << 3,
     Swipe = 1u << 4,
     Wheel = 1u << 5,
-
     All = UINT32_MAX
 };
 Q_ENUM_NS(GestureType)

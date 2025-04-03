@@ -17,13 +17,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-
-#include "gesture.h"
-
-#include <QPointF>
-
-#include <memory>
-#include <vector>
+#include "motion.h"
 
 namespace libgestures
 {
@@ -79,13 +73,14 @@ private:
     std::vector<Point> m_points;
 };
 
-class StrokeGesture : public Gesture
+/**
+ * A motion input action where a shape is drawn.
+ */
+class StrokeTrigger : public MotionTrigger
 {
 public:
     const std::vector<Stroke> &strokes() const;
     void setStrokes(const std::vector<Stroke> &strokes);
-
-    GestureType type() const override;
 
 private:
     std::vector<Stroke> m_strokes;
