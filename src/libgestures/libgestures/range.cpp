@@ -18,6 +18,8 @@
 
 #include "range.h"
 
+#include <limits>
+
 #include <QPointF>
 
 namespace libgestures
@@ -34,6 +36,18 @@ Range<T>::Range(T min, T max)
     : m_min(min)
     , m_max(max)
 {
+}
+
+template <typename T>
+Range<T> Range<T>::minToInf(const T &min)
+{
+    return Range(min, std::numeric_limits<T>::max());
+}
+
+template <typename T>
+Range<T> Range<T>::infToMax(const T &max)
+{
+    return Range(std::numeric_limits<T>::lowest(), max);
 }
 
 template <typename T>

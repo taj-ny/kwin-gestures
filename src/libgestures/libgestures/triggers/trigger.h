@@ -184,8 +184,6 @@ protected:
     virtual void updateActions(const TriggerUpdateEvent *event);
 
 private:
-    bool thresholdReached() const;
-
     void reset();
 
     QString m_name = "none";
@@ -204,6 +202,8 @@ private:
 
     std::vector<std::unique_ptr<GestureAction>> m_actions;
     bool m_started = false;
+
+    friend class TestTrigger;
 };
 
 }

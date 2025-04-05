@@ -1,116 +1,187 @@
-#include <QSignalSpy>
 #include "test_action.h"
+
+#include "utils.h"
+
+using namespace ::testing;
 
 namespace libgestures
 {
 
 void TestAction::init()
 {
-    m_action = std::make_shared<GestureAction>();
+    m_action = std::make_unique<MockGestureAction>();
 }
 
-void TestAction::satisfiesConditions_data()
+void TestAction::canExecute_data()
 {
-    QTest::addColumn<std::vector<std::shared_ptr<Condition>>>("conditions");
+    QTest::addColumn<std::optional<bool>>("condition");
+    QTest::addColumn<std::optional<bool>>("threshold");
     QTest::addColumn<bool>("result");
 
-    QTest::newRow("none") << (std::vector<std::shared_ptr<Condition>>()) << true;
-    QTest::newRow("one satisfied") << std::vector<std::shared_ptr<Condition>> { m_satisfiedCondition } << true;
-    QTest::newRow("one unsatisfied") << std::vector<std::shared_ptr<Condition>> { m_unsatisfiedCondition } << false;
-    QTest::newRow("one unsatisfied one satisfied") << std::vector<std::shared_ptr<Condition>> { m_unsatisfiedCondition, m_satisfiedCondition } << true;
+    QTest::newRow("no condition, no threshold") << std::optional<bool>() << std::optional<bool>() << true;
+    QTest::newRow("condition true, no threshold") << std::optional<bool>(true) << std::optional<bool>() << true;
+    QTest::newRow("condition false, no threshold") << std::optional<bool>(false) << std::optional<bool>() << false;
+    QTest::newRow("no condition, threshold true") << std::optional<bool>() << std::optional<bool>(true) << true;
+    QTest::newRow("no condition, threshold false") << std::optional<bool>() << std::optional<bool>(false) << false;
+    QTest::newRow("condition true, threshold true") << std::optional<bool>(true) << std::optional<bool>(true) << true;
+    QTest::newRow("condition false, threshold false") << std::optional<bool>(false) << std::optional<bool>(false) << false;
+    QTest::newRow("condition false, threshold true") << std::optional<bool>(false) << std::optional<bool>(true) << false;
+    QTest::newRow("condition true, threshold false") << std::optional<bool>(true) << std::optional<bool>(false) << false;
 }
 
-void TestAction::satisfiesConditions()
+void TestAction::canExecute()
 {
-    QFETCH(std::vector<std::shared_ptr<Condition>>, conditions);
+    QFETCH(std::optional<bool>, condition);
+    QFETCH(std::optional<bool>, threshold);
     QFETCH(bool, result);
 
-    for (auto &condition : conditions) {
-        m_action->addCondition(condition);
+    if (condition) {
+        m_action->setCondition(makeCondition(*condition));
+    }
+    if (threshold) {
+        m_action->setThreshold(*threshold ? Range<qreal>(0) : Range<qreal>(1));
     }
 
-    QCOMPARE(m_action->satisfiesConditions(), result);
+    QCOMPARE(m_action->GestureAction::canExecute(), result);
 }
 
-void TestAction::canExecute_nonRepeatingNotExecuted_returnsTrue()
+void TestAction::tryExecute_canExecute_executes()
 {
-    QVERIFY(m_action->canExecute());
+    ON_CALL(*m_action, canExecute())
+        .WillByDefault(Return(true));
+    EXPECT_CALL(*m_action, execute())
+        .Times(Exactly(1));
+
+    m_action->GestureAction::tryExecute();
+
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
 
-void TestAction::canExecute_repeatingNotExecuted_returnsTrue()
+void TestAction::tryExecute_cantExecute_doesntExecute()
 {
-    m_action->setRepeatInterval(1);
-    QVERIFY(m_action->canExecute());
+    ON_CALL(*m_action, canExecute())
+        .WillByDefault(Return(false));
+    EXPECT_CALL(*m_action, execute())
+        .Times(Exactly(0));
+
+    m_action->GestureAction::tryExecute();
+
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
 
-void TestAction::canExecute_nonRepeatingExecutedOnce_returnsFalse()
+void TestAction::gestureStarted_data()
 {
-    m_action->tryExecute();
-    QVERIFY(!m_action->canExecute());
+    QTest::addColumn<On>("on");
+    QTest::addColumn<bool>("executes");
+
+    QTest::newRow("begin") << On::Begin << true;
+    QTest::newRow("update") << On::Update << false;
+    QTest::newRow("end") << On::End << false;
+    QTest::newRow("cancel") << On::Cancel << false;
+    QTest::newRow("end or cancel") << On::EndOrCancel << false;
 }
 
-void TestAction::canExecute_repeatingExecutedOnce_returnsTrue()
+void TestAction::gestureStarted()
 {
-    m_action->setRepeatInterval(1);
-    m_action->tryExecute();
-    QVERIFY(m_action->canExecute());
+    QFETCH(On, on);
+    QFETCH(bool, executes);
+
+    EXPECT_CALL(*m_action, tryExecute())
+        .Times(Exactly(executes ? 1 : 0));
+
+    m_action->setOn(on);
+    m_action->GestureAction::gestureStarted();
+
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
 
-void TestAction::canExecute_nonRepeatingExecutedOnceAndEnded_returnsTrue()
+void TestAction::gestureUpdated_data()
 {
-    m_action->tryExecute();
-    Q_EMIT m_action->gestureEnded();
-    QVERIFY(m_action->canExecute());
+    QTest::addColumn<std::vector<qreal>>("deltas");
+    QTest::addColumn<ActionInterval>("interval");
+    QTest::addColumn<int>("executions");
+
+    ActionInterval interval{};
+    QTest::newRow("zeroes") << std::vector<qreal>{0, 0, 0} << interval << 3;
+    interval.setValue(2);
+    QTest::newRow("accumulation") << std::vector<qreal>{1, 1, 1, 1} << interval << 2;
+    QTest::newRow("multiple executions") << std::vector<qreal>{4, 4} << interval << 4;
+    QTest::newRow("direction change (any)") << std::vector<qreal>{-4, 1, -4, 1} << interval << 4;
+    interval.setDirection(IntervalDirection::Positive);
+    QTest::newRow("direction change (positive)") << std::vector<qreal>{-4, 1, -4, 1} << interval << 0;
+    interval.setDirection(IntervalDirection::Negative);
+    QTest::newRow("direction change (negative)") << std::vector<qreal>{4, -1, 4, -1} << interval << 0;
 }
 
-void TestAction::canExecute_nonRepeatingExecutedOnceAndCancelled_returnsTrue()
+void TestAction::gestureUpdated()
 {
-    m_action->tryExecute();
-    Q_EMIT m_action->gestureCancelled();
-    QVERIFY(m_action->canExecute());
-}
+    QFETCH(std::vector<qreal>, deltas);
+    QFETCH(ActionInterval, interval);
+    QFETCH(int, executions);
 
-void TestAction::onGestureUpdated_notRepeating_doesntExecuteAction()
-{
-    const QSignalSpy spy(m_action.get(), &GestureAction::executed);
+    EXPECT_CALL(*m_action, tryExecute())
+        .Times(Exactly(executions));
 
-    Q_EMIT m_action->gestureUpdated(1);
-
-    QCOMPARE(spy.count(), 0);
-}
-
-void TestAction::onGestureUpdated_repeating_data()
-{
-    QTest::addColumn<int>("interval");
-    QTest::addColumn<int>("delta1");
-    QTest::addColumn<int>("delta2");
-    QTest::addColumn<int>("actionExecutions");
-
-    QTest::newRow("interval equal to delta") << 10 << 10 << 0 << 1;
-    QTest::newRow("interval greater than delta") << 10 << 9 << 0 << 0;
-    QTest::newRow("interval lesser than delta") << 10 << 11 << 0 << 1;
-    QTest::newRow("negative interval positive delta") << -10 << 10 << 0 << 0;
-    QTest::newRow("positive interval negative delta") << 10 << -10 << 0 << 0;
-    QTest::newRow("multiple executions") << 10 << 55 << 0 << 5;
-    QTest::newRow("two deltas") << 10 << 5 << 5 << 1;
-    QTest::newRow("direction changed 1") << 10 << 20 << -40 << 2;
-    QTest::newRow("direction changed 2") << -10 << -40 << 80 << 4;
-}
-
-void TestAction::onGestureUpdated_repeating()
-{
-    QFETCH(int, interval);
-    QFETCH(int, delta1);
-    QFETCH(int, delta2);
-    QFETCH(int, actionExecutions);
-
+    m_action->setOn(On::Update);
     m_action->setRepeatInterval(interval);
-    const QSignalSpy spy(m_action.get(), &GestureAction::executed);
 
-    Q_EMIT m_action->gestureUpdated(delta1);
-    Q_EMIT m_action->gestureUpdated(delta2);
+    for (const auto &delta : deltas) {
+        m_action->GestureAction::gestureUpdated(delta, {});
+    }
 
-    QCOMPARE(spy.count(), actionExecutions);
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
+}
+
+void TestAction::gestureEnded_data()
+{
+    QTest::addColumn<On>("on");
+    QTest::addColumn<bool>("executes");
+
+    QTest::newRow("begin") << On::Begin << false;
+    QTest::newRow("update") << On::Update << false;
+    QTest::newRow("end") << On::End << true;
+    QTest::newRow("cancel") << On::Cancel << false;
+    QTest::newRow("end or cancel") << On::EndOrCancel << true;
+}
+
+void TestAction::gestureEnded()
+{
+    QFETCH(On, on);
+    QFETCH(bool, executes);
+
+    EXPECT_CALL(*m_action, tryExecute)
+        .Times(Exactly(executes ? 1 : 0));
+
+    m_action->setOn(on);
+    m_action->GestureAction::gestureEnded();
+
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
+}
+
+void TestAction::gestureCancelled_data()
+{
+    QTest::addColumn<On>("on");
+    QTest::addColumn<bool>("executes");
+
+    QTest::newRow("begin") << On::Begin << false;
+    QTest::newRow("update") << On::Update << false;
+    QTest::newRow("end") << On::End << false;
+    QTest::newRow("cancel") << On::Cancel << true;
+    QTest::newRow("end or cancel") << On::EndOrCancel << true;
+}
+
+void TestAction::gestureCancelled()
+{
+    QFETCH(On, on);
+    QFETCH(bool, executes);
+
+    EXPECT_CALL(*m_action, tryExecute)
+        .Times(Exactly(executes ? 1 : 0));
+
+    m_action->setOn(on);
+    m_action->GestureAction::gestureCancelled();
+
+    QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
 
 }

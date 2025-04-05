@@ -16,39 +16,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#pragma once
+#include "callbackcondition.h"
 
 namespace libgestures
 {
 
-template <typename T>
-class Range
+CallbackCondition::CallbackCondition(const std::function<bool()> &func)
+    : m_func(func)
 {
-public:
-    Range() = default;
-    Range(T minmax);
-    Range(T min, T max);
+}
 
-    /**
-     * @return A threshold that ranges from min to the maximum positive value.
-     */
-    static Range<T> minToInf(const T &min);
-    /**
-     * @return A threshold that ranges from the maximum negative value to max.
-     */
-    static Range<T> infToMax(const T &max);
-
-    const T &min() const;
-    const T &max() const;
-
-    bool contains(const T &value) const;
-
-    template <typename U>
-    explicit operator Range<U>() const;
-
-private:
-    T m_min{};
-    T m_max{};
-};
+bool CallbackCondition::satisfied() const
+{
+    return m_func();
+}
 
 }

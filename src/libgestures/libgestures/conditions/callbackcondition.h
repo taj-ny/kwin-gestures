@@ -18,37 +18,22 @@
 
 #pragma once
 
+#include "condition.h"
+
+#include <functional>
+
 namespace libgestures
 {
 
-template <typename T>
-class Range
+class CallbackCondition : public Condition
 {
 public:
-    Range() = default;
-    Range(T minmax);
-    Range(T min, T max);
+    CallbackCondition(const std::function<bool()> &func);
 
-    /**
-     * @return A threshold that ranges from min to the maximum positive value.
-     */
-    static Range<T> minToInf(const T &min);
-    /**
-     * @return A threshold that ranges from the maximum negative value to max.
-     */
-    static Range<T> infToMax(const T &max);
-
-    const T &min() const;
-    const T &max() const;
-
-    bool contains(const T &value) const;
-
-    template <typename U>
-    explicit operator Range<U>() const;
+    bool satisfied() const override;
 
 private:
-    T m_min{};
-    T m_max{};
+    std::function<bool()> m_func;
 };
 
 }

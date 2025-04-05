@@ -33,9 +33,9 @@ bool ConditionGroup::satisfied() const
     switch (m_mode)
     {
         case ConditionGroupMode::All:
-            return std::all_of(begin, end, pred);
+            return !m_conditions.empty() && std::all_of(begin, end, pred);
         case ConditionGroupMode::Any:
-            return std::any_of(begin, end, pred);
+            return !m_conditions.empty() && std::any_of(begin, end, pred);
         case ConditionGroupMode::None:
             return std::none_of(begin, end, pred);
         default:

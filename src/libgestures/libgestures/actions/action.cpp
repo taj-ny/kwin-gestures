@@ -28,17 +28,6 @@ void GestureAction::setCondition(const std::shared_ptr<const Condition> &conditi
     m_condition = condition;
 }
 
-bool GestureAction::satisfiesConditions() const
-{
-    return !m_condition || m_condition.value()->satisfied();
-}
-
-bool GestureAction::thresholdReached() const
-{
-    return (m_threshold.min() == 0 || m_absoluteAccumulatedDelta >= m_threshold.min())
-        && (m_threshold.max() == 0 || m_absoluteAccumulatedDelta <= m_threshold.max());
-}
-
 void GestureAction::tryExecute()
 {
     if (!canExecute()) {
@@ -57,17 +46,13 @@ const bool &GestureAction::executed() const
 
 bool GestureAction::canExecute() const
 {
-    return satisfiesConditions() && thresholdReached();
+    return (!m_condition || m_condition.value()->satisfied())
+        && (!m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta));
 }
 
-bool GestureAction::blocksOtherActions() const
+void GestureAction::gestureCancelled()
 {
-    return m_executed && m_blockOtherActions;
-}
-
-void GestureAction::gestureCancelled(const bool &execute)
-{
-    if (execute && (m_on == On::Cancel || m_on == On::EndOrCancel)) {
+    if (m_on == On::Cancel || m_on == On::EndOrCancel) {
         tryExecute();
     }
 
@@ -75,9 +60,9 @@ void GestureAction::gestureCancelled(const bool &execute)
     reset();
 }
 
-void GestureAction::gestureEnded(const bool &execute)
+void GestureAction::gestureEnded()
 {
-    if (execute && (m_on == On::End || m_on == On::EndOrCancel)) {
+    if (m_on == On::End || m_on == On::EndOrCancel) {
         tryExecute();
     }
 
@@ -98,7 +83,7 @@ void GestureAction::gestureStarted()
 void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
-    if ((m_accumulatedDelta > 0 && delta < 0) || (m_accumulatedDelta < 0 && delta > 0)) {
+    if (std::signbit(m_accumulatedDelta) != std::signbit(delta)) {
         // Direction changed
         m_accumulatedDelta = delta;
         qCDebug(LIBGESTURES_ACTION).noquote() << QString("Gesture direction changed (name: %1)").arg(m_name);
@@ -120,7 +105,11 @@ void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPoint
     // Keep executing action until accumulated delta no longer exceeds the interval
     while (m_interval.matches(m_accumulatedDelta) && std::abs(m_accumulatedDelta / interval) >= 1) {
         tryExecute();
-        m_accumulatedDelta -= interval;
+        if (std::signbit(m_accumulatedDelta) != std::signbit(interval)) {
+            m_accumulatedDelta += interval;
+        } else {
+            m_accumulatedDelta -= interval;
+        }
     }
 }
 

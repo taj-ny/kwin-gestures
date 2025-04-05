@@ -1,14 +1,22 @@
-add_subdirectory(actions)
-add_subdirectory(gestures)
+include_directories(.)
 
-set(testCondition_SRCS
-    test_condition.cpp
-    mockwindowinfoprovider.cpp
-)
-qt_add_executable(testCondition ${testCondition_SRCS})
-add_test(NAME "condition" COMMAND testCondition)
-target_link_libraries(testCondition PRIVATE
-    libgestures
-    Qt::Core
-    Qt::Test
-)
+macro(libgestures_add_test TARGET_NAME)
+    set(options)
+    set(oneValueArgs)
+    set(multiValueArgs SOURCES)
+    cmake_parse_arguments(TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    qt_add_executable(${TARGET_NAME} ${TEST_SOURCES})
+    add_test(NAME "${TARGET_NAME}" COMMAND ${TARGET_NAME})
+    target_link_libraries(${TARGET_NAME} PRIVATE
+        libgestures
+        GTest::gmock_main
+        Qt::Core
+        Qt::Test
+    )
+endmacro()
+
+libgestures_add_test(action SOURCES actions/test_action.cpp)
+libgestures_add_test(actioninterval SOURCES actions/test_actioninterval.cpp)
+libgestures_add_test(conditiongroup SOURCES conditions/test_conditiongroup.cpp)
+libgestures_add_test(trigger SOURCES triggers/test_trigger.cpp)

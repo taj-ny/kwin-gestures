@@ -115,39 +115,31 @@ public:
     /**
      * Called by the gesture when it is started.
      */
-    void gestureStarted();
+    virtual void gestureStarted();
     /**
      * Called by the gesture when it is updated.
      */
-    void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    virtual void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
     /**
      * Called by the gesture when it has ended.
-     * @param execute Whether the action should be executed.
      */
-    void gestureEnded(const bool &execute);
+    virtual void gestureEnded();
     /**
      * Called by the gesture when it has been cancelled.
-     * @param execute Whether the action should be executed.
      */
-    void gestureCancelled(const bool &execute);
+    virtual void gestureCancelled();
 
     /**
      * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
      */
-    void tryExecute();
-    const bool &executed() const;
-    bool canExecute() const;
+    virtual void tryExecute();
+    virtual const bool &executed() const;
+    virtual bool canExecute() const;
 
     /**
      * @return Whether the action satisfies at least one condition, or no conditions have been added.
      */
     bool satisfiesConditions() const;
-
-    /**
-     * @return Whether this action should block all other actions, including actions belonging to other custom and
-     * built-in gestures, from being executed during the gesture, if the action is executed.
-     */
-    bool blocksOtherActions() const;
 
     /**
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
@@ -193,11 +185,6 @@ protected:
     QPointF m_currentDeltaPointMultiplied;
 
 private:
-    /**
-     * @return Whether the accumulated delta fits within the specified range.
-     */
-    bool thresholdReached() const;
-
     void reset();
 
     QString m_name = "none";
@@ -222,10 +209,10 @@ private:
 
     ActionInterval m_interval;
     bool m_blockOtherActions = false;
-    Range<qreal> m_threshold{0};
+    std::optional<Range<qreal>> m_threshold;
     On m_on = On::Update;
 
-    friend class TestGestureRecognizer;
+    friend class TestTrigger;
 };
 
 }

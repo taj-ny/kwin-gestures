@@ -3,6 +3,7 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
+    libgestures/libgestures/conditions/callbackcondition.cpp
     libgestures/libgestures/conditions/condition.cpp
     libgestures/libgestures/conditions/conditiongroup.cpp
     libgestures/libgestures/conditions/legacycondition.cpp

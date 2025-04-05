@@ -55,7 +55,7 @@ bool Trigger::canUpdate(const TriggerUpdateEvent *) const
 void Trigger::update(const TriggerUpdateEvent *event)
 {
     m_absoluteAccumulatedDelta += std::abs(event->delta());
-    m_thresholdReached = thresholdReached();
+    m_thresholdReached = !m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta);
     if (!m_thresholdReached) {
         qCDebug(LIBGESTURES_TRIGGER).noquote()
             << QString("Threshold not reached (name: %1, current: %2, min: %3, max: %4")
@@ -89,18 +89,28 @@ bool Trigger::canEnd(const TriggerEndEvent *event) const
 
 void Trigger::end()
 {
+    if (!m_started) {
+        reset();
+        return;
+    }
+
     qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
-        action->gestureEnded(m_thresholdReached);
+        action->gestureEnded();
     }
     reset();
 }
 
 void Trigger::cancel()
 {
+    if (!m_started) {
+        reset();
+        return;
+    }
+
     qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
-        action->gestureCancelled(m_thresholdReached);
+        action->gestureCancelled();
     }
     reset();
 }
@@ -112,7 +122,7 @@ bool Trigger::overridesOtherTriggersOnEnd()
     }
 
     return std::any_of(m_actions.begin(), m_actions.end(), [](const auto &action) {
-        return action->on() == On::End && action->canExecute();
+        return (action->on() == On::End || action->on() == On::EndOrCancel) && action->canExecute();
     });
 }
 
@@ -201,17 +211,6 @@ const TriggerType &Trigger::type() const
 void Trigger::setType(const TriggerType &type)
 {
     m_type = type;
-}
-
-bool Trigger::thresholdReached() const
-{
-    if (!m_threshold) {
-        return true;
-    }
-
-    return (m_threshold->min() == 0 || m_absoluteAccumulatedDelta >= m_threshold->min())
-        && (m_threshold->max() == 0 || m_absoluteAccumulatedDelta <= m_threshold->max());
-
 }
 
 void Trigger::reset()
