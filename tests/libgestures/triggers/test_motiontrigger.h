@@ -1,0 +1,28 @@
+#pragma once
+
+#include "libgestures/triggers/motiontrigger.h"
+
+#include <QTest>
+
+namespace libgestures
+{
+
+class TestMotionTrigger : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void init();
+
+    void canUpdate_data();
+    void canUpdate();
+
+    void hasSpeed_data();
+    void hasSpeed();
+
+private:
+    std::unique_ptr<MotionTrigger> m_motionTrigger;
+    MotionTriggerUpdateEvent m_event;
+};
+
+}
