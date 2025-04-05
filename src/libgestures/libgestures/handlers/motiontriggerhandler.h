@@ -1,6 +1,24 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
-#include "libgestures/triggers/directionalmotion.h"
+#include "libgestures/triggers/directionalmotiontrigger.h"
 #include "triggerhandler.h"
 
 Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOTION)
@@ -25,13 +43,13 @@ public:
 protected:
     bool determineSpeed(const qreal &delta, const qreal &fastThreshold);
 
-    void triggerActivating(Trigger *trigger) override;
+    void triggerActivating(const Trigger *trigger) override;
     void reset() override;
 
     TriggerSpeed m_speed = TriggerSpeed::Any;
 
 private:
-    void strokeGestureEnder(const TriggerEndEvent *event);
+    void strokeTriggerEndHandler(const TriggerEndEvent *event);
 
     Axis m_currentSwipeAxis = Axis::None;
     QPointF m_currentSwipeDelta;

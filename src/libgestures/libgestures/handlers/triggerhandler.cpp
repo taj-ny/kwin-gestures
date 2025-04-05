@@ -1,9 +1,27 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "triggerhandler.h"
+
+Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER, "libgestures.handler", QtWarningMsg)
 
 namespace libgestures
 {
-
-Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER, "libgestures.handler", QtWarningMsg)
 
 /**
  * Press timer interval and delta.
@@ -17,7 +35,8 @@ TriggerHandler::TriggerHandler()
         pressUpdate(s_pressDelta);
     });
 
-    registerTriggerActivator(TriggerType::Press, std::bind(&TriggerHandler::pressTriggerActivator, this));
+    registerTriggerActivateHandler(TriggerType::Press, std::bind(&TriggerHandler::pressTriggerActivateHandler, this));
+    registerTriggerEndCancelHandler(TriggerType::Press, std::bind(&TriggerHandler::pressTriggerEndCancelHandler, this));
 }
 
 void TriggerHandler::addTrigger(std::unique_ptr<Trigger> trigger)
@@ -34,17 +53,32 @@ void TriggerHandler::keyboardKey(const Qt::Key &key, const bool &state)
     endTriggers(TriggerType::All);
 }
 
-bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerActivateEvent *event)
+void TriggerHandler::registerTriggerActivateHandler(const TriggerType &type, const std::function<void()> &func)
+{
+    m_triggerActivateHandlers[type] = func;
+}
+
+void TriggerHandler::registerTriggerEndHandler(const TriggerType &type, const std::function<void(const TriggerEndEvent *)> &func)
+{
+    m_triggerEndHandlers[type] = func;
+}
+
+void TriggerHandler::registerTriggerEndCancelHandler(const TriggerType &type, const std::function<void()> &func)
+{
+    m_triggerEndCancelHandlers[type] = func;
+}
+
+bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerActivationEvent *event)
 {
     qCDebug(LIBGESTURES_HANDLER).noquote().nospace() << "Triggers activating (types: " << types << ", fingers: " << event->fingers << ", mouseButtons: " << event->mouseButtons << ", keyboardModifiers: " << event->keyboardModifiers << ", position: " << event->position << ")";
     cancelTriggers(TriggerType::All);
     reset();
 
-    for (const auto &[type, activator] : m_triggerActivators) {
+    for (const auto &[type, handler] : m_triggerActivateHandlers) {
         if (!(types & type)) {
             continue;
         }
-        activator();
+        handler();
     }
 
     auto hasKeyboardModifiers = false;
@@ -64,18 +98,18 @@ bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerAc
 
 bool TriggerHandler::activateTriggers(const TriggerTypes &types, const uint8_t &fingers)
 {
-    auto event = createActivateEvent();
+    auto event = createActivationEvent();
     event->fingers = fingers;
     return activateTriggers(types, event.get());
 }
 
 bool TriggerHandler::activateTriggers(const TriggerTypes &types)
 {
-    auto event = createActivateEvent();
+    auto event = createActivationEvent();
     return activateTriggers(types, event.get());
 }
 
-bool TriggerHandler::updateTriggers(const std::map<TriggerTypes, const TriggerUpdateEvent *> &events)
+bool TriggerHandler::updateTriggers(const std::map<TriggerType, const TriggerUpdateEvent *> &events)
 {
     TriggerTypes types{};
     for (const auto &[type, _] : events) {
@@ -106,7 +140,7 @@ bool TriggerHandler::updateTriggers(const std::map<TriggerTypes, const TriggerUp
         if (!m_conflictsResolved && m_activeTriggers.size() > 1) {
             qCDebug(LIBGESTURES_TRIGGER, "Cancelling conflicting triggers");
             m_conflictsResolved = true;
-            if (trigger->overridesOtherTriggers()) {
+            if (trigger->overridesOtherTriggersOnUpdate()) {
                 cancelTriggers(trigger);
                 break;
             } else if (types & TriggerType::StrokeSwipe) { // TODO This should be in MotionTriggerHandler
@@ -133,11 +167,17 @@ bool TriggerHandler::endTriggers(const TriggerTypes &types, const TriggerEndEven
 
     qCDebug(LIBGESTURES_HANDLER).nospace() << "Ending gestures (types: " << types << ")";
 
-    for (const auto &[type, ender] : m_triggerEnders) {
+    for (const auto &[type, handler] : m_triggerEndHandlers) {
         if (!(types & type)) {
             continue;
         }
-        ender(event);
+        handler(event);
+    }
+    for (const auto &[type, handler] : m_triggerEndCancelHandlers) {
+        if (!(types & type)) {
+            continue;
+        }
+        handler();
     }
 
     for (auto it = m_activeTriggers.begin(); it != m_activeTriggers.end();) {
@@ -163,6 +203,12 @@ bool TriggerHandler::endTriggers(const TriggerTypes &types, const TriggerEndEven
         continue;
     }
     return true;
+}
+
+bool TriggerHandler::endTriggers(const TriggerTypes &types)
+{
+    auto event = createEndEvent();
+    return endTriggers(types, event.get());
 }
 
 bool TriggerHandler::cancelTriggers(const TriggerTypes &types)
@@ -199,7 +245,7 @@ void TriggerHandler::cancelTriggers(Trigger *except)
     }
 }
 
-std::vector<Trigger *> TriggerHandler::triggers(const TriggerTypes &types, const libgestures::TriggerActivateEvent *event)
+std::vector<Trigger *> TriggerHandler::triggers(const TriggerTypes &types, const TriggerActivationEvent *event)
 {
     std::vector<Trigger *> result;
     for (auto &trigger : m_triggers) {
@@ -243,9 +289,9 @@ void TriggerHandler::pressUpdate(const qreal &delta)
     qCDebug(LIBGESTURES_HANDLER).nospace() << "Event processed (type: Pinch, hasGestures: " << hasGestures << ")";
 }
 
-std::unique_ptr<TriggerActivateEvent> TriggerHandler::createActivateEvent() const
+std::unique_ptr<TriggerActivationEvent> TriggerHandler::createActivationEvent() const
 {
-    auto event = std::make_unique<TriggerActivateEvent>();
+    auto event = std::make_unique<TriggerActivationEvent>();
     event->keyboardModifiers = Input::implementation()->keyboardModifiers();
     return event;
 }
@@ -255,15 +301,25 @@ std::unique_ptr<TriggerEndEvent> TriggerHandler::createEndEvent() const
     return std::make_unique<TriggerEndEvent>();
 }
 
+void TriggerHandler::triggerActivating(const Trigger *trigger)
+{
+}
+
 void TriggerHandler::reset()
 {
     m_conflictsResolved = false;
 }
 
-void TriggerHandler::pressTriggerActivator()
+void TriggerHandler::pressTriggerActivateHandler()
 {
     qCDebug(LIBGESTURES_HANDLER) << "Starting press timer";
     m_pressTimer.start(s_pressDelta);
+}
+
+void TriggerHandler::pressTriggerEndCancelHandler()
+{
+    qCDebug(LIBGESTURES_HANDLER) << "Stopping press timer";
+    m_pressTimer.stop();
 }
 
 }

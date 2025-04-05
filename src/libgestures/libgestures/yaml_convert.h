@@ -1,9 +1,33 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "libgestures/actions/command.h"
 #include "libgestures/actions/input.h"
 #include "libgestures/actions/plasmaglobalshortcut.h"
-#include "libgestures/gestures/handler.h"
+#include "libgestures/conditions/conditiongroup.h"
+#include "libgestures/conditions/legacycondition.h"
+#include "libgestures/handlers/mousetriggerhandler.h"
+#include "libgestures/handlers/touchpadtriggerhandler.h"
+#include "libgestures/triggers/directionalmotiontrigger.h"
+#include "libgestures/triggers/presstrigger.h"
+#include "libgestures/triggers/stroketrigger.h"
 
 #include <QRegularExpression>
 #include <QVector>
@@ -593,103 +617,120 @@ struct convert<std::shared_ptr<libgestures::Condition>>
 {
     static bool decode(const Node &node, std::shared_ptr<libgestures::Condition> &condition)
     {
-        condition = std::make_shared<libgestures::Condition>();
+        auto group = std::make_shared<libgestures::ConditionGroup>();
+        condition = group;
+        group->setMode(libgestures::ConditionGroupMode::Any);
 
-        const auto negatedNode = node["negate"];
-        if (negatedNode.IsDefined()) {
-            for (const auto &negatedRaw : negatedNode.as<QStringList>(QStringList())) {
-                if (negatedRaw.contains("window_class")) {
-                    condition->setNegateWindowClass(true);
-                } else if (negatedRaw.contains("window_state")) {
-                    condition->setNegateWindowState(true);
-                } else {
-                    throw Exception(node.Mark(), "Invalid negated condition property");
+        for (const auto &legacyConditionNode : node) {
+            auto legacyCondition = std::make_shared<libgestures::LegacyCondition>();
+            group->add(legacyCondition);
+
+            const auto negatedNode = node["negate"];
+            if (negatedNode.IsDefined()) {
+                for (const auto &negatedRaw : negatedNode.as<QStringList>(QStringList())) {
+                    if (negatedRaw.contains("window_class")) {
+                        legacyCondition->setNegateWindowClass(true);
+                    } else if (negatedRaw.contains("window_state")) {
+                        legacyCondition->setNegateWindowState(true);
+                    } else {
+                        throw Exception(node.Mark(), "Invalid negated condition property");
+                    }
                 }
             }
+
+            const auto windowClass = node["window_class"];
+            if (windowClass.IsDefined()) {
+                legacyCondition->setWindowClass(windowClass.as<QRegularExpression>());
+            }
+            legacyCondition->setWindowState(node["window_state"].as<libgestures::WindowStates>(libgestures::WindowState::All));
         }
 
-        const auto windowClass = node["window_class"];
-        if (windowClass.IsDefined()) {
-            condition->setWindowClass(windowClass.as<QRegularExpression>());
-        }
-        condition->setWindowState(node["window_state"].as<libgestures::WindowStates>(libgestures::WindowState::All));
 
         return true;
     }
 };
 
 template<>
-struct convert<std::shared_ptr<libgestures::Gesture>>
+struct convert<std::unique_ptr<libgestures::Trigger>>
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::Gesture> &gesture)
+    static bool decode(const Node &node, std::unique_ptr<libgestures::Trigger> &trigger)
     {
         const auto type = node["type"].as<QString>();
         if (type == "hold" || type == "press") {
-            auto pressGesture = new libgestures::PressGesture;
-            pressGesture->setInstant(node["instant"].as<bool>(false));
-            gesture.reset(pressGesture);
+            auto pressTrigger = new libgestures::PressTrigger;
+            pressTrigger->setInstant(node["instant"].as<bool>(false));
+            trigger.reset(pressTrigger);
         } else if (type == "pinch") {
-            auto pinchGesture = new libgestures::PinchGesture;
-            pinchGesture->setDirection(node["direction"].as<libgestures::PinchDirection>());
-            gesture.reset(pinchGesture);
+            auto pinchTrigger = new libgestures::DirectionalMotionTrigger;
+            pinchTrigger->setType(libgestures::TriggerType::Pinch);
+            pinchTrigger->setDirection(static_cast<uint32_t>(node["direction"].as<libgestures::PinchDirection>()));
+            trigger.reset(pinchTrigger);
         } else if (type == "stroke") {
-            auto strokeGesture = new libgestures::StrokeGesture;
-            strokeGesture->setStrokes(node["strokes"].as<std::vector<libgestures::Stroke>>());
-            gesture.reset(strokeGesture);
+            auto strokeTrigger = new libgestures::StrokeTrigger;
+            strokeTrigger->setStrokes(node["strokes"].as<std::vector<libgestures::Stroke>>());
+            trigger.reset(strokeTrigger);
         } else if (type == "swipe") {
-            auto swipeGesture = new libgestures::SwipeGesture;
-            swipeGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
-            gesture.reset(swipeGesture);
+            auto swipeTrigger = new libgestures::DirectionalMotionTrigger;
+            swipeTrigger->setType(libgestures::TriggerType::Swipe);
+            swipeTrigger->setDirection(static_cast<uint32_t>(node["direction"].as<libgestures::SwipeDirection>()));
+            trigger.reset(swipeTrigger);
         } else if (type == "rotate") {
-            auto rotateGesture = new libgestures::RotateGesture;
-            rotateGesture->setDirection(node["direction"].as<libgestures::RotateDirection>());
-            gesture.reset(rotateGesture);
+            auto rotateTrigger = new libgestures::DirectionalMotionTrigger;
+            rotateTrigger->setType(libgestures::TriggerType::Rotate);
+            rotateTrigger->setDirection(static_cast<uint32_t>(node["direction"].as<libgestures::RotateDirection>()));
+            trigger.reset(rotateTrigger);
         } else if (type == "wheel") {
-            auto wheelGesture = new libgestures::WheelGesture;
-            wheelGesture->setDirection(node["direction"].as<libgestures::SwipeDirection>());
-            gesture.reset(wheelGesture);
+            auto wheelTrigger = new libgestures::DirectionalMotionTrigger;
+            wheelTrigger->setType(libgestures::TriggerType::Wheel);
+            wheelTrigger->setDirection(static_cast<uint32_t>(node["direction"].as<libgestures::SwipeDirection>()));
+            trigger.reset(wheelTrigger);
         } else {
-            throw Exception(node.Mark(), "Invalid gesture type");
+            throw Exception(node.Mark(), "Invalid trigger type");
         }
 
-        gesture->setName(node["name"].as<QString>(gesture->name()));
-
-        gesture->setFingers(node["fingers"].as<libgestures::Range<uint8_t>>(1));
-        gesture->setThreshold(node["threshold"].as<libgestures::Range<qreal>>(0));
-
-        gesture->setSpeed(node["speed"].as<libgestures::GestureSpeed>(libgestures::GestureSpeed::Any));
-
-        if (const auto modifiersNode = node["keyboard_modifiers"]) {
+        if (const auto &nameNode = node["name"]) {
+            trigger->setName(nameNode.as<QString>());
+        }
+        if (const auto &fingersNode = node["fingers"]) {
+            trigger->setFingers(fingersNode.as<libgestures::Range<uint8_t>>());
+        }
+        if (const auto &thresholdNode = node["threshold"]) {
+            trigger->setThreshold(thresholdNode.as<libgestures::Range<qreal>>());
+        }
+        if (const auto &modifiersNode = node["keyboard_modifiers"]) {
             if (modifiersNode.IsSequence()) {
                 if (const auto modifiers = modifiersNode.as<Qt::KeyboardModifiers>(Qt::KeyboardModifier::NoModifier)) {
-                    gesture->setKeyboardModifiers(modifiers);
+                    trigger->setKeyboardModifiers(modifiers);
                 }
             } else {
                 const auto modifierMatchingMode = modifiersNode.as<QString>();
-                if (modifierMatchingMode == "any") {
-                    gesture->setKeyboardModifiers(std::nullopt);
-                } else if (modifierMatchingMode == "none") {
-                    gesture->setKeyboardModifiers(Qt::KeyboardModifier::NoModifier);
-                } else {
+                if (modifierMatchingMode == "none") {
+                    trigger->setKeyboardModifiers(Qt::KeyboardModifier::NoModifier);
+                } else if (modifierMatchingMode != "any") {
                     throw Exception(node.Mark(), "Invalid keyboard modifier");
                 }
             }
         }
-        if (const auto mouseButtonsNode = node["mouse_buttons"]) {
-            gesture->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>(Qt::MouseButton::NoButton));
+        if (const auto &mouseButtonsNode = node["mouse_buttons"]) {
+            trigger->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>());
         }
-        if (const auto startPositionsNode = node["begin_positions"]) {
-            gesture->setBeginPositions(startPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
+        if (const auto &startPositionsNode = node["begin_positions"]) {
+            trigger->setBeginPositions(startPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
         }
-        if (const auto endPositionsNode = node["end_positions"]) {
-            gesture->setEndPositions(endPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
+        if (const auto &endPositionsNode = node["end_positions"]) {
+            trigger->setEndPositions(endPositionsNode.as<std::vector<libgestures::Range<QPointF>>>());
         }
-
         for (const auto &conditionNode : node["conditions"]) {
-            gesture->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
+            trigger->setCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
         }
         for (const auto &actionNode : node["actions"]) {
-            gesture->addAction(actionNode.as<std::shared_ptr<libgestures::GestureAction>>());
+            trigger->addAction(actionNode.as<std::unique_ptr<libgestures::GestureAction>>());
+        }
+
+        if (auto *motionTrigger = dynamic_cast<libgestures::MotionTrigger *>(trigger.get())) {
+            if (const auto &speedNode = node["speed"]) {
+                motionTrigger->setSpeed(speedNode.as<libgestures::TriggerSpeed>());
+            }
         }
 
         return true;
@@ -697,9 +738,9 @@ struct convert<std::shared_ptr<libgestures::Gesture>>
 };
 
 template<>
-struct convert<std::shared_ptr<libgestures::GestureAction>>
+struct convert<std::unique_ptr<libgestures::GestureAction>>
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureAction> &action)
+    static bool decode(const Node &node, std::unique_ptr<libgestures::GestureAction> &action)
     {
         if (node["command"].IsDefined()) {
             auto commandAction = new libgestures::CommandGestureAction();
@@ -742,7 +783,7 @@ struct convert<std::shared_ptr<libgestures::GestureAction>>
         action->setRepeatInterval(node["interval"].as<libgestures::ActionInterval>(libgestures::ActionInterval()));
         action->setBlockOtherActions(node["block_other"].as<bool>(false));
         for (const auto &conditionNode : node["conditions"]) {
-            action->addCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
+            action->setCondition(conditionNode.as<std::shared_ptr<libgestures::Condition>>());
         }
 
         return true;
@@ -772,64 +813,103 @@ struct convert<libgestures::ActionInterval>
     }
 };
 
-template<>
-struct convert<std::shared_ptr<libgestures::GestureHandler>>
+static void decodeTriggerHandler(const Node &node, libgestures::TriggerHandler *handler)
 {
-    static bool decode(const Node &node, std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
+    const auto &triggersNode = node["gestures"];
+    if (!triggersNode.IsDefined()) {
+        throw Exception(node.Mark(), "No gestures specified");
+    }
+    for (const auto &triggerNode : triggersNode) {
+        handler->addTrigger(triggerNode.as<std::unique_ptr<libgestures::Trigger>>());
+    }
+}
+
+static void decodeMotionTriggerHandler(const Node &node, libgestures::TriggerHandler *handler)
+{
+    decodeTriggerHandler(node, handler);
+
+    auto *motionHandler = dynamic_cast<libgestures::MotionTriggerHandler *>(handler);
+    if (const auto &speedNode = node["speed"]) {
+        if (const auto &eventsNode = speedNode["events"]) {
+//            motionHandler->setInputEventsToSample(speedNode.as<uint8_t>());
+        }
+        if (const auto &swipeThresholdNode = speedNode["swipe_threshold"]) {
+//            motionHandler->setSwipeFastThreshold(speedNode.as<qreal>());
+        }
+    }
+}
+
+static void decodeMultiTouchMotionTriggerHandler(const Node &node, libgestures::TriggerHandler *handler)
+{
+    decodeMotionTriggerHandler(node, handler);
+
+    auto *multiTouchMotionHandler = dynamic_cast<libgestures::MultiTouchMotionTriggerHandler *>(handler);
+    if (const auto &speedNode = node["sped"]) {
+        if (const auto &pinchInThresholdNode = node["pinch_in_threshold"]) {
+//            multiTouchMotionHandler->setPinchInFastThreshold(pinchInThresholdNode.as<qreal>());
+        }
+        if (const auto &pinchOutThresholdNode = node["pinch_out_threshold"]) {
+//            multiTouchMotionHandler->setPinchOutFastThreshold(pinchOutThresholdNode.as<qreal>());
+        }
+        if (const auto &rotateThresholdNode = node["rotate_threshold"]) {
+//            multiTouchMotionHandler->setRotateFastThreshold(rotateThresholdNode.as<qreal>());
+        }
+    }
+
+}
+
+template<>
+struct convert<std::unique_ptr<libgestures::MouseTriggerHandler>>
+{
+    static bool decode(const Node &node, std::unique_ptr<libgestures::MouseTriggerHandler> &handler)
     {
-        const auto gesturesNode = node["gestures"];
-        if (!gesturesNode.IsDefined()) {
-            throw Exception(node.Mark(), "No gestures specified");
-        }
+        auto *mouseTriggerHandler = new libgestures::MouseTriggerHandler;
+        handler.reset(mouseTriggerHandler);
+        decodeMotionTriggerHandler(node, handler.get());
 
-        gestureRecognizer = std::make_unique<libgestures::GestureHandler>();
-        for (const auto gestureNode : gesturesNode) {
-            gestureRecognizer->registerGesture(gestureNode.as<std::shared_ptr<libgestures::Gesture>>());
+        if (const auto &motionTimeoutNode = node["motion_timeout"]) {
+            mouseTriggerHandler->setMotionTimeout(motionTimeoutNode.as<qreal>());
         }
-
-        gestureRecognizer->setDeltaMultiplier(node["delta_multiplier"].as<qreal>(gestureRecognizer->m_deltaMultiplier));
-        const auto speedNode = node["speed"];
-        if (speedNode.IsDefined()) {
-            gestureRecognizer->setInputEventsToSample(
-                speedNode["events"].as<uint8_t>(gestureRecognizer->m_inputEventsToSample));
-            gestureRecognizer->setSwipeFastThreshold(
-                speedNode["swipe_threshold"].as<qreal>(gestureRecognizer->m_swipeGestureFastThreshold));
-            gestureRecognizer->setPinchInFastThreshold(
-                speedNode["pinch_in_threshold"].as<qreal>(gestureRecognizer->m_pinchInFastThreshold));
-            gestureRecognizer->setPinchOutFastThreshold(
-                speedNode["pinch_out_threshold"].as<qreal>(gestureRecognizer->m_pinchOutFastThreshold));
-            gestureRecognizer->setRotateFastThreshold(
-                speedNode["rotate_threshold"].as<qreal>(gestureRecognizer->m_rotateFastThreshold));
+        if (const auto &pressTimeoutNode = node["press_timeout"]) {
+            mouseTriggerHandler->setPressTimeout(pressTimeoutNode.as<qreal>());
         }
-
-        if (const auto motionTimeoutNode = node["motion_timeout"]) {
-            gestureRecognizer->setMotionTimeout(motionTimeoutNode.as<qreal>());
-        }
-        if (const auto pressTimeoutNode = node["press_timeout"]) {
-            gestureRecognizer->setPressTimeout(pressTimeoutNode.as<qreal>());
-        }
-        if (const auto scrollTimeoutNode = node["scroll_timeout"]) {
-            gestureRecognizer->setTouchpadScrollTimeout(scrollTimeoutNode.as<qreal>());
-        }
-
         return true;
     }
 };
 
 template<>
-struct convert<libgestures::GestureSpeed>
+struct convert<std::unique_ptr<libgestures::TouchpadTriggerHandler>>
 {
-    static bool decode(const Node &node, libgestures::GestureSpeed &speed)
+    static bool decode(const Node &node, std::unique_ptr<libgestures::TouchpadTriggerHandler> &handler)
+    {
+        auto *touchpadTriggerHandler = new libgestures::TouchpadTriggerHandler;
+        handler.reset(touchpadTriggerHandler);
+        decodeMultiTouchMotionTriggerHandler(node, handler.get());
+
+        if (const auto &deltaMultiplierNode = node["delta_multiplier"]) {
+            touchpadTriggerHandler->setSwipeDeltaMultiplier(deltaMultiplierNode.as<qreal>());
+        }
+        if (const auto &scrollTimeoutNode = node["scroll_timeout"]) {
+            touchpadTriggerHandler->setScrollTimeout(scrollTimeoutNode.as<qreal>());
+        }
+        return true;
+    }
+};
+
+template<>
+struct convert<libgestures::TriggerSpeed>
+{
+    static bool decode(const Node &node, libgestures::TriggerSpeed &speed)
     {
         const auto speedRaw = node.as<QString>();
         if (speedRaw == "fast") {
-            speed = libgestures::GestureSpeed::Fast;
+            speed = libgestures::TriggerSpeed::Fast;
         } else if (speedRaw == "slow") {
-            speed = libgestures::GestureSpeed::Slow;
+            speed = libgestures::TriggerSpeed::Slow;
         } else if (speedRaw == "any") {
-            speed = libgestures::GestureSpeed::Any;
+            speed = libgestures::TriggerSpeed::Any;
         } else {
-            throw Exception(node.Mark(), "Invalid gesture speed");
+            throw Exception(node.Mark(), "Invalid trigger speed");
         }
 
         return true;

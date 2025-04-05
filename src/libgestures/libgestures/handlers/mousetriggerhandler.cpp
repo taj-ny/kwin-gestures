@@ -1,4 +1,24 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "mousetriggerhandler.h"
+
+#include "libgestures/triggers/presstrigger.h"
 
 namespace libgestures
 {
@@ -20,13 +40,12 @@ bool MouseTriggerHandler::button(const Qt::MouseButton &button, const quint32 &n
     if (state) {
         m_mouseMotionSinceButtonPress = 0;
         m_hadMouseGestureSinceButtonPress = false;
-
         cancelTriggers(TriggerType::All);
-        m_data = {};
+        m_activationEvent = createActivationEvent();
 
         // This should be per-gesture instead of global, but it's good enough
         m_instantPress = false;
-        for (const auto &trigger : triggers(TriggerType::Press, m_data)) {
+        for (const auto &trigger : triggers(TriggerType::Press, m_activationEvent.get())) {
             if (dynamic_cast<PressTrigger *>(trigger)->instant()) {
                 qCDebug(LIBGESTURES_HANDLER, "Press gesture is instant");
                 m_instantPress = true;
@@ -44,7 +63,7 @@ bool MouseTriggerHandler::button(const Qt::MouseButton &button, const quint32 &n
                 }
 
                 qCDebug(LIBGESTURES_HANDLER, "Attempting to activate mouse press gestures");
-                if (!activateTriggers(TriggerType::Press, m_data)) {
+                if (!activateTriggers(TriggerType::Press, m_activationEvent.get())) {
                     qCDebug(LIBGESTURES_HANDLER, "No wheel or press mouse gestures");
                     pressBlockedMouseButtons();
                 }
@@ -78,7 +97,7 @@ bool MouseTriggerHandler::button(const Qt::MouseButton &button, const quint32 &n
             m_motionTimeoutTimer.stop();
 
             if (m_instantPress) {
-                activateTriggers(TriggerType::Press, m_data);
+                activateTriggers(TriggerType::Press, m_activationEvent.get());
                 pressUpdate(5); // TODO
                 endTriggers(TriggerType::Press);
             }
@@ -163,9 +182,19 @@ bool MouseTriggerHandler::wheel(const qreal &delta, const Qt::Orientation &orien
     return hadTriggers;
 }
 
-std::unique_ptr<TriggerActivateEvent> MouseTriggerHandler::createActivateEvent() const
+void MouseTriggerHandler::setMotionTimeout(const qreal &timeout)
 {
-    auto event = TriggerHandler::createActivateEvent();
+    m_motionTimeout = timeout;
+}
+
+void MouseTriggerHandler::setPressTimeout(const qreal &timeout)
+{
+    m_pressTimeout = timeout;
+}
+
+std::unique_ptr<TriggerActivationEvent> MouseTriggerHandler::createActivationEvent() const
+{
+    auto event = TriggerHandler::createActivationEvent();
     event->mouseButtons = Input::implementation()->mouseButtons();
     event->position = Input::implementation()->mousePosition();
     return event;
@@ -180,16 +209,17 @@ std::unique_ptr<TriggerEndEvent> MouseTriggerHandler::createEndEvent() const
 
 bool MouseTriggerHandler::shouldBlockMouseButton(const Qt::MouseButton &button)
 {
-    const auto event = createActivateEvent();
+    const auto event = createActivationEvent();
     // Triggers support multiple buttons, so this property must be ignored when finding activatable triggers
     event->mouseButtons = std::nullopt;
     for (const auto &trigger : triggers(TriggerType::All, event.get())) {
         const auto buttons = trigger->mouseButtons();
         if (buttons && (*buttons & button)) {
-            qCDebug(LIBGESTURES_HANDLER).noquote().nospace() << "Mouse button blocked (button: " << button << ", gesture: " << gesture->name() << ")";
+            qCDebug(LIBGESTURES_HANDLER).noquote().nospace() << "Mouse button blocked (button: " << button << ", trigger: " << trigger->name() << ")";
             return true;
         }
     }
+    return false;
 }
 
 void MouseTriggerHandler::pressBlockedMouseButtons()

@@ -1,4 +1,24 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "inputfilter.h"
+
+#include "libgestures/triggers/stroketrigger.h"
 
 #include "utils.h"
 
@@ -31,16 +51,14 @@ GestureInputEventFilter::GestureInputEventFilter()
     });
 }
 
-void GestureInputEventFilter::setMouseGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
+void GestureInputEventFilter::setMouseTriggerHandler(std::unique_ptr<libgestures::MouseTriggerHandler> handler)
 {
-    m_mouseGestureRecognizer = gestureRecognizer;
-    m_mouseGestureRecognizer->setDeviceType(libgestures::DeviceType::Mouse);
+    m_mouseTriggerHandler = std::move(handler);
 }
 
-void GestureInputEventFilter::setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureHandler> &gestureRecognizer)
+void GestureInputEventFilter::setTouchpadTriggerHandler(std::unique_ptr<libgestures::TouchpadTriggerHandler> handler)
 {
-    m_touchpadGestureRecognizer = gestureRecognizer;
-    m_touchpadGestureRecognizer->setDeviceType(libgestures::DeviceType::Touchpad);
+    m_touchpadTriggerHandler = std::move(handler);
 }
 
 bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
@@ -155,7 +173,7 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
         pinchGestureBegin(2, time);
     }
 
-    return m_touchpadTriggerHandler->pinchUpdate(scale, angleDelta, delta);
+    return m_touchpadTriggerHandler->updatePinch(scale, angleDelta, delta);
 }
 
 bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)

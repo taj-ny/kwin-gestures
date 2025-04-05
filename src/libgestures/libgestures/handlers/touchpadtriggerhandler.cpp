@@ -1,3 +1,21 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "touchpadtriggerhandler.h"
 
 namespace libgestures
@@ -33,7 +51,7 @@ bool TouchpadTriggerHandler::pinchBegin(const uint8_t &fingers)
 
 bool TouchpadTriggerHandler::pinchUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta)
 {
-    return pinch(scale, angleDelta, delta);
+    return updatePinch(scale, angleDelta, delta);
 }
 
 bool TouchpadTriggerHandler::pinchEnd()
@@ -88,7 +106,7 @@ bool TouchpadTriggerHandler::scroll(const qreal &delta, const Qt::Orientation &o
 
 void TouchpadTriggerHandler::setSwipeDeltaMultiplier(const qreal &multiplier)
 {
-    m_swipeDeltaMultiplier = multiplier;
+//    m_swipeDeltaMultiplier = multiplier;
 }
 
 void TouchpadTriggerHandler::setScrollTimeout(const qreal &timeout)

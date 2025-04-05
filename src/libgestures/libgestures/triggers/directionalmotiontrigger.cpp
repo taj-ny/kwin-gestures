@@ -16,21 +16,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "kwinwindowinfoprovider.h"
-#include "effect/effecthandler.h"
-#include "window.h"
+#include "directionalmotiontrigger.h"
 
-std::optional<const libgestures::WindowInfo> KWinWindowInfoProvider::activeWindow() const
+namespace libgestures
 {
-    const auto window = KWin::effects->activeWindow();
-    if (!window)
-        return std::nullopt;
 
-    libgestures::WindowStates state = static_cast<libgestures::WindowState>(0);
-    if (window->isFullScreen())
-        state = state | libgestures::WindowState::Fullscreen;
-    if (window->window()->maximizeMode() == KWin::MaximizeMode::MaximizeFull)
-        state = state | libgestures::WindowState::Maximized;
+bool DirectionalMotionTrigger::canUpdate(const TriggerUpdateEvent *event) const
+{
+    if (!MotionTrigger::canUpdate(event)) {
+        return false;
+    }
 
-    return libgestures::WindowInfo(window->caption(), window->window()->resourceClass(), window->window()->resourceName(), state);
+    const auto *castedEvent = dynamic_cast<const DirectionalMotionTriggerUpdateEvent *>(event);
+    return m_direction & castedEvent->direction();
+}
+
+void DirectionalMotionTrigger::setDirection(const uint32_t &direction)
+{
+    m_direction = direction;
+}
+
+const uint32_t &DirectionalMotionTriggerUpdateEvent::direction() const
+{
+    return m_direction;
+}
+
+void DirectionalMotionTriggerUpdateEvent::setDirection(const uint32_t &direction)
+{
+    m_direction = direction;
+}
+
 }

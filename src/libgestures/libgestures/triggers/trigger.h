@@ -1,7 +1,26 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "libgestures/actions/action.h"
 #include "libgestures/conditions/condition.h"
+#include "libgestures/globals.h"
 #include "libgestures/input.h"
 
 #include <QLoggingCategory>
@@ -11,27 +30,11 @@ Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_TRIGGER)
 
 namespace libgestures
 {
-Q_NAMESPACE
 
-enum class TriggerType : uint32_t {
-    None = 0,
-    Pinch = 1u << 0,
-    Press = 1u << 1,
-    Rotate = 1u << 2,
-    Stroke = 1u << 3,
-    Swipe = 1u << 4,
-    Wheel = 1u << 5,
-
-    PinchRotate = Pinch | Rotate,
-    StrokeSwipe = Stroke | Swipe,
-
-    All = UINT32_MAX
-};
-Q_ENUM_NS(TriggerType)
-Q_DECLARE_FLAGS(TriggerTypes, TriggerType)
-Q_DECLARE_OPERATORS_FOR_FLAGS(TriggerTypes)
-
-class TriggerActivateEvent
+/**
+ * Unset optional fields are not checked by triggers.
+ */
+class TriggerActivationEvent
 {
 public:
     std::optional<uint8_t> fingers;
@@ -51,6 +54,9 @@ public:
 private:
     qreal m_delta = 0;
 };
+/**
+ * Unset optional fields are not checked by triggers.
+ */
 struct TriggerEndEvent
 {
     std::optional<QPointF> position;
@@ -67,12 +73,18 @@ public:
     Trigger() = default;
     virtual ~Trigger() = default;
 
-    void addAction(const std::unique_ptr<GestureAction> &action);
+    void addAction(std::unique_ptr<GestureAction> action);
+    /**
+     * To add multiple conditions, use a condition group.
+     *
+     * Ignored unless set.
+     */
+    void setCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
      * @return Whether conditions, fingers, keyboard modifiers, mouse buttons and begin positions are satisfied.
      */
-    bool canActivate(const TriggerActivateEvent *event) const;
+    bool canActivate(const TriggerActivationEvent *event) const;
 
     /**
      * Called by the trigger handler before updating a trigger. If true is returned, that trigger will be cancelled.
@@ -88,12 +100,12 @@ public:
      */
     bool canEnd(const TriggerEndEvent *event) const;
     /**
-     * Resets the trigger and informs all actions that it has ended.
+     * Resets the trigger and notifies all actions that it has ended.
      */
     void end();
 
     /**
-     * Resets the trigger and informs all actions that it has been cancelled.
+     * Resets the trigger and notifies all actions that it has been cancelled.
      */
     void cancel();
 
@@ -113,15 +125,11 @@ public:
     bool overridesOtherTriggersOnUpdate();
 
     /**
-     * Ignored unless set.
-     */
-    void addCondition(const std::shared_ptr<const Condition> &condition);
-    /**
      * Ignored unless set. Does not apply to mouse triggers.
      *
      * @param fingers Range of fingers the trigger must be performed with.
      */
-    void setFingers(const Range<qreal> &fingers);
+    void setFingers(const Range<uint8_t> &fingers);
     /**
      * Ignored unless set.
      *
@@ -171,7 +179,9 @@ public:
     void setType(const TriggerType &type);
 
 protected:
-    virtual void updateDerived(const TriggerUpdateEvent *event);
+    const std::vector<GestureAction *> actions();
+
+    virtual void updateActions(const TriggerUpdateEvent *event);
 
 private:
     bool thresholdReached() const;
@@ -179,9 +189,10 @@ private:
     void reset();
 
     QString m_name = "none";
+    TriggerType m_type{0};
 
-    std::optional<std::shared_ptr<ConditionV2>> m_condition;
-    Range<uint8_t> m_fingers = Range<uint8_t>(0, UINT8_MAX);
+    std::optional<std::shared_ptr<const Condition>> m_condition;
+    std::optional<Range<uint8_t>> m_fingers;
     std::optional<std::vector<Range<QPointF>>> m_beginPositions;
     std::optional<std::vector<Range<QPointF>>> m_endPositions;
     std::optional<Qt::KeyboardModifiers> m_keyboardModifiers;

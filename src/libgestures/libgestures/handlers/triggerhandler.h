@@ -1,3 +1,21 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "libgestures/triggers/trigger.h"
@@ -23,14 +41,24 @@ public:
 protected:
     TriggerHandler();
 
-    void registerTriggerActivator(const TriggerType &type, const std::function<void()> &activator);
-    void registerTriggerEnder(const TriggerType &type, const std::function<void()> &ender);
+    /**
+     * Registers a custom handler that runs when the specified trigger type is activated.
+     */
+    void registerTriggerActivateHandler(const TriggerType &type, const std::function<void()> &func);
+    /**
+     * Registers a custom handler that runs when the specified trigger type is ended.
+     */
+    void registerTriggerEndHandler(const TriggerType &type, const std::function<void(const TriggerEndEvent *)> &func);
+    /**
+     * Registers a custom handler that runs when the specified trigger type is ended or cancelled.
+     */
+    void registerTriggerEndCancelHandler(const TriggerType &type, const std::function<void()> &func);
 
     /**
      * Cancels all active triggers and activates triggers of the specified types eligible for activation.
      * @return Whether any triggers have been activated.
      */
-    bool activateTriggers(const TriggerTypes &types, const TriggerActivateEvent *event);
+    bool activateTriggers(const TriggerTypes &types, const TriggerActivationEvent *event);
     /**
      * @see activateTriggers(const TriggerTypes &, const TriggerActivateEvent *)
      */
@@ -43,7 +71,7 @@ protected:
      * Updates triggers of multiple types.
      * @return Whether there are any active triggers.
      */
-    bool updateTriggers(const std::map<TriggerTypes, const TriggerUpdateEvent *> &events);
+    bool updateTriggers(const std::map<TriggerType, const TriggerUpdateEvent *> &events);
     bool updateTriggers(const TriggerType &type, const TriggerUpdateEvent *event);
     /**
      * Ends the specified types of triggers.
@@ -67,7 +95,7 @@ protected:
     /**
      * @return Triggers of the specified types eligible for activation.
      */
-    std::vector<Trigger *> triggers(const TriggerTypes &types, const TriggerActivateEvent *event);
+    std::vector<Trigger *> triggers(const TriggerTypes &types, const TriggerActivationEvent *event);
     /**
      * @return Active triggers of the specified types.
      */
@@ -77,19 +105,28 @@ protected:
      */
     bool hasActiveTriggers(const TriggerTypes &types);
 
-    virtual std::unique_ptr<TriggerActivateEvent> createActivateEvent() const;
+    /**
+     * Creates a trigger activation event with information that can be provided by the input device(s).
+     *
+     * This implementation sets keyboard modifiers.
+     */
+    virtual std::unique_ptr<TriggerActivationEvent> createActivationEvent() const;
+    /**
+     * @return End event with information that can be provided by the input device(s).
+     */
     virtual std::unique_ptr<TriggerEndEvent> createEndEvent() const;
 
     /**
      * Called before a trigger is activated.
      */
-    virtual void triggerActivating(Trigger *trigger);
+    virtual void triggerActivating(const Trigger *trigger);
     virtual void reset();
 
     void pressUpdate(const qreal &delta);
 
 private:
-    void pressTriggerActivator();
+    void pressTriggerActivateHandler();
+    void pressTriggerEndCancelHandler();
 
     /**
      * Whether conflicting triggers have been cancelled since activation.
@@ -102,8 +139,18 @@ private:
      */
     QTimer m_pressTimer;
 
-    std::map<TriggerType, std::function<void()>> m_triggerActivators;
-    std::map<TriggerType, std::function<void()>> m_triggerEnders;
+    /**
+     * Executed when a trigger type is activated.
+     */
+    std::map<TriggerType, std::function<void()>> m_triggerActivateHandlers;
+    /**
+     * Executed when a trigger type is ended.
+     */
+    std::map<TriggerType, std::function<void(const TriggerEndEvent *)>> m_triggerEndHandlers;
+    /**
+     * Executed when a trigger type is ended or cancelled.
+     */
+    std::map<TriggerType, std::function<void()>> m_triggerEndCancelHandlers;
 
     std::vector<std::unique_ptr<Trigger>> m_triggers;
     std::vector<Trigger *> m_activeTriggers;

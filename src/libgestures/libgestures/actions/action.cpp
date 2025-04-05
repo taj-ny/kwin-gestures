@@ -1,3 +1,21 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "action.h"
 
 #include "libgestures/logging.h"
@@ -5,16 +23,14 @@
 namespace libgestures
 {
 
-void GestureAction::addCondition(const std::shared_ptr<const Condition> &condition)
+void GestureAction::setCondition(const std::shared_ptr<const Condition> &condition)
 {
-    m_conditions.push_back(condition);
+    m_condition = condition;
 }
 
 bool GestureAction::satisfiesConditions() const
 {
-    return m_conditions.empty() || std::find_if(m_conditions.begin(), m_conditions.end(), [](const std::shared_ptr<const Condition> &condition) {
-        return condition->isSatisfied();
-    }) != m_conditions.end();
+    return !m_condition || m_condition.value()->satisfied();
 }
 
 bool GestureAction::thresholdReached() const

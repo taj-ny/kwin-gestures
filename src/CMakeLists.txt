@@ -3,15 +3,20 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
-    libgestures/libgestures/gestures/gesture.cpp
-    libgestures/libgestures/gestures/handler.cpp
-    libgestures/libgestures/gestures/pinch.cpp
-    libgestures/libgestures/gestures/press.cpp
-    libgestures/libgestures/gestures/rotate.cpp
-    libgestures/libgestures/gestures/stroke.cpp
-    libgestures/libgestures/gestures/swipe.cpp
-    libgestures/libgestures/gestures/wheel.cpp
-    libgestures/libgestures/condition.cpp
+    libgestures/libgestures/conditions/condition.cpp
+    libgestures/libgestures/conditions/conditiongroup.cpp
+    libgestures/libgestures/conditions/legacycondition.cpp
+    libgestures/libgestures/handlers/motiontriggerhandler.cpp
+    libgestures/libgestures/handlers/mousetriggerhandler.cpp
+    libgestures/libgestures/handlers/multitouchmotiontriggerhandler.cpp
+    libgestures/libgestures/handlers/touchpadtriggerhandler.cpp
+    libgestures/libgestures/handlers/triggerhandler.cpp
+    libgestures/libgestures/triggers/directionalmotiontrigger.cpp
+    libgestures/libgestures/triggers/motiontrigger.cpp
+    libgestures/libgestures/triggers/presstrigger.cpp
+    libgestures/libgestures/triggers/stroketrigger.cpp
+    libgestures/libgestures/triggers/trigger.cpp
+    libgestures/libgestures/globals.h
     libgestures/libgestures/input.cpp
     libgestures/libgestures/logging.cpp
     libgestures/libgestures/range.cpp

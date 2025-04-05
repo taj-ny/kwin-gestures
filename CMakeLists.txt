@@ -31,6 +31,8 @@ find_package(Qt6 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     DBus
 )
 
+add_compile_options(-Wno-unused-parameter) # This warning is stupid
+
 add_subdirectory(src)
 if (BUILD_TESTS)
     add_subdirectory(tests)

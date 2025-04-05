@@ -1,3 +1,21 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "effect.h"
 #include "libgestures/yaml_convert.h"
 
@@ -69,10 +87,10 @@ void Effect::reconfigure(ReconfigureFlags flags)
         m_autoReload = config["autoreload"].as<bool>(true);
 
         if (config["mouse"].IsDefined()) {
-            m_inputEventFilter->setMouseGestureRecognizer(config["mouse"].as<std::shared_ptr<libgestures::GestureHandler>>());
+            m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libgestures::MouseTriggerHandler>>());
         }
         if (config["touchpad"].IsDefined()) {
-            m_inputEventFilter->setTouchpadGestureRecognizer(config["touchpad"].as<std::shared_ptr<libgestures::GestureHandler>>());
+            m_inputEventFilter->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libgestures::TouchpadTriggerHandler>>());
         }
     } catch (const YAML::Exception &e) {
         qCritical(INPUTACTIONS_KWIN).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)

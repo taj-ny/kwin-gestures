@@ -16,21 +16,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "kwinwindowinfoprovider.h"
-#include "effect/effecthandler.h"
-#include "window.h"
+#pragma once
 
-std::optional<const libgestures::WindowInfo> KWinWindowInfoProvider::activeWindow() const
+#include "trigger.h"
+
+namespace libgestures
 {
-    const auto window = KWin::effects->activeWindow();
-    if (!window)
-        return std::nullopt;
 
-    libgestures::WindowStates state = static_cast<libgestures::WindowState>(0);
-    if (window->isFullScreen())
-        state = state | libgestures::WindowState::Fullscreen;
-    if (window->window()->maximizeMode() == KWin::MaximizeMode::MaximizeFull)
-        state = state | libgestures::WindowState::Maximized;
+class PressTrigger : public Trigger
+{
+public:
+    PressTrigger();
 
-    return libgestures::WindowInfo(window->caption(), window->window()->resourceClass(), window->window()->resourceName(), state);
+    const bool &instant() const;
+    void setInstant(const bool &instant);
+
+private:
+    bool m_instant = false;
+};
+
 }
