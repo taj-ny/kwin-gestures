@@ -1,0 +1,81 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#pragma once
+
+#include "motiontrigger.h"
+
+namespace libgestures
+{
+
+enum class PinchDirection : uint32_t
+{
+    In = 1u << 0,
+    Out = 1u << 1,
+    Any = UINT32_MAX
+};
+enum class RotateDirection : uint32_t
+{
+    Clockwise = 1u << 0,
+    Counterclockwise = 1u << 1,
+    Any = UINT32_MAX
+};
+enum class SwipeDirection : uint32_t
+{
+    Left = 1u << 0,
+    Right = 1u << 1,
+    Up = 1u << 2,
+    Down = 1u << 3,
+    LeftRight = Left | Right,
+    UpDown = Up | Down,
+    Any = UINT32_MAX
+};
+
+class DirectionalMotionTriggerUpdateEvent : public MotionTriggerUpdateEvent
+{
+public:
+    DirectionalMotionTriggerUpdateEvent() = default;
+
+    const uint32_t &direction() const;
+    void setDirection(const uint32_t &direction);
+
+private:
+    uint32_t m_direction = UINT32_MAX;
+};
+
+/**
+ * An input action that involves directional motion.
+ */
+class DirectionalMotionTrigger : public MotionTrigger
+{
+public:
+    DirectionalMotionTrigger() = default;
+
+    /**
+     * @return Whether the direction matches.
+     * @see MotionTrigger::canUpdate
+     */
+    bool canUpdate(const TriggerUpdateEvent *event) const override;
+
+    void setDirection(const uint32_t &direction);
+
+private:
+    uint32_t m_direction = 0;
+};
+
+}

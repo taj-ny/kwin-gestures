@@ -3,14 +3,23 @@ set(libgestures_SRCS
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
-    libgestures/libgestures/gestures/gesture.cpp
-    libgestures/libgestures/gestures/gesturerecognizer.cpp
-    libgestures/libgestures/gestures/holdgesture.h
-    libgestures/libgestures/gestures/pinchgesture.cpp
-    libgestures/libgestures/gestures/rotategesture.cpp
-    libgestures/libgestures/gestures/swipegesture.cpp
-    libgestures/libgestures/condition.cpp
+    libgestures/libgestures/conditions/condition.cpp
+    libgestures/libgestures/conditions/conditiongroup.cpp
+    libgestures/libgestures/conditions/legacycondition.cpp
+    libgestures/libgestures/handlers/motiontriggerhandler.cpp
+    libgestures/libgestures/handlers/mousetriggerhandler.cpp
+    libgestures/libgestures/handlers/multitouchmotiontriggerhandler.cpp
+    libgestures/libgestures/handlers/touchpadtriggerhandler.cpp
+    libgestures/libgestures/handlers/triggerhandler.cpp
+    libgestures/libgestures/triggers/directionalmotiontrigger.cpp
+    libgestures/libgestures/triggers/motiontrigger.cpp
+    libgestures/libgestures/triggers/presstrigger.cpp
+    libgestures/libgestures/triggers/stroketrigger.cpp
+    libgestures/libgestures/triggers/trigger.cpp
+    libgestures/libgestures/globals.h
     libgestures/libgestures/input.cpp
+    libgestures/libgestures/logging.cpp
+    libgestures/libgestures/range.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
 
@@ -19,7 +28,6 @@ target_link_libraries(libgestures PRIVATE
     Qt6::Core
     Qt6::DBus
 )
-
 
 find_package(yaml-cpp REQUIRED)
 target_link_libraries(libgestures PRIVATE yaml-cpp)

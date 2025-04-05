@@ -1,7 +1,26 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "kwininput.h"
 
 #include "utils.h"
 
+#include "core/output.h"
 #include "keyboard_input.h"
 #include "pointer_input.h"
 #include "workspace.h"
@@ -14,6 +33,7 @@ KWinInput::KWinInput()
 {
     m_input = KWin::input();
     m_input->addInputDevice(m_device.get());
+    m_device.get()->isTouchpad();
     m_pointer = m_input->pointer();
     m_keyboard = m_input->keyboard();
 
@@ -31,9 +51,11 @@ KWinInput::~KWinInput()
 
 void KWinInput::keyboardKey(const uint32_t &key, const bool &state)
 {
+    m_isSendingInput = true;
     m_ignoreModifierUpdates = true;
     m_keyboard->processKey(key, state ? KeyboardKeyStatePressed : KeyboardKeyStateReleased, timestamp(), m_device.get());
     m_ignoreModifierUpdates = false;
+    m_isSendingInput = false;
 }
 
 Qt::KeyboardModifiers KWinInput::keyboardModifiers() const
@@ -69,20 +91,53 @@ void KWinInput::keyboardClearModifiers()
 
 void KWinInput::mouseButton(const uint32_t &button, const bool &state)
 {
+    m_isSendingInput = true;
     m_pointer->processButton(button, state ? PointerButtonStatePressed : PointerButtonStateReleased, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
 }
 
 void KWinInput::mouseMoveAbsolute(const QPointF &pos)
 {
+    m_isSendingInput = true;
     m_pointer->processMotionAbsolute(pos, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
 }
 
 void KWinInput::mouseMoveRelative(const QPointF &pos)
 {
+    m_isSendingInput = true;
     m_pointer->processMotion(pos, pos, timestamp(), m_device.get());
     m_pointer->processFrame(m_device.get());
+    m_isSendingInput = false;
+}
+
+Qt::MouseButtons KWinInput::mouseButtons() const
+{
+    return m_pointer->buttons();
+}
+
+QPointF KWinInput::mousePosition() const
+{
+    QPointF position;
+    const auto rawPosition = m_pointer->pos();
+    for (const auto &output : KWin::workspace()->outputs()) {
+        const auto geometry = output->geometryF();
+        if (!geometry.contains(rawPosition)) {
+            continue;
+        }
+
+        const auto translatedPosition = rawPosition - geometry.topLeft();
+        position.setX(translatedPosition.x() / geometry.width());
+        position.setY(translatedPosition.y() / geometry.height());
+    }
+    return position;
+}
+
+bool KWinInput::isSendingInput() const
+{
+    return m_isSendingInput;
 }
 
 void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
@@ -127,7 +182,7 @@ void KWinInput::slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state)
 
 QString InputDevice::name() const
 {
-    return "kwin_gestures";
+    return "inputactions";
 }
 
 bool InputDevice::isEnabled() const

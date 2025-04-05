@@ -1,105 +1,190 @@
 # Example gestures
 All gestures provided here are instant - actions trigger immediately when the gesture begins. If you don't like that, replace ``on: begin`` with ``on: end``.
 
-Some gestures may not be compatible with each other, as they use the same direction, finger amount and speed.
+## Mouse
+<details>
+  <summary>Right + Draw circle - Close window</summary>
 
-## Window drag
-Swipe 3 fingers to drag the window. Swipe gestures have a different acceleration profile. You can change *Device.delta_multiplier* to make the gesture faster or slower.
+  ```yaml
+  - type: stroke
+    strokes: [ 'PAsAXx8PClkXEg1PDRkRRwUiFj8BLBo1ADcdKQJAIR0ISCQUEU8oCilYMQBFWDv4TlU/8FpPRORgR0fXZDtLzGMzTsReJ1O8WyFVslEZWqo4DmQA' ]
+    mouse_buttons: [ right ]
 
-```yaml
-- type: swipe
-  direction: any
-  fingers: 3
+    actions:
+      - plasma_shortcut: kwin,Window Close
+  ```
+</details>
+<details>
+  <summary>Meta + Wheel - Volume control</summary>
+  
+  ```yaml
+  - type: wheel
+    direction: up
+    keyboard_modifiers: [ meta ]
 
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ +leftmeta ]
-        - mouse: [ +left ]
+    actions:
+      - input:
+        - keyboard: [ volumeup ]
 
-    - on: update
-      input:
-        - mouse: [ move_by_delta ]
+  - type: wheel
+    direction: down
+    keyboard_modifiers: [ meta ]
 
-    - on: end_cancel
-      input:
-        - keyboard: [ -leftmeta ]
-        - mouse: [ -left ]
+    actions:
+      - input:
+        - keyboard: [ volumedown ]
+  ```
+</details>
+<details>
+  <summary>Meta + Left/Right - Go back/forward</summary>
+
+  ```yaml
+  - type: press
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
+    instant: true
+
+    actions:
+      - on: begin
+        input:
+          - mouse: [ back ]
+
+  - type: press
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ right ]
+    instant: true
+
+    actions:
+      - on: begin
+        input:
+          - mouse: [ forward ]
+  ```
+</details>
+<details>
+  <summary>Meta + Left + Swipe up/down - Home/End</summary>
+  
+  ```yaml
+  - type: swipe
+    direction: up
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftctrl+home ]
+
+  - type: swipe
+    direction: down
+    keyboard_modifiers: [ meta ]
+    mouse_buttons: [ left ]
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftctrl+end ]
+  ```
+</details>
+<details>
+  <summary>Left click top left corner - Open dolphin</summary>
+
+  ```yaml
+  - type: press
+    mouse_buttons: [ left ]
+    begin_positions: [ 0%;0% - 0.01%;0.01% ]
+    press_instant: true
+
+    actions:
+      - on: begin
+        command: dolphin
+  ```
+</details>
+<details>
+  <summary>Middle click top edge - Maximize window</summary>
+
+  ```yaml
+  - type: press
+    mouse_buttons: [ middle ]
+    begin_positions: [ 0%;0% - 100%;0.01% ]
+    instant: true
+
+    actions:
+      - on: begin
+        plasma_shortcut: kwin,Window Maximize
+  ```
+</details>
+
+## Touchpad
+<details>
+  <summary>Swipe 3 - Window drag</summary>
+
+  Swipe gestures have a different acceleration profile. You can change *Device.delta_multiplier* to make the gesture faster or slower.
+
+  ```yaml
+  - type: swipe
+    direction: any
+    fingers: 3
+
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ +leftmeta ]
+          - mouse: [ +left ]
+
+      - on: update
+        input:
+          - mouse: [ move_by_delta ]
+
+      - on: end_cancel
+        input:
+          - keyboard: [ -leftmeta ]
+          - mouse: [ -left ]
 ```
+</details>
+<details>
+  <summary>Swipe 3 left/right - Go back/forward</summary>
+  
+  ```yaml
+  - type: swipe
+    fingers: 3
+    direction: left
 
-## Firefox/Dolphin navigation
-Not guaranteed to work on all keyboard layouts. It may be necessary to change the key sequence.
-- Swipe 3 fingers left - Go back
-- Swipe 3 fingers right - Go forward
+    actions:
+      - on: begin
+        input:
+          - mouse: [ back ]
 
-```yaml
-# Go back
-- type: swipe
-  fingers: 3
-  direction: left
+  - type: swipe
+    fingers: 3
+    direction: right
 
-  actions:
-    # Firefox
-    - on: begin
-      input:
-        - keyboard: [ leftctrl+leftbrace ]
+    actions:
+      - on: begin
+        input:
+          - mouse: [ forward ]
+  ```
+  
+</details>
+<details>
+  <summary>Rotate 2 - Volume control</summary>
 
-      conditions:
-        - window_class: firefox
+  ```yaml
+  - type: rotate
+    fingers: 2
+    direction: any
 
-    # Dolphin
-    - on: begin
-      input:
-        - keyboard: [ backspace ]
+    actions:
+      - on: update
+        interval: -10
+        input:
+          - keyboard: [ volumedown ]
 
-      conditions:
-        - window_class: dolphin
-
-# Go forward
-- type: swipe
-  fingers: 3
-  direction: right
-
-  actions:
-    # Firefox
-    - on: begin
-      input:
-        - keyboard: [ leftctrl+rightbrace ]
-
-      conditions:
-        - window_class: firefox
-
-    # Dolphin
-    - on: begin
-      input:
-        - keyboard: [ leftalt+right ]
-
-      conditions:
-        - window_class: dolphin
-```
-
-## Volume control
-This is an example of a gesture with repeating actions. It's possible to change the direction during the gesture.
-
-Stop all audio before trying this, as the threshold may be too small for some devices.
-
-- Rotate 2 fingers counterclockwise to decrease volume by 5%
-- Rotate 2 fingers clockwise to increase volume by 5%
-
-```yaml
-- type: rotate
-  fingers: 2
-  direction: any
-
-  actions:
-    - on: update
-      interval: -10
-      command: pactl set-sink-volume @DEFAULT_SINK@ -5%
-
-    - on: update
-      interval: 10
-      command: pactl set-sink-volume @DEFAULT_SINK@ +5%
-```
+      - on: update
+        interval: 10
+        input:
+          - keyboard: [ volumeup ]
+  ```
+</details>
 
 ## Window management
 - Swipe 4 fingers up to maximize window if not maximized
@@ -227,17 +312,4 @@ Stop all audio before trying this, as the threshold may be too small for some de
     - on: begin
       input:
         - keyboard: [ leftalt+tab ]
-```
-
-## KRunner
-- Hold 4 fingers to launch KRunner
-
-```yaml
-# Launch KRunner
-- type: hold
-  fingers: 4
-
-  actions:
-    - on: begin
-      plasma_shortcut: org_kde_krunner_desktop,_launch
 ```

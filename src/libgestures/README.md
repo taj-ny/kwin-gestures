@@ -1,2 +1,2 @@
 # libgestures
-C++ static library for gesture recognition and handling.
+Not intended for use outside the Input Actions project.
