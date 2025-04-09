@@ -84,6 +84,8 @@ void Effect::reconfigure(ReconfigureFlags flags)
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);
 
+        m_inputEventFilter->setMouseTriggerHandler(std::make_unique<libgestures::MouseTriggerHandler>());
+        m_inputEventFilter->setTouchpadTriggerHandler(std::make_unique<libgestures::TouchpadTriggerHandler>());
         if (config["mouse"].IsDefined()) {
             m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libgestures::MouseTriggerHandler>>());
         }
