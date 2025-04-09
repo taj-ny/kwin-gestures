@@ -35,6 +35,8 @@
 
 #include "yaml-cpp/yaml.h"
 
+// Keep s_keyboard and s_mouse at the top, the documentation links to them.
+
 static const std::unordered_map<QString, uint32_t> s_keyboard = {
     {"RESERVED", KEY_RESERVED},
     {"ESC", KEY_ESC},
@@ -551,7 +553,7 @@ static const std::unordered_map<QString, uint32_t> s_mouse = {
     {"MIDDLE", BTN_MIDDLE},
     {"RIGHT", BTN_RIGHT},
 
-    // Those 5 button are supposed to be like this (I think)
+    // Those 5 buttons are supposed to be like this (I think)
     {"BACK", BTN_SIDE},
     {"FORWARD", BTN_EXTRA},
     {"TASK", BTN_FORWARD},
@@ -566,13 +568,6 @@ static const std::unordered_map<QString, uint32_t> s_mouse = {
     {"EXTRA11", 0x11d},
     {"EXTRA12", 0x11e},
     {"EXTRA13", 0x11f},
-};
-
-static const std::unordered_map<QString, Qt::KeyboardModifier> s_keyboardModifiers = {
-    {"alt", Qt::KeyboardModifier::AltModifier},
-    {"ctrl", Qt::KeyboardModifier::ControlModifier},
-    {"meta", Qt::KeyboardModifier::MetaModifier},
-    {"shift", Qt::KeyboardModifier::ShiftModifier},
 };
 
 using namespace libgestures;
@@ -604,7 +599,7 @@ struct convert<Range<QPointF>>
     {
         const auto raw = node.as<QString>().replace(" ", "").replace("%", "").split("-");
         if (raw.size() != 2) {
-            throw Exception(node.Mark(), "Invalid start position");
+            throw Exception(node.Mark(), "Invalid point range");
         }
 
         const auto rawMin = raw[0].split(";");
@@ -907,138 +902,88 @@ struct convert<std::unique_ptr<TouchpadTriggerHandler>>
     }
 };
 
-template<>
-struct convert<TriggerSpeed>
-{
-    static bool decode(const Node &node, TriggerSpeed &speed)
-    {
-        const auto speedRaw = node.as<QString>();
-        if (speedRaw == "fast") {
-            speed = TriggerSpeed::Fast;
-        } else if (speedRaw == "slow") {
-            speed = TriggerSpeed::Slow;
-        } else if (speedRaw == "any") {
-            speed = TriggerSpeed::Any;
-        } else {
-            throw Exception(node.Mark(), "Invalid trigger speed");
-        }
+#define ENUM_DECODER(type, error, map)                                                                                 \
+    template<>                                                                                                         \
+    struct convert<type>                                                                                               \
+    {                                                                                                                  \
+        static bool decode(const Node &node, type &value)                                                              \
+        {                                                                                                              \
+            const auto raw = node.as<QString>();                                                                       \
+            if (!map.contains(raw)) {                                                                                  \
+                throw Exception(node.Mark(), QString("Invalid %1 ('%2')").arg(error, raw).toStdString());              \
+            }                                                                                                          \
+            value = map.at(raw);                                                                                       \
+            return true;                                                                                               \
+        }                                                                                                              \
+    };
 
-        return true;
-    }
-};
-
-template<>
-struct convert<PinchDirection>
-{
-    static bool decode(const Node &node, PinchDirection &direction)
-    {
-        const auto directionRaw = node.as<QString>();
-        if (directionRaw == "in") {
-            direction = PinchDirection::In;
-        } else if (directionRaw == "out") {
-            direction = PinchDirection::Out;
-        } else if (directionRaw == "any") {
-            direction = PinchDirection::Any;
-        } else {
-            throw Exception(node.Mark(), "Invalid pinch direction");
-        }
-
-        return true;
-    }
-};
-
-template<>
-struct convert<RotateDirection>
-{
-    static bool decode(const Node &node, RotateDirection &direction)
-    {
-        const auto directionRaw = node.as<QString>();
-        if (directionRaw == "any") {
-            direction = RotateDirection::Any;
-        } else if (directionRaw == "clockwise") {
-            direction = RotateDirection::Clockwise;
-        } else if (directionRaw == "counterclockwise") {
-            direction = RotateDirection::Counterclockwise;
-        } else {
-            throw Exception(node.Mark(), "Invalid rotate direction");
-        }
-
-        return true;
-    }
-};
-
-template<>
-struct convert<SwipeDirection>
-{
-    static bool decode(const Node &node, SwipeDirection &direction)
-    {
-        const auto directionRaw = node.as<QString>();
-        if (directionRaw == "left") {
-            direction = SwipeDirection::Left;
-        } else if (directionRaw == "right") {
-            direction = SwipeDirection::Right;
-        } else if (directionRaw == "left_right") {
-            direction = SwipeDirection::LeftRight;
-        } else if (directionRaw == "up") {
-            direction = SwipeDirection::Up;
-        } else if (directionRaw == "down") {
-            direction = SwipeDirection::Down;
-        } else if (directionRaw == "up_down") {
-            direction = SwipeDirection::UpDown;
-        } else if (directionRaw == "any") {
-            direction = SwipeDirection::Any;
-        } else {
-            throw Exception(node.Mark(), "Invalid swipe direction");
-        }
-
-        return true;
-    }
-};
+#define FLAGS_DECODER(type, error, map)                                                                                \
+    template<>                                                                                                         \
+    struct convert<type>                                                                                               \
+    {                                                                                                                  \
+        static bool decode(const Node &node, type &values)                                                             \
+        {                                                                                                              \
+            values = {0};                                                                                              \
+            for (const auto &raw : node.as<QStringList>()) {                                                           \
+                if (!map.contains(raw)) {                                                                              \
+                    throw Exception(node.Mark(), QString("Invalid %1 ('%2')").arg(error, raw).toStdString());          \
+                }                                                                                                      \
+                values |= map.at(raw);                                                                                 \
+            }                                                                                                          \
+            return true;                                                                                               \
+        }                                                                                                              \
+    };
 
 
-template<>
-struct convert<WindowStates>
-{
-    static bool decode(const Node &node, WindowStates &windowStates)
-    {
-        windowStates = static_cast<WindowState>(0);
-        for (const auto &stateRaw : node.as<QStringList>()) {
-            if (stateRaw == "maximized") {
-                windowStates |= WindowState::Maximized;
-            } else if (stateRaw == "fullscreen") {
-                windowStates |= WindowState::Fullscreen;
-            } else {
-                throw Exception(node.Mark(), "Invalid window state");
-            }
-        }
+ENUM_DECODER(TriggerSpeed, "trigger speed", (std::unordered_map<QString, TriggerSpeed> {
+    {"fast", TriggerSpeed::Fast},
+    {"slow", TriggerSpeed::Slow},
+    {"any", TriggerSpeed::Any}
+}))
+ENUM_DECODER(PinchDirection, "pinch direction", (std::unordered_map<QString, PinchDirection> {
+    {"in", PinchDirection::In},
+    {"out", PinchDirection::Out},
+    {"any", PinchDirection::Any}
+}))
+ENUM_DECODER(RotateDirection, "rotate direction", (std::unordered_map<QString, RotateDirection> {
+    {"clockwise", RotateDirection::Clockwise},
+    {"counterclockwise", RotateDirection::Counterclockwise},
+    {"any", RotateDirection::Any}
+}))
+ENUM_DECODER(SwipeDirection, "swipe direction", (std::unordered_map<QString, SwipeDirection> {
+    {"left", SwipeDirection::Left},
+    {"right", SwipeDirection::Right},
+    {"up", SwipeDirection::Up},
+    {"down", SwipeDirection::Down},
+    {"up_down", SwipeDirection::UpDown},
+    {"left_right", SwipeDirection::LeftRight},
+    {"any", SwipeDirection::Any}
+}))
+ENUM_DECODER(On, "action event (on)", (std::unordered_map<QString, On> {
+    {"begin", On::Begin},
+    {"update", On::Update},
+    {"cancel", On::Cancel},
+    {"end", On::End},
+    {"end_cancel", On::EndOrCancel}
+}));
 
-        return true;
-    }
-};
-
-template<>
-struct convert<On>
-{
-    static bool decode(const Node &node, On &when)
-    {
-        const auto raw = node.as<QString>();
-        if (raw == "begin") {
-            when = On::Begin;
-        } else if (raw == "update") {
-            when = On::Update;
-        } else if (raw == "cancel") {
-            when = On::Cancel;
-        } else if (raw == "end") {
-            when = On::End;
-        } else if (raw == "end_cancel") {
-            when = On::EndOrCancel;
-        } else {
-            throw Exception(node.Mark(), "Invalid action event ('on')");
-        }
-
-        return true;
-    }
-};
+FLAGS_DECODER(WindowStates, "window state", (std::unordered_map<QString, WindowState> {
+    {"maximized", WindowState::Maximized},
+    {"fullscreen", WindowState::Fullscreen}
+}))
+FLAGS_DECODER(Qt::KeyboardModifiers, "keyboard modifier", (std::unordered_map<QString, Qt::KeyboardModifier> {
+    {"alt", Qt::KeyboardModifier::AltModifier},
+    {"ctrl", Qt::KeyboardModifier::ControlModifier},
+    {"meta", Qt::KeyboardModifier::MetaModifier},
+    {"shift", Qt::KeyboardModifier::ShiftModifier}
+}))
+FLAGS_DECODER(Qt::MouseButtons, "mouse button", (std::unordered_map<QString, Qt::MouseButton> {
+    {"left", Qt::MouseButton::LeftButton},
+    {"middle", Qt::MouseButton::MiddleButton},
+    {"right", Qt::MouseButton::RightButton},
+    {"back", Qt::MouseButton::ExtraButton1},
+    {"forward", Qt::MouseButton::ExtraButton2}
+}))
 
 template<>
 struct convert<std::vector<InputAction>>
@@ -1168,47 +1113,6 @@ struct convert<Stroke>
             });
         }
         stroke = Stroke(points);
-
-        return true;
-    }
-};
-
-template<>
-struct convert<Qt::KeyboardModifiers>
-{
-    static bool decode(const Node &node, Qt::KeyboardModifiers &modifiers)
-    {
-        for (const auto &modifierRaw : node.as<QStringList>()) {
-            if (s_keyboardModifiers.contains(modifierRaw)) {
-                modifiers |= s_keyboardModifiers.at(modifierRaw);
-            } else {
-                throw Exception(node.Mark(), "Invalid keyboard modifier");
-            }
-        }
-
-        return true;
-    }
-};
-
-static const std::unordered_map<QString, Qt::MouseButton> s_mouseButtons = {
-    {"left", Qt::MouseButton::LeftButton},
-    {"middle", Qt::MouseButton::MiddleButton},
-    {"right", Qt::MouseButton::RightButton},
-    {"back", Qt::MouseButton::ExtraButton1},
-    {"forward", Qt::MouseButton::ExtraButton2},
-};
-template<>
-struct convert<Qt::MouseButtons>
-{
-    static bool decode(const Node &node, Qt::MouseButtons &buttons)
-    {
-        for (const auto &buttonRaw : node.as<QStringList>()) {
-            if (s_mouseButtons.contains(buttonRaw)) {
-                buttons |= s_mouseButtons.at(buttonRaw);
-            } else {
-                throw Exception(node.Mark(), "Invalid mouse button");
-            }
-        }
 
         return true;
     }
