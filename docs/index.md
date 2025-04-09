@@ -1,3 +1,7 @@
+# Documentation
+[Configuration](configuration.md)<br>
+[Example gestures](example_gestures.md)
+
 # Gestures
 ## Lifecycle
 - activate - If a gesture's initial conditions (finger count, keyboard modifiers, mouse buttons, screen edges) are satisfied, it is added to the list of active gestures and can receive update events. If one of the activated gestures has set speed, all of them will only receive events after it is determined.
@@ -7,8 +11,8 @@
 - cancel - The gesture's update conditions were not satisfied, the finger count has changed, or there is a gesture conflict (see section below). Cancel actions are only executed if the gesture has began.
 
 ## Conflict resolution
-In order to avoid conflicts, only one gesture may be active at a time. Internally it works in a different way, but that's not important. All other gestures are cancelled immediately when:
-- a gesture is updated, and has any action that has been executed, or has an update action that can be executed (satisfies conditions and thresholds) but hasn't been yet (the interval hadn't been reached)
+All active gestures can receive events. This can lead to them conflicting with each other. To prevent this, all other gestures are cancelled immediately when:
+- a gesture is updated, and has any action that has been executed, or has an update action that can be executed but hasn't been yet (the interval hadn't been reached)
 - a gesture ends, and has an end action that can be executed
 - a stroke gesture is active (in this case only swipe gestures are cancelled)
 
@@ -45,15 +49,12 @@ Swipe gestures are limited to 4 directions. The direction is determined during t
 ## Stroke gestures
 Stroke gestures allow you to draw any shape. The performed stroke is compared against all gestures and the one with the highest match (must be ≥0.7) is ended, while all others are cancelled. 
 
-Strokes can be recorded using the stroke recorder at *System Settings* -> *Desktop Effects* -> *Gestures (configure)* or DBus: ``qdbus org.inputactions / recordStroke``.
+Strokes can be recorded using the stroke recorder at *System Settings* -> *Desktop Effects* -> *Input Actions (configure)* or DBus: ``qdbus org.inputactions / recordStroke``.
 
 Only *end* actions are supported.
 
-# Built-in Plasma gestures
-Plasma provides no way of disabling touchpad gestures. The plugin blocks them by preventing certain input events from reaching KWin's gesture handler and clients.
-
 # Input
-Input events are sent at blocked at compositor level, therefore applications that read from /dev/input may not function as expected.  
+Input events are sent and blocked at compositor level. Applications that read from /dev/input may not function as expected.  
 
 # Devices
 ## Mouse
@@ -62,7 +63,7 @@ Mouse gestures are only supported on Plasma 6.3
 ### Press gestures
 Mouse press gestures do not start immediately by default, allowing swipe gestures or normal clicks to be performed. 
 
-If this behavior is not desired, *Gesture.instant* should be set to true. The property is set per-gesture, but affects all activated press gestures.
+If this behavior is not desired, *PressGesture.instant* should be set to true. The property is set per-gesture, but affects all activated press gestures.
 
 ### Wheel gestures
 Wheel gestures begin, update and end instantly on every single scroll event, therefore they do not support thresholds and speed.

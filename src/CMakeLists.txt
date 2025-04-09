@@ -1,8 +1,10 @@
 set(libgestures_SRCS
     libgestures/libgestures/actions/action.cpp
+    libgestures/libgestures/actions/actiongroup.cpp
     libgestures/libgestures/actions/command.cpp
     libgestures/libgestures/actions/plasmaglobalshortcut.cpp
     libgestures/libgestures/actions/input.cpp
+    libgestures/libgestures/actions/oneactiongroup.cpp
     libgestures/libgestures/conditions/callbackcondition.cpp
     libgestures/libgestures/conditions/condition.cpp
     libgestures/libgestures/conditions/conditiongroup.cpp
@@ -19,7 +21,6 @@ set(libgestures_SRCS
     libgestures/libgestures/triggers/trigger.cpp
     libgestures/libgestures/globals.h
     libgestures/libgestures/input.cpp
-    libgestures/libgestures/logging.cpp
     libgestures/libgestures/range.cpp
     libgestures/libgestures/windowinfoprovider.cpp
 )
@@ -29,6 +30,7 @@ target_link_libraries(libgestures PRIVATE
     Qt6::Core
     Qt6::DBus
 )
+target_compile_definitions(libgestures PUBLIC TEST_VIRTUAL=$<IF:$<BOOL:${BUILD_TESTS}>,virtual,>)
 
 find_package(yaml-cpp REQUIRED)
 target_link_libraries(libgestures PRIVATE yaml-cpp)

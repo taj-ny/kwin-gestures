@@ -91,7 +91,7 @@ All gestures provided here are instant - actions trigger immediately when the ge
   ```yaml
   - type: press
     mouse_buttons: [ left ]
-    begin_positions: [ 0%;0% - 0.01%;0.01% ]
+    start_positions: [ 0%;0% - 0.01%;0.01% ]
     press_instant: true
 
     actions:
@@ -105,7 +105,7 @@ All gestures provided here are instant - actions trigger immediately when the ge
   ```yaml
   - type: press
     mouse_buttons: [ middle ]
-    begin_positions: [ 0%;0% - 100%;0.01% ]
+    start_positions: [ 0%;0% - 100%;0.01% ]
     instant: true
 
     actions:

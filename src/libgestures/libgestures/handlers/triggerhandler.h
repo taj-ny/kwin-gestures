@@ -22,18 +22,24 @@
 
 #include <QTimer>
 
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER)
+Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_TRIGGER)
 
 namespace libgestures
 {
 
+/**
+ * Press timer interval and delta.
+ */
+static int s_pressDelta = 5;
+
+/**
+ * Base class of all handlers.
+ */
 class TriggerHandler : public QObject
 {
     Q_OBJECT
 
 public:
-    virtual ~TriggerHandler() = default;
-
     void addTrigger(std::unique_ptr<Trigger> trigger);
 
     void keyboardKey(const Qt::Key &key, const bool &state);
@@ -42,15 +48,15 @@ protected:
     TriggerHandler();
 
     /**
-     * Registers a custom handler that runs when the specified trigger type is activated.
+     * Registers a custom handler that will be executed when the specified trigger type is activated.
      */
     void registerTriggerActivateHandler(const TriggerType &type, const std::function<void()> &func);
     /**
-     * Registers a custom handler that runs when the specified trigger type is ended.
+     * Registers a custom handler that will be executed when the specified trigger type is ended.
      */
     void registerTriggerEndHandler(const TriggerType &type, const std::function<void(const TriggerEndEvent *)> &func);
     /**
-     * Registers a custom handler that runs when the specified trigger type is ended or cancelled.
+     * Registers a custom handler that will be executed when the specified trigger type is ended or cancelled.
      */
     void registerTriggerEndCancelHandler(const TriggerType &type, const std::function<void()> &func);
 
@@ -67,26 +73,35 @@ protected:
      * @see activateTriggers(const TriggerTypes &, const TriggerActivateEvent *)
      */
     bool activateTriggers(const TriggerTypes &types);
+
     /**
-     * Updates triggers of multiple types.
+     * Updates triggers of multiple types in order as added to the handler.
      * @return Whether there are any active triggers.
      */
     bool updateTriggers(const std::map<TriggerType, const TriggerUpdateEvent *> &events);
+    /**
+     * Updates triggers of a single type.
+     * @warning Do not use this to update multiple trigger types, as it will prevent conflict resolution from working
+     * correctly.
+     * @see updateTriggers(const std::map<TriggerType, const TriggerUpdateEvent *> &events)
+     */
     bool updateTriggers(const TriggerType &type, const TriggerUpdateEvent *event);
+
     /**
      * Ends the specified types of triggers.
      * @return Whether there were any active triggers of the specified types.
      */
-    bool endTriggers(const TriggerTypes &types, const TriggerEndEvent *event);
+    TEST_VIRTUAL bool endTriggers(const TriggerTypes &types, const TriggerEndEvent *event);
     /**
      * @see endTriggers(const TriggerTypes &, const TriggerEndEvent *)
      */
     bool endTriggers(const TriggerTypes &types);
+
     /**
      * Cancels the specified types of triggers.
      * @return Whether there were any active triggers of the specified types.
      */
-    bool cancelTriggers(const TriggerTypes &types);
+    TEST_VIRTUAL bool cancelTriggers(const TriggerTypes &types);
     /**
      * Cancels all triggers leaving only the specified one.
      */
@@ -107,12 +122,11 @@ protected:
 
     /**
      * Creates a trigger activation event with information that can be provided by the input device(s).
-     *
      * This implementation sets keyboard modifiers.
      */
     virtual std::unique_ptr<TriggerActivationEvent> createActivationEvent() const;
     /**
-     * @return End event with information that can be provided by the input device(s).
+     * Creates a trigger end event with information that can be provided by the input device(s).
      */
     virtual std::unique_ptr<TriggerEndEvent> createEndEvent() const;
 
@@ -120,9 +134,12 @@ protected:
      * Called before a trigger is activated.
      */
     virtual void triggerActivating(const Trigger *trigger);
+    /**
+     * Resets member variables that hold information about the performed input action.
+     */
     virtual void reset();
 
-    void pressUpdate(const qreal &delta);
+    void pressUpdate(const qreal &delta = s_pressDelta);
 
 private:
     void pressTriggerActivateHandler();
@@ -132,7 +149,6 @@ private:
      * Whether conflicting triggers have been cancelled since activation.
      */
     bool m_conflictsResolved = false;
-    bool m_beganTriggers = false;
 
     /**
      * Updates hold triggers.
@@ -154,6 +170,8 @@ private:
 
     std::vector<std::unique_ptr<Trigger>> m_triggers;
     std::vector<Trigger *> m_activeTriggers;
+
+    friend class TestTriggerHandler;
 };
 
 }

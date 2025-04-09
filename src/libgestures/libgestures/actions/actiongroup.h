@@ -16,9 +16,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "logging.h"
+#pragma once
 
-Q_LOGGING_CATEGORY(LIBGESTURES, "libgestures", QtWarningMsg)
-Q_LOGGING_CATEGORY(LIBGESTURES_ACTION, "libgestures.action", QtWarningMsg)
-Q_LOGGING_CATEGORY(LIBGESTURES_GESTURE, "libgestures.gesture", QtWarningMsg)
-Q_LOGGING_CATEGORY(LIBGESTURES_GESTURE_HANDLER, "libgestures.gesture.handler", QtWarningMsg)
+#include "action.h"
+
+namespace libgestures
+{
+
+/**
+ * Action groups control how actions are executed. Individual actions are not informed of gesture lifecycle events,
+ * therefore they do not support the
+ */
+class ActionGroup : public GestureAction
+{
+public:
+    void add(std::unique_ptr<GestureAction> action);
+
+protected:
+    ActionGroup() = default;
+
+    std::vector<std::unique_ptr<GestureAction>> m_actions;
+};
+
+}

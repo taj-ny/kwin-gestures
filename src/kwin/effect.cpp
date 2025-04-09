@@ -80,8 +80,6 @@ void Effect::slotConfigDirectoryChanged()
 
 void Effect::reconfigure(ReconfigureFlags flags)
 {
-    Q_UNUSED(flags)
-
     try {
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);

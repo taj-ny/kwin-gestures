@@ -63,7 +63,6 @@ void GestureInputEventFilter::setTouchpadTriggerHandler(std::unique_ptr<libgestu
 
 bool GestureInputEventFilter::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_touchpadTriggerHandler->holdBegin(fingerCount);
@@ -89,7 +88,6 @@ bool GestureInputEventFilter::holdGestureEnd(std::chrono::microseconds time)
 
 bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_touchpadTriggerHandler->holdCancel();
@@ -98,7 +96,6 @@ bool GestureInputEventFilter::holdGestureCancelled(std::chrono::microseconds tim
 
 bool GestureInputEventFilter::swipeGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     if (m_isRecordingStroke) {
@@ -145,7 +142,6 @@ bool GestureInputEventFilter::swipeGestureEnd(std::chrono::microseconds time)
 
 bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_touchpadTriggerHandler->swipeCancel();
@@ -154,7 +150,6 @@ bool GestureInputEventFilter::swipeGestureCancelled(std::chrono::microseconds ti
 
 bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = true;
@@ -164,7 +159,6 @@ bool GestureInputEventFilter::pinchGestureBegin(int fingerCount, std::chrono::mi
 
 bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, const QPointF &delta, std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     // Two-finger pinch gestures may be at first incorrectly interpreted by libinput as scrolling. Libinput does
@@ -173,12 +167,11 @@ bool GestureInputEventFilter::pinchGestureUpdate(qreal scale, qreal angleDelta, 
         pinchGestureBegin(2, time);
     }
 
-    return m_touchpadTriggerHandler->updatePinch(scale, angleDelta, delta);
+    return m_touchpadTriggerHandler->pinchUpdate(scale, angleDelta);
 }
 
 bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
@@ -197,7 +190,6 @@ bool GestureInputEventFilter::pinchGestureEnd(std::chrono::microseconds time)
 
 bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds time)
 {
-    Q_UNUSED(time)
     ENSURE_SESSION_UNLOCKED();
 
     m_pinchGestureActive = false;
@@ -209,7 +201,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 {
     const auto device = event->device;
-    if (!device || !isMouse(event->device)) {
+    if (libgestures::Input::implementation()->isSendingInput() || !device || !isMouse(event->device)) {
         return false;
     }
 
@@ -224,7 +216,7 @@ bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 
 bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 {
-    if (!event->device || !isMouse(event->device)) {
+    if (libgestures::Input::implementation()->isSendingInput()|| !event->device || !isMouse(event->device)) {
         return false;
     }
 
@@ -233,9 +225,13 @@ bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 
 bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
 {
+    if (libgestures::Input::implementation()->isSendingInput()) {
+        return false;
+    }
+
     m_mouseTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
     m_touchpadTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
-return false;
+    return false;
 }
 #endif
 
@@ -258,7 +254,7 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
     ENSURE_SESSION_UNLOCKED();
 
     const auto mouse = isMouse(device);
-    if (!device->isTouchpad() && !mouse) {
+    if (libgestures::Input::implementation()->isSendingInput() || (!device->isTouchpad() && !mouse)) {
         return false;
     }
 

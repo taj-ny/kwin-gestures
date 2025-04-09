@@ -49,9 +49,9 @@ bool TouchpadTriggerHandler::pinchBegin(const uint8_t &fingers)
     return activateTriggers(TriggerType::PinchRotate, fingers);
 }
 
-bool TouchpadTriggerHandler::pinchUpdate(const qreal &scale, const qreal &angleDelta, const QPointF &delta)
+bool TouchpadTriggerHandler::pinchUpdate(const qreal &scale, const qreal &angleDelta)
 {
-    return updatePinch(scale, angleDelta, delta);
+    return updatePinch(scale, angleDelta);
 }
 
 bool TouchpadTriggerHandler::pinchEnd()
@@ -109,7 +109,7 @@ void TouchpadTriggerHandler::setSwipeDeltaMultiplier(const qreal &multiplier)
 //    m_swipeDeltaMultiplier = multiplier;
 }
 
-void TouchpadTriggerHandler::setScrollTimeout(const qreal &timeout)
+void TouchpadTriggerHandler::setScrollTimeout(const uint32_t &timeout)
 {
     m_scrollTimeout = timeout;
 }

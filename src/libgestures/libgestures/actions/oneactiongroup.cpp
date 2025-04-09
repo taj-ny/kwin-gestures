@@ -16,9 +16,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <QLoggingCategory>
+#include "oneactiongroup.h"
 
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES)
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_ACTION)
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_GESTURE)
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_GESTURE_HANDLER)
+namespace libgestures
+{
+
+void OneActionGroup::execute()
+{
+    for (auto &action : m_actions) {
+        if (action->canExecute()) {
+            qCDebug(LIBGESTURES_ACTION).noquote() << action->name();
+            action->tryExecute();
+            break;
+        }
+    }
+}
+
+}

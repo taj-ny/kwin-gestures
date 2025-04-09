@@ -20,11 +20,23 @@
 
 #include "libgestures/handlers/motiontriggerhandler.h"
 
+Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOUSE)
+
 namespace libgestures
 {
 
 /**
- * Handles mouse triggers: press, stroke, swipe, wheel
+ * Handles mouse triggers: press, stroke, swipe, wheel.
+ *
+ * Press triggers activate after a small delay in order to allow for normal clicks and dragging. This behavior can be
+ * changed by making a press trigger instant, however any activated instant trigger will make all other activated
+ * triggers instant as well.
+ * @see setMotionTimeout
+ * @see PressTrigger::setInstant
+ *
+ * Wheel triggers have a different lifecycle than other triggers, as they are activated, updated and ended on
+ * every single event. They are never cancelled and do not support speed or thresholds, although there are no checks
+ * against that.
  */
 class MouseTriggerHandler : public MotionTriggerHandler
 {
@@ -32,19 +44,35 @@ public:
     MouseTriggerHandler();
 
     /**
-     * @return Whether the input event should be blocked.
+     * Handles an event. Called by the input collector.
+     * @return Whether the event should be blocked.
      */
     bool button(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state);
+    /**
+     * Handles an event. Called by the input collector.
+     */
     void motion(const QPointF &delta);
     /**
-     * @return Whether the input event should be blocked.
+     * Handles an event. Called by the input collector.
+     * @return Whether the event should be blocked.
      */
     bool wheel(const qreal &delta, const Qt::Orientation &orientation);
 
-    void setMotionTimeout(const qreal &timeout);
-    void setPressTimeout(const qreal &timeout);
+    /**
+     * The amount of time in milliseconds the handler will wait for motion to be performed (wheel is considered motion
+     * as well) before attempting to activate press triggers. For pointer motion there is a small threshold to prevent
+     * accidental activations.
+     */
+    void setMotionTimeout(const uint32_t &timeout);
+    /**
+     * The amount of time in milliseconds the handler will wait for all mouse buttons to be pressed before activating
+     * press triggers.
+     */
+    void setPressTimeout(const uint32_t &timeout);
 
 protected:
+    void triggerActivating(const Trigger *trigger) override;
+
     /**
      * This implementation sets mouse buttons and position, which is the position of the pointer relative to the screen
      * it is on ranging from (0,0) to (1,1).
@@ -77,9 +105,9 @@ private:
      * one button.
      */
     QTimer m_pressTimeoutTimer;
-    qreal m_pressTimeout = 50;
+    uint32_t m_pressTimeout = 50;
     QTimer m_motionTimeoutTimer;
-    qreal m_motionTimeout = 200;
+    uint32_t m_motionTimeout = 200;
 
     /**
      * Activation event for the last button press.

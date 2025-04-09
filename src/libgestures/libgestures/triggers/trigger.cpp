@@ -38,9 +38,9 @@ bool Trigger::canActivate(const TriggerActivationEvent *event) const
     if ((m_fingers && event->fingers && !m_fingers->contains(*event->fingers))
         || (m_keyboardModifiers && event->keyboardModifiers && *m_keyboardModifiers != event->keyboardModifiers)
         || (m_mouseButtons && event->mouseButtons && *m_mouseButtons != event->mouseButtons)
-        || (m_beginPositions && event->position && std::find_if(m_beginPositions->begin(), m_beginPositions->end(), [&event](const auto &position) {
+        || (m_startPositions && event->position && std::find_if(m_startPositions->begin(), m_startPositions->end(), [&event](const auto &position) {
         return position.contains(*event->position);
-    }) == m_beginPositions->end())) {
+    }) == m_startPositions->end())) {
         return false;
     }
 
@@ -94,7 +94,7 @@ void Trigger::end()
         return;
     }
 
-    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
+    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
         action->gestureEnded();
     }
@@ -108,7 +108,7 @@ void Trigger::cancel()
         return;
     }
 
-    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
+    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
         action->gestureCancelled();
     }
@@ -160,7 +160,7 @@ void Trigger::setFingers(const Range<uint8_t> &fingers)
 
 void Trigger::setBeginPositions(const std::vector<Range<QPointF>> &positions)
 {
-    m_beginPositions = positions;
+    m_startPositions = positions;
 }
 
 void Trigger::setEndPositions(const std::vector<Range<QPointF>> &positions)
@@ -217,7 +217,7 @@ void Trigger::reset()
 {
     m_started = false;
     m_absoluteAccumulatedDelta = 0;
-    m_threshold = false;
+    m_thresholdReached = false;
 }
 
 const qreal &TriggerUpdateEvent::delta() const

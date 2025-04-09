@@ -192,7 +192,6 @@ bool InputDevice::isEnabled() const
 
 void InputDevice::setEnabled(bool enabled)
 {
-    Q_UNUSED(enabled)
 }
 
 bool InputDevice::isKeyboard() const
@@ -248,6 +247,5 @@ KWin::LEDs InputDevice::leds() const
 
 void InputDevice::setLeds(KWin::LEDs leds)
 {
-    Q_UNUSED(leds)
 }
 #endif

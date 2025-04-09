@@ -23,24 +23,25 @@
 namespace libgestures
 {
 
-enum class PinchDirection : uint32_t
+typedef uint32_t TriggerDirection;
+enum class PinchDirection : TriggerDirection
 {
     In = 1u << 0,
     Out = 1u << 1,
     Any = UINT32_MAX
 };
-enum class RotateDirection : uint32_t
+enum class RotateDirection : TriggerDirection
 {
-    Clockwise = 1u << 0,
-    Counterclockwise = 1u << 1,
+    Clockwise = 1u << 2,
+    Counterclockwise = 1u << 3,
     Any = UINT32_MAX
 };
-enum class SwipeDirection : uint32_t
+enum class SwipeDirection : TriggerDirection
 {
-    Left = 1u << 0,
-    Right = 1u << 1,
-    Up = 1u << 2,
-    Down = 1u << 3,
+    Left = 1u << 4,
+    Right = 1u << 5,
+    Up = 1u << 6,
+    Down = 1u << 7,
     LeftRight = Left | Right,
     UpDown = Up | Down,
     Any = UINT32_MAX
@@ -51,11 +52,11 @@ class DirectionalMotionTriggerUpdateEvent : public MotionTriggerUpdateEvent
 public:
     DirectionalMotionTriggerUpdateEvent() = default;
 
-    const uint32_t &direction() const;
-    void setDirection(const uint32_t &direction);
+    const TriggerDirection &direction() const;
+    void setDirection(const TriggerDirection &direction);
 
 private:
-    uint32_t m_direction = UINT32_MAX;
+    TriggerDirection m_direction = UINT32_MAX;
 };
 
 /**
@@ -72,10 +73,13 @@ public:
      */
     bool canUpdate(const TriggerUpdateEvent *event) const override;
 
-    void setDirection(const uint32_t &direction);
+    void setDirection(const TriggerDirection &direction);
+
+protected:
+    void updateActions(const TriggerUpdateEvent *event) override;
 
 private:
-    uint32_t m_direction = 0;
+    TriggerDirection m_direction = 0;
 };
 
 }

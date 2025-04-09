@@ -18,7 +18,7 @@
 
 #include "action.h"
 
-#include "libgestures/logging.h"
+Q_LOGGING_CATEGORY(LIBGESTURES_ACTION, "libgestures.action", QtWarningMsg)
 
 namespace libgestures
 {
@@ -128,10 +128,6 @@ const On &GestureAction::on() const
     return m_on;
 }
 
-void GestureAction::setBlockOtherActions(const bool &blockOtherActions)
-{
-    m_blockOtherActions = blockOtherActions;
-}
 
 void GestureAction::setRepeatInterval(const ActionInterval &interval)
 {

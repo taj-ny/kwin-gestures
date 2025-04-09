@@ -23,8 +23,11 @@
 
 #include <memory>
 
+#include <QLoggingCategory>
 #include <QPointF>
 #include <QString>
+
+Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_ACTION)
 
 namespace libgestures
 {
@@ -115,31 +118,26 @@ public:
     /**
      * Called by the gesture when it is started.
      */
-    virtual void gestureStarted();
+    TEST_VIRTUAL void gestureStarted();
     /**
      * Called by the gesture when it is updated.
      */
-    virtual void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    TEST_VIRTUAL void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
     /**
      * Called by the gesture when it has ended.
      */
-    virtual void gestureEnded();
+    TEST_VIRTUAL void gestureEnded();
     /**
      * Called by the gesture when it has been cancelled.
      */
-    virtual void gestureCancelled();
+    TEST_VIRTUAL void gestureCancelled();
 
     /**
      * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
      */
-    virtual void tryExecute();
-    virtual const bool &executed() const;
-    virtual bool canExecute() const;
-
-    /**
-     * @return Whether the action satisfies at least one condition, or no conditions have been added.
-     */
-    bool satisfiesConditions() const;
+    TEST_VIRTUAL void tryExecute();
+    TEST_VIRTUAL const bool &executed() const;
+    TEST_VIRTUAL bool canExecute() const;
 
     /**
      * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
@@ -154,12 +152,6 @@ public:
      * @param on The point during the gesture at which the action should be executed.
      */
     void setOn(const On &on);
-
-    /**
-     * @param blockOtherActions Whether this action should block all other actions, including actions belonging to
-     * other custom and built-in gestures, from being executed during the gesture, if the action is executed.
-     */
-    void setBlockOtherActions(const bool &blockOtherActions);
 
     /**
      * @param interval How often an update action should repeat.
@@ -187,7 +179,7 @@ protected:
 private:
     void reset();
 
-    QString m_name = "none";
+    QString m_name = "Unnamed action";
 
     std::optional<std::shared_ptr<const Condition>> m_condition;
 
@@ -208,7 +200,6 @@ private:
     bool m_executed = false;
 
     ActionInterval m_interval;
-    bool m_blockOtherActions = false;
     std::optional<Range<qreal>> m_threshold;
     On m_on = On::Update;
 

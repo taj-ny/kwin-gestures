@@ -33,20 +33,46 @@ enum class Axis
     None
 };
 
+struct TriggerSpeedThreshold
+{
+    TriggerType type;
+    qreal threshold;
+    uint32_t directions;
+};
+
+/**
+ * Handles motion triggers: stroke, swipe.
+ */
 class MotionTriggerHandler : public TriggerHandler
 {
 public:
-    MotionTriggerHandler();
-
-    bool updateMotion(const QPointF &delta);
+    /**
+     * Duplicate thresholds (same type and direction) will be replaced.
+     */
+    void setSpeedThreshold(const TriggerType &type, const qreal &threshold, const TriggerDirection &directions = UINT32_MAX);
+    void setSpeedInputEventsToSample(const uint8_t &events);
 
 protected:
-    bool determineSpeed(const qreal &delta, const qreal &fastThreshold);
+    MotionTriggerHandler();
 
-    void triggerActivating(const Trigger *trigger) override;
+    /**
+     * Does nothing if there are no active pinch or rotate triggers.
+     * @return Whether there are any active pinch or rotate triggers.
+     */
+    bool updateMotion(const QPointF &delta);
+
+    /**
+     * If false is returned, speed is being determined and methods processing triggers must also return true
+     * immediately and not update triggers.
+     * @param delta The delta of the individual input event.
+     * @param speed Set to the speed once it is determined.
+     * @return Whether speed is necessary and has been determined.
+     * @see setSpeedThreshold
+     */
+    bool determineSpeed(const TriggerType &type, const qreal &delta, TriggerSpeed &speed, const TriggerDirection &direction = UINT32_MAX);
+
+    virtual void triggerActivating(const Trigger *trigger) override;
     void reset() override;
-
-    TriggerSpeed m_speed = TriggerSpeed::Any;
 
 private:
     void strokeTriggerEndHandler(const TriggerEndEvent *event);
@@ -59,6 +85,8 @@ private:
     uint8_t m_inputEventsToSample = 3;
     uint8_t m_sampledInputEvents = 0;
     qreal m_accumulatedAbsoluteSampledDelta = 0;
+    std::optional<TriggerSpeed> m_speed;
+    std::vector<TriggerSpeedThreshold> m_speedThresholds;
 
     std::vector<QPointF> m_stroke;
 };

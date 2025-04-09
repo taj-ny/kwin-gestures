@@ -18,42 +18,21 @@
 
 #pragma once
 
-#include "motiontriggerhandler.h"
-
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MULTITOUCH)
+#include "actiongroup.h"
 
 namespace libgestures
 {
 
-enum class PinchType
-{
-    Unknown,
-    Pinch,
-    Rotate
-};
-
 /**
- * Handles multi-touch triggers: pinch, rotate.
- * In the future this will also be able to recognize triggers based on touch points.
+ * Executes only one action in order as added.
  */
-class MultiTouchMotionTriggerHandler : public MotionTriggerHandler
+class OneActionGroup : public ActionGroup
 {
+public:
+    OneActionGroup() = default;
+
 protected:
-    MultiTouchMotionTriggerHandler() = default;
-
-    /**
-     * Does nothing if there are no active pinch or rotate triggers.
-     *
-     * @return Whether there are any active pinch or rotate triggers.
-     */
-    bool updatePinch(const qreal &scale, const qreal &angleDelta);
-
-    void reset() override;
-
-private:
-    qreal m_previousPinchScale = 1;
-    PinchType m_pinchType = PinchType::Unknown;
-    qreal m_accumulatedRotateDelta = 0;
+    void execute() override;
 };
 
 }

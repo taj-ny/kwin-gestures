@@ -84,13 +84,13 @@ public:
     /**
      * @return Whether conditions, fingers, keyboard modifiers, mouse buttons and begin positions are satisfied.
      */
-    bool canActivate(const TriggerActivationEvent *event) const;
+    TEST_VIRTUAL bool canActivate(const TriggerActivationEvent *event) const;
 
     /**
      * Called by the trigger handler before updating a trigger. If true is returned, that trigger will be cancelled.
      */
     virtual bool canUpdate(const TriggerUpdateEvent *event) const;
-    virtual void update(const TriggerUpdateEvent *event);
+    TEST_VIRTUAL void update(const TriggerUpdateEvent *event);
 
     /**
      * Called by the trigger handler before ending a trigger. If true is returned, that trigger will be cancelled
@@ -186,12 +186,12 @@ protected:
 private:
     void reset();
 
-    QString m_name = "none";
+    QString m_name = "Unnamed gesture";
     TriggerType m_type{0};
 
     std::optional<std::shared_ptr<const Condition>> m_condition;
     std::optional<Range<uint8_t>> m_fingers;
-    std::optional<std::vector<Range<QPointF>>> m_beginPositions;
+    std::optional<std::vector<Range<QPointF>>> m_startPositions;
     std::optional<std::vector<Range<QPointF>>> m_endPositions;
     std::optional<Qt::KeyboardModifiers> m_keyboardModifiers;
     std::optional<Qt::MouseButtons> m_mouseButtons;
