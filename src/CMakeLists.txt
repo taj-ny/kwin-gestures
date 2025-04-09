@@ -1,42 +1,44 @@
-set(libgestures_SRCS
-    libgestures/actions/action.cpp
-    libgestures/actions/actiongroup.cpp
-    libgestures/actions/command.cpp
-    libgestures/actions/plasmaglobalshortcut.cpp
-    libgestures/actions/input.cpp
-    libgestures/actions/oneactiongroup.cpp
-    libgestures/conditions/callbackcondition.cpp
-    libgestures/conditions/condition.cpp
-    libgestures/conditions/conditiongroup.cpp
-    libgestures/conditions/legacycondition.cpp
-    libgestures/handlers/motiontriggerhandler.cpp
-    libgestures/handlers/mousetriggerhandler.cpp
-    libgestures/handlers/multitouchmotiontriggerhandler.cpp
-    libgestures/handlers/touchpadtriggerhandler.cpp
-    libgestures/handlers/triggerhandler.cpp
-    libgestures/triggers/directionalmotiontrigger.cpp
-    libgestures/triggers/motiontrigger.cpp
-    libgestures/triggers/presstrigger.cpp
-    libgestures/triggers/stroketrigger.cpp
-    libgestures/triggers/trigger.cpp
-    libgestures/globals.h
-    libgestures/input.cpp
-    libgestures/range.cpp
-    libgestures/windowinfoprovider.cpp
-)
-
-add_library(libgestures STATIC ${libgestures_SRCS})
-target_link_libraries(libgestures PRIVATE
-    Qt6::Core
-    Qt6::DBus
-)
-target_compile_definitions(libgestures PUBLIC TEST_VIRTUAL=$<IF:$<BOOL:${BUILD_TESTS}>,virtual,>)
-target_include_directories(libgestures PUBLIC libgestures)
-
-find_package(yaml-cpp REQUIRED)
-target_link_libraries(libgestures PRIVATE yaml-cpp)
-target_compile_options(libgestures PUBLIC -fexceptions -fPIC)
-
 if (BUILD_KWIN_EFFECT)
     add_subdirectory(kwin)
 endif()
+
+find_package(yaml-cpp REQUIRED)
+
+set(libinputactions_SRCS
+    libinputactions/actions/action.cpp
+    libinputactions/actions/actiongroup.cpp
+    libinputactions/actions/command.cpp
+    libinputactions/actions/plasmaglobalshortcut.cpp
+    libinputactions/actions/input.cpp
+    libinputactions/actions/oneactiongroup.cpp
+    libinputactions/conditions/callbackcondition.cpp
+    libinputactions/conditions/condition.cpp
+    libinputactions/conditions/conditiongroup.cpp
+    libinputactions/conditions/legacycondition.cpp
+    libinputactions/handlers/motiontriggerhandler.cpp
+    libinputactions/handlers/mousetriggerhandler.cpp
+    libinputactions/handlers/multitouchmotiontriggerhandler.cpp
+    libinputactions/handlers/touchpadtriggerhandler.cpp
+    libinputactions/handlers/triggerhandler.cpp
+    libinputactions/triggers/directionalmotiontrigger.cpp
+    libinputactions/triggers/motiontrigger.cpp
+    libinputactions/triggers/presstrigger.cpp
+    libinputactions/triggers/stroketrigger.cpp
+    libinputactions/triggers/trigger.cpp
+    libinputactions/globals.h
+    libinputactions/input.cpp
+    libinputactions/range.cpp
+    libinputactions/windowinfoprovider.cpp
+)
+
+add_library(libinputactions STATIC ${libinputactions_SRCS})
+target_link_libraries(libinputactions PRIVATE
+    Qt6::Core
+    Qt6::DBus
+)
+target_compile_definitions(libinputactions PUBLIC TEST_VIRTUAL=$<IF:$<BOOL:${BUILD_TESTS}>,virtual,>)
+target_include_directories(libinputactions PUBLIC libinputactions)
+set_target_properties(libinputactions PROPERTIES PREFIX "")
+
+target_link_libraries(libinputactions PRIVATE yaml-cpp)
+target_compile_options(libinputactions PUBLIC -fexceptions -fPIC)

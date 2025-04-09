@@ -1,7 +1,7 @@
 #include "test_gesturerecognizer.h"
 #include <QSignalSpy>
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestGestureRecognizer::init()
@@ -324,5 +324,5 @@ void TestGestureRecognizer::gestureUpdate_twoActiveGesturesAndOneEndsPrematurely
 
 }
 
-QTEST_MAIN(libgestures::TestGestureRecognizer)
+QTEST_MAIN(libinputactions::TestGestureRecognizer)
 #include "test_gesturerecognizer.moc"

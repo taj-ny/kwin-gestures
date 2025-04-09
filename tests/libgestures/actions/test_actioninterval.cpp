@@ -1,6 +1,6 @@
 #include "test_actioninterval.h"
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestActionInterval::matches_data()
@@ -34,5 +34,5 @@ void TestActionInterval::matches()
 
 }
 
-QTEST_MAIN(libgestures::TestActionInterval)
+QTEST_MAIN(libinputactions::TestActionInterval)
 #include "test_actioninterval.moc"

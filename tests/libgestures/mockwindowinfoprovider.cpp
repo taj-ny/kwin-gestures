@@ -2,7 +2,7 @@
 
 #include <utility>
 
-namespace libgestures
+namespace libinputactions
 {
 
 MockWindowInfoProvider::MockWindowInfoProvider(std::optional<const WindowInfo> info)

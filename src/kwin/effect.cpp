@@ -17,7 +17,7 @@
 */
 
 #include "effect.h"
-#include "libgestures/yaml_convert.h"
+#include <libinputactions/yaml_convert.h>
 
 #include "effect/effecthandler.h"
 
@@ -30,8 +30,8 @@ const QString configFile = QStandardPaths::writableLocation(QStandardPaths::Conf
 
 Effect::Effect()
 {
-    libgestures::Input::setImplementation(new KWinInput);
-    libgestures::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
+    libinputactions::Input::setImplementation(new KWinInput);
+    libinputactions::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());
@@ -84,13 +84,13 @@ void Effect::reconfigure(ReconfigureFlags flags)
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);
 
-        m_inputEventFilter->setMouseTriggerHandler(std::make_unique<libgestures::MouseTriggerHandler>());
-        m_inputEventFilter->setTouchpadTriggerHandler(std::make_unique<libgestures::TouchpadTriggerHandler>());
+        m_inputEventFilter->setMouseTriggerHandler(std::make_unique<libinputactions::MouseTriggerHandler>());
+        m_inputEventFilter->setTouchpadTriggerHandler(std::make_unique<libinputactions::TouchpadTriggerHandler>());
         if (config["mouse"].IsDefined()) {
-            m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libgestures::MouseTriggerHandler>>());
+            m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libinputactions::MouseTriggerHandler>>());
         }
         if (config["touchpad"].IsDefined()) {
-            m_inputEventFilter->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libgestures::TouchpadTriggerHandler>>());
+            m_inputEventFilter->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libinputactions::TouchpadTriggerHandler>>());
         }
     } catch (const YAML::Exception &e) {
         qCritical(INPUTACTIONS_KWIN).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)

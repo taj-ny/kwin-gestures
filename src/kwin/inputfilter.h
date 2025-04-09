@@ -22,9 +22,9 @@
 
 #include "impl/kwininput.h"
 
-#include "libgestures/handlers/mousetriggerhandler.h"
-#include "libgestures/handlers/touchpadtriggerhandler.h"
-#include "libgestures/triggers/stroketrigger.h"
+#include <libinputactions/handlers/mousetriggerhandler.h>
+#include <libinputactions/handlers/touchpadtriggerhandler.h>
+#include <libinputactions/triggers/stroketrigger.h>
 
 #include <QTimer>
 
@@ -46,8 +46,8 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
-    void setMouseTriggerHandler(std::unique_ptr<libgestures::MouseTriggerHandler> handler);
-    void setTouchpadTriggerHandler(std::unique_ptr<libgestures::TouchpadTriggerHandler> handler);
+    void setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler);
+    void setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     bool holdGestureEnd(std::chrono::microseconds time) override;
@@ -76,15 +76,15 @@ public:
     void recordStroke();
 
 signals:
-    void strokeRecordingFinished(const libgestures::Stroke &stroke);
+    void strokeRecordingFinished(const libinputactions::Stroke &stroke);
 
 private:
     bool isMouse(const KWin::InputDevice *device) const;
 
     void finishStrokeRecording();
 
-    std::unique_ptr<libgestures::MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libgestures::MouseTriggerHandler>();
-    std::unique_ptr<libgestures::TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libgestures::TouchpadTriggerHandler>();
+    std::unique_ptr<libinputactions::MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libinputactions::MouseTriggerHandler>();
+    std::unique_ptr<libinputactions::TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libinputactions::TouchpadTriggerHandler>();
 
     bool m_pinchGestureActive = false;
 

@@ -1,6 +1,6 @@
 #include "test_condition.h"
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestCondition::init()
@@ -114,5 +114,5 @@ void TestCondition::isWindowStateSubConditionSatisfied()
 
 }
 
-QTEST_MAIN(libgestures::TestCondition)
+QTEST_MAIN(libinputactions::TestCondition)
 #include "test_condition.moc"

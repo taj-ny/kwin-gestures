@@ -2,10 +2,10 @@
 
 #include "utils.h"
 
-#include "libgestures/conditions/callbackcondition.h"
-#include "libgestures/conditions/conditiongroup.h"
+#include <libinputactions/conditions/callbackcondition.h>
+#include <libinputactions/conditions/conditiongroup.h>
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestConditionGroup::satisfies_data()
@@ -45,5 +45,5 @@ void TestConditionGroup::satisfies()
 
 }
 
-QTEST_MAIN(libgestures::TestConditionGroup)
+QTEST_MAIN(libinputactions::TestConditionGroup)
 #include "test_conditiongroup.moc"

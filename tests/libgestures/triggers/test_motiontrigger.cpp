@@ -1,6 +1,6 @@
 #include "test_motiontrigger.h"
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestMotionTrigger::init()
@@ -60,5 +60,5 @@ void TestMotionTrigger::hasSpeed()
 
 }
 
-QTEST_MAIN(libgestures::TestMotionTrigger)
+QTEST_MAIN(libinputactions::TestMotionTrigger)
 #include "test_motiontrigger.moc"

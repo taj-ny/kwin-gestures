@@ -1,13 +1,13 @@
 #include "test_trigger.h"
 
-#include "libgestures/conditions/callbackcondition.h"
-#include "libgestures/conditions/conditiongroup.h"
+#include <libinputactions/conditions/callbackcondition.h>
+#include <libinputactions/conditions/conditiongroup.h>
 
 #include <QSignalSpy>
 
 using namespace ::testing;
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestTrigger::init()
@@ -320,5 +320,5 @@ void TestTrigger::overridesOtherTriggersOnUpdate_noUpdate_false()
 
 }
 
-QTEST_MAIN(libgestures::TestTrigger)
+QTEST_MAIN(libinputactions::TestTrigger)
 #include "test_trigger.moc"

@@ -18,12 +18,12 @@
 
 #pragma once
 
-#include "libgestures/windowinfoprovider.h"
+#include <libinputactions/windowinfoprovider.h>
 
-class KWinWindowInfoProvider : public libgestures::WindowInfoProvider
+class KWinWindowInfoProvider : public libinputactions::WindowInfoProvider
 {
 public:
     KWinWindowInfoProvider() = default;
 
-    std::optional<const libgestures::WindowInfo> activeWindow() const override;
+    std::optional<const libinputactions::WindowInfo> activeWindow() const override;
 };

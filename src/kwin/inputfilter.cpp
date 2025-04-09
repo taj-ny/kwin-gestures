@@ -18,7 +18,7 @@
 
 #include "inputfilter.h"
 
-#include "libgestures/triggers/stroketrigger.h"
+#include <libinputactions/triggers/stroketrigger.h>
 
 #include "utils.h"
 
@@ -51,12 +51,12 @@ GestureInputEventFilter::GestureInputEventFilter()
     });
 }
 
-void GestureInputEventFilter::setMouseTriggerHandler(std::unique_ptr<libgestures::MouseTriggerHandler> handler)
+void GestureInputEventFilter::setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler)
 {
     m_mouseTriggerHandler = std::move(handler);
 }
 
-void GestureInputEventFilter::setTouchpadTriggerHandler(std::unique_ptr<libgestures::TouchpadTriggerHandler> handler)
+void GestureInputEventFilter::setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler)
 {
     m_touchpadTriggerHandler = std::move(handler);
 }
@@ -201,7 +201,7 @@ bool GestureInputEventFilter::pinchGestureCancelled(std::chrono::microseconds ti
 bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 {
     const auto device = event->device;
-    if (libgestures::Input::implementation()->isSendingInput() || !device || !isMouse(event->device)) {
+    if (libinputactions::Input::implementation()->isSendingInput() || !device || !isMouse(event->device)) {
         return false;
     }
 
@@ -216,7 +216,7 @@ bool GestureInputEventFilter::pointerMotion(KWin::PointerMotionEvent *event)
 
 bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 {
-    if (libgestures::Input::implementation()->isSendingInput()|| !event->device || !isMouse(event->device)) {
+    if (libinputactions::Input::implementation()->isSendingInput()|| !event->device || !isMouse(event->device)) {
         return false;
     }
 
@@ -225,7 +225,7 @@ bool GestureInputEventFilter::pointerButton(KWin::PointerButtonEvent *event)
 
 bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
 {
-    if (libgestures::Input::implementation()->isSendingInput()) {
+    if (libinputactions::Input::implementation()->isSendingInput()) {
         return false;
     }
 
@@ -254,7 +254,7 @@ bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
     ENSURE_SESSION_UNLOCKED();
 
     const auto mouse = isMouse(device);
-    if (libgestures::Input::implementation()->isSendingInput() || (!device->isTouchpad() && !mouse)) {
+    if (libinputactions::Input::implementation()->isSendingInput() || (!device->isTouchpad() && !mouse)) {
         return false;
     }
 
@@ -290,7 +290,7 @@ void GestureInputEventFilter::recordStroke()
 void GestureInputEventFilter::finishStrokeRecording()
 {
     m_isRecordingStroke = false;
-    Q_EMIT strokeRecordingFinished(libgestures::Stroke(m_strokePoints));
+    Q_EMIT strokeRecordingFinished(libinputactions::Stroke(m_strokePoints));
     m_strokePoints.clear();
 }
 

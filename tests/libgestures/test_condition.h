@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libgestures/condition.h"
+#include <libinputactions/condition.h>
 #include "mockwindowinfoprovider.h"
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 static const QString s_windowCaption = "Firefox";

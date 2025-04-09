@@ -1,7 +1,7 @@
-#include "libgestures/gestures/gesturerecognizer.h"
+#include <libinputactions/gestures/gesturerecognizer.h>
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestGestureRecognizer : public QObject

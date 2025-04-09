@@ -26,7 +26,7 @@
 #include "workspace.h"
 
 // TODO move key list
-#include "libgestures/yaml_convert.h"
+#include <libinputactions/yaml_convert.h>
 
 KWinInput::KWinInput()
     : m_device(std::make_unique<InputDevice>())

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libgestures/actions/action.h"
+#include <libinputactions/actions/action.h>
 
 #include <gmock/gmock.h>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class MockGestureAction : public GestureAction

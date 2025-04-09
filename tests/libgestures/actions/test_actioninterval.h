@@ -4,7 +4,7 @@
 
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestActionInterval : public QObject

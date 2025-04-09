@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libgestures/conditions/callbackcondition.h"
+#include <libinputactions/conditions/callbackcondition.h>
 
 #include <memory>
 
-namespace libgestures
+namespace libinputactions
 {
 
 std::shared_ptr<Condition> makeCondition(const bool &result)

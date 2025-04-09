@@ -2,11 +2,11 @@
 
 #include "mocks/mockgestureaction.h"
 
-#include "libgestures/triggers/trigger.h"
+#include <libinputactions/triggers/trigger.h>
 
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestTrigger : public QObject

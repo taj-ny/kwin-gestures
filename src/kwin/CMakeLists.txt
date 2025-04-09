@@ -30,7 +30,7 @@ set(kwin_gestures_SOURCES
 add_library(kwin_gestures MODULE ${kwin_gestures_SOURCES})
 target_link_libraries(kwin_gestures PRIVATE
     KWin::kwin
-    libgestures
+    libinputactions
     Qt6::Widgets
     XKB::XKB
 )

@@ -4,7 +4,7 @@
 
 using namespace ::testing;
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestAction::init()
@@ -186,5 +186,5 @@ void TestAction::gestureCancelled()
 
 }
 
-QTEST_MAIN(libgestures::TestAction)
+QTEST_MAIN(libinputactions::TestAction)
 #include "test_action.moc"

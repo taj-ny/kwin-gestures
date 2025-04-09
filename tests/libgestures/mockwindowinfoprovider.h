@@ -1,6 +1,6 @@
-#include "libgestures/windowinfoprovider.h"
+#include <libinputactions/windowinfoprovider.h>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class MockWindowInfoProvider : public WindowInfoProvider

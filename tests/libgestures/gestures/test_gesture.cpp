@@ -1,6 +1,6 @@
 #include "test_gesture.h"
 
-namespace libgestures
+namespace libinputactions
 {
 
 void TestGesture::thresholdReached_data()
@@ -31,5 +31,5 @@ void TestGesture::thresholdReached()
 
 }
 
-QTEST_MAIN(libgestures::TestGesture)
+QTEST_MAIN(libinputactions::TestGesture)
 #include "test_gesture.moc"

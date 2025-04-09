@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libgestures/triggers/motiontrigger.h"
+#include <libinputactions/triggers/motiontrigger.h>
 
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestMotionTrigger : public QObject

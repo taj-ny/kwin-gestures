@@ -1,10 +1,10 @@
 #pragma once
 
-#include "libgestures/conditions/condition.h"
+#include <libinputactions/conditions/condition.h>
 
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestConditionGroup : public QObject

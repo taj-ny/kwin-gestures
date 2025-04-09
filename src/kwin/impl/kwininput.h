@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "libgestures/input.h"
+#include <libinputactions/input.h>
 
 #include "core/inputdevice.h"
 #include "kwin/input.h"
@@ -60,7 +60,7 @@ public:
 #endif
 };
 
-class KWinInput : public QObject, public libgestures::Input
+class KWinInput : public QObject, public libinputactions::Input
 {
     Q_OBJECT
 

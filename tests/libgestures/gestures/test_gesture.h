@@ -1,9 +1,9 @@
 #pragma once
 
-#include "libgestures/gestures/gesture.h"
+#include <libinputactions/gestures/gesture.h>
 #include <QTest>
 
-namespace libgestures
+namespace libinputactions
 {
 
 class TestGesture : public QObject
