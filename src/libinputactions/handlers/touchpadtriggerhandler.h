@@ -102,10 +102,6 @@ public:
     bool scroll(const qreal &delta, const Qt::Orientation &orientation, const qreal &inverted);
 
     /**
-     * Used in input actions, as KWin doesn't provide accelerated deltas for gestures. Temporary workaround.
-     */
-    void setSwipeDeltaMultiplier(const qreal &multiplier);
-    /**
      * The time of inactivity in milliseconds after which 2-finger motion triggers will end.
      */
     void setScrollTimeout(const uint32_t &timeout);

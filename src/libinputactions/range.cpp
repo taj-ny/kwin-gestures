@@ -26,28 +26,16 @@ namespace libinputactions
 {
 
 template <typename T>
-Range<T>::Range(T minmax)
+Range<T>::Range(const T &minmax)
     : Range(minmax, minmax)
 {
 }
 
 template <typename T>
-Range<T>::Range(T min, T max)
+Range<T>::Range(const std::optional<T> &min, const std::optional<T> &max)
     : m_min(min)
     , m_max(max)
 {
-}
-
-template <typename T>
-Range<T> Range<T>::minToInf(const T &min)
-{
-    return Range(min, std::numeric_limits<T>::max());
-}
-
-template <typename T>
-Range<T> Range<T>::infToMax(const T &max)
-{
-    return Range(std::numeric_limits<T>::lowest(), max);
 }
 
 template <typename T>
@@ -59,27 +47,27 @@ bool Range<T>::contains(const T &value) const
 template <>
 bool Range<QPointF>::contains(const QPointF &value) const
 {
-    return value.x() >= m_min.x() && value.y() >= m_min.y()
-        && value.x() <= m_max.x() && value.y() <= m_max.y();
+    return (!m_min || (value.x() >= m_min->x() && value.y() >= m_min->y()))
+        && (!m_max || (value.x() <= m_max->x() && value.y() <= m_max->y()));
+}
+
+template <typename T>
+const std::optional<T> &Range<T>::min() const
+{
+    return m_min;
+}
+
+template <typename T>
+const std::optional<T> &Range<T>::max() const
+{
+    return m_max;
 }
 
 template <typename T>
 template <typename U>
 Range<T>::operator Range<U>() const
 {
-    return Range<U>(static_cast<U>(min), static_cast<U>(max));
-}
-
-template <typename T>
-const T &Range<T>::min() const
-{
-    return m_min;
-}
-
-template <typename T>
-const T &Range<T>::max() const
-{
-    return m_max;
+    return Range<U>(static_cast<std::optional<U>>(m_min), static_cast<std::optional<U>>(m_max));
 }
 
 template class Range<uint8_t>;

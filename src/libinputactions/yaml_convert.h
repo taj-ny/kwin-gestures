@@ -585,7 +585,7 @@ struct convert<Range<T>>
             const auto split = rangeRaw.split("-");
             range = Range<T>(split[0].toDouble(), split[1].toDouble());
         } else {
-            range = Range<T>::minToInf(rangeRaw.toDouble());
+            range = Range<T>(rangeRaw.toDouble(), {});
         }
 
         return true;
@@ -690,7 +690,11 @@ struct convert<std::unique_ptr<Trigger>>
             trigger->setName(nameNode.as<QString>());
         }
         if (const auto &fingersNode = node["fingers"]) {
-            trigger->setFingers(fingersNode.as<Range<uint8_t>>());
+            auto range = fingersNode.as<Range<uint8_t>>();
+            if (!range.max()) {
+                range = Range<uint8_t>(range.min(), range.min());
+            }
+            trigger->setFingers(range);
         }
         if (const auto &thresholdNode = node["threshold"]) {
             trigger->setThreshold(thresholdNode.as<Range<qreal>>());
@@ -782,7 +786,7 @@ struct convert<std::unique_ptr<GestureAction>>
         }
 
         const auto on = node["on"].as<On>(On::End);
-        if (on == On::Begin && (threshold.min() != 0 || threshold.max() != 0)) {
+        if (on == On::Begin && (threshold.min() || threshold.max())) {
             throw Exception(node.Mark(), "Begin actions can't have thresholds");
         }
 

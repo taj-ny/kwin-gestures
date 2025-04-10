@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <optional>
+
 namespace libinputactions
 {
 
@@ -26,29 +28,20 @@ class Range
 {
 public:
     Range() = default;
-    Range(T minmax);
-    Range(T min, T max);
-
-    /**
-     * @return A threshold that ranges from min to the maximum positive value.
-     */
-    static Range<T> minToInf(const T &min);
-    /**
-     * @return A threshold that ranges from the maximum negative value to max.
-     */
-    static Range<T> infToMax(const T &max);
-
-    const T &min() const;
-    const T &max() const;
+    Range(const T &minmax);
+    Range(const std::optional<T> &min, const std::optional<T> &max);
 
     bool contains(const T &value) const;
+
+    const std::optional<T> &min() const;
+    const std::optional<T> &max() const;
 
     template <typename U>
     explicit operator Range<U>() const;
 
 private:
-    T m_min{};
-    T m_max{};
+    std::optional<T> m_min;
+    std::optional<T> m_max;
 };
 
 }

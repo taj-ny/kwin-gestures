@@ -52,6 +52,11 @@ public:
     void setSpeedThreshold(const TriggerType &type, const qreal &threshold, const TriggerDirection &directions = UINT32_MAX);
     void setSpeedInputEventsToSample(const uint8_t &events);
 
+    /**
+     * Used in input actions, as KWin doesn't provide accelerated deltas for gestures. Temporary workaround.
+     */
+    void setSwipeDeltaMultiplier(const qreal &multiplier);
+
 protected:
     MotionTriggerHandler();
 

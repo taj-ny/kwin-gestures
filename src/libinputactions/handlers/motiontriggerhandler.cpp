@@ -57,6 +57,11 @@ void MotionTriggerHandler::setSpeedInputEventsToSample(const uint8_t &events)
     m_inputEventsToSample = events;
 }
 
+void MotionTriggerHandler::setSwipeDeltaMultiplier(const qreal &multiplier)
+{
+    m_swipeDeltaMultiplier = multiplier;
+}
+
 bool MotionTriggerHandler::updateMotion(const QPointF &delta)
 {
     if (!hasActiveTriggers(TriggerType::StrokeSwipe)) {
@@ -186,7 +191,6 @@ void MotionTriggerHandler::reset()
     TriggerHandler::reset();
     m_currentSwipeAxis = Axis::None;
     m_currentSwipeDelta = {};
-    m_swipeDeltaMultiplier = 1.0;
     m_speed = {};
     m_isDeterminingSpeed = false;
     m_sampledInputEvents = 0;

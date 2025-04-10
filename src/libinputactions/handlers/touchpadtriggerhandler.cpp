@@ -104,11 +104,6 @@ bool TouchpadTriggerHandler::scroll(const qreal &delta, const Qt::Orientation &o
     return false;
 }
 
-void TouchpadTriggerHandler::setSwipeDeltaMultiplier(const qreal &multiplier)
-{
-//    m_swipeDeltaMultiplier = multiplier;
-}
-
 void TouchpadTriggerHandler::setScrollTimeout(const uint32_t &timeout)
 {
     m_scrollTimeout = timeout;

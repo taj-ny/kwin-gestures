@@ -59,7 +59,7 @@ void Trigger::update(const TriggerUpdateEvent *event)
     if (!m_thresholdReached) {
         qCDebug(LIBGESTURES_TRIGGER).noquote()
             << QString("Threshold not reached (name: %1, current: %2, min: %3, max: %4")
-                .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_threshold->min()), QString::number(m_threshold->max()));
+                .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_threshold->min().value_or(-1)), QString::number(m_threshold->max().value_or(-1)));
         return;
     }
 
