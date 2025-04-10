@@ -27,7 +27,7 @@ namespace libinputactions
 /**
  * Invokes a Plasma global shortcut through DBus.
  */
-class PlasmaGlobalShortcutGestureAction : public GestureAction
+class PlasmaGlobalShortcutTriggerAction : public TriggerAction
 {
 public:
     void execute() override;

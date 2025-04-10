@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <libinputactions/handlers/multitouchmotiontriggerhandler.h>
+#include <libinputactions/handlers/multitouchmotion.h>
 
 namespace libinputactions
 {

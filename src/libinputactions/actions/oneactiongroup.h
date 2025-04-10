@@ -26,10 +26,10 @@ namespace libinputactions
 /**
  * Executes only one action in order as added.
  */
-class OneActionGroup : public ActionGroup
+class OneTriggerActionGroup : public TriggerActionGroup
 {
 public:
-    OneActionGroup() = default;
+    OneTriggerActionGroup() = default;
 
 protected:
     void execute() override;

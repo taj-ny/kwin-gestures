@@ -73,7 +73,7 @@ public:
     Trigger() = default;
     virtual ~Trigger() = default;
 
-    void addAction(std::unique_ptr<GestureAction> action);
+    void addAction(std::unique_ptr<TriggerAction> action);
     /**
      * To add multiple conditions, use a condition group.
      *
@@ -138,9 +138,9 @@ public:
      *
      * @param positions Exact rectangle(s) on the input device where the trigger must begin.
      */
-    void setBeginPositions(const std::vector<Range<QPointF>> &positions);
+    void setStartPositions(const std::vector<Range<QPointF>> &positions);
     /**
-     * @see setBeginPositions
+     * @see setStartPositions
      */
     void setEndPositions(const std::vector<Range<QPointF>> &positions);
     /**
@@ -179,7 +179,7 @@ public:
     void setType(const TriggerType &type);
 
 protected:
-    const std::vector<GestureAction *> actions();
+    const std::vector<TriggerAction *> actions();
 
     virtual void updateActions(const TriggerUpdateEvent *event);
 
@@ -200,7 +200,7 @@ private:
     bool m_thresholdReached = false;
     qreal m_absoluteAccumulatedDelta = 0;
 
-    std::vector<std::unique_ptr<GestureAction>> m_actions;
+    std::vector<std::unique_ptr<TriggerAction>> m_actions;
     bool m_started = false;
 
     friend class TestTrigger;

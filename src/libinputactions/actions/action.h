@@ -33,34 +33,14 @@ namespace libinputactions
 {
 
 /**
- * At which point during the gesture the action should be executed.
+ * The point of the trigger's lifecycle at which the action should be executed.
  */
-enum On {
-    /**
-     * The gesture has ended.
-     */
-    End,
-
-    /**
-     * The gesture has started. If a threshold has been set on the gesture, the action will be triggered when it's
-     * reached. Begin actions can't have a minimum threshold.
-     */
+enum class On {
     Begin,
-
-    /**
-     * An input event has been sent by the device.
-     */
-    Update,
-
-    /**
-     * The gesture has been cancelled, due to the direction changing or the finger count changing but not to 0.
-     */
     Cancel,
-
-    /**
-     * The gesture has ended or has been cancelled.
-     */
-    EndOrCancel
+    End,
+    EndCancel,
+    Update
 };
 
 enum class IntervalDirection
@@ -80,7 +60,7 @@ enum class IntervalDirection
 };
 
 /**
- * Represents how often an action should repeat.
+ * Defines how often and when should an action repeat.
  */
 class ActionInterval
 {
@@ -108,29 +88,29 @@ private:
 };
 
 /**
- * Executed at a specific point during the gesture if the specified conditions are met.
+ * Executed at a specific point of the trigger's lifecycle.
  */
-class GestureAction
+class TriggerAction
 {
 public:
-    virtual ~GestureAction() = default;
+    virtual ~TriggerAction() = default;
 
     /**
-     * Called by the gesture when it is started.
+     * Called by the trigger.
      */
-    TEST_VIRTUAL void gestureStarted();
+    TEST_VIRTUAL void triggerStarted();
     /**
-     * Called by the gesture when it is updated.
+     * Called by the trigger.
      */
-    TEST_VIRTUAL void gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
+    TEST_VIRTUAL void triggerUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
     /**
-     * Called by the gesture when it has ended.
+     * Called by the trigger.
      */
-    TEST_VIRTUAL void gestureEnded();
+    TEST_VIRTUAL void triggerEnded();
     /**
-     * Called by the gesture when it has been cancelled.
+     * Called by the trigger.
      */
-    TEST_VIRTUAL void gestureCancelled();
+    TEST_VIRTUAL void triggerCancelled();
 
     /**
      * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
@@ -149,12 +129,12 @@ public:
 
     const On &on() const;
     /**
-     * @param on The point during the gesture at which the action should be executed.
+     * @param on The point of the trigger-s lifecycle at which the action should be executed.
      */
     void setOn(const On &on);
 
     /**
-     * @param interval How often an update action should repeat.
+     * @param interval How often and when an update action should repeat.
      */
     void setRepeatInterval(const ActionInterval &interval);
 
@@ -166,7 +146,7 @@ public:
     void setThreshold(const Range<qreal> &threshold);
 
 protected:
-    GestureAction() = default;
+    TriggerAction() = default;
 
     /**
      * Executes the action without checking conditions.

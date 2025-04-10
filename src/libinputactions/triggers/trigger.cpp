@@ -23,7 +23,7 @@ Q_LOGGING_CATEGORY(LIBGESTURES_TRIGGER, "libinputactions.trigger", QtWarningMsg)
 namespace libinputactions
 {
 
-void Trigger::addAction(std::unique_ptr<GestureAction> action)
+void Trigger::addAction(std::unique_ptr<TriggerAction> action)
 {
     m_actions.push_back(std::move(action));
 }
@@ -69,7 +69,7 @@ void Trigger::update(const TriggerUpdateEvent *event)
         qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger started (name: %1)").arg(m_name);
         m_started = true;
         for (const auto &action : m_actions) {
-            action->gestureStarted();
+            action->triggerStarted();
         }
     }
 
@@ -96,7 +96,7 @@ void Trigger::end()
 
     qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
-        action->gestureEnded();
+        action->triggerEnded();
     }
     reset();
 }
@@ -110,7 +110,7 @@ void Trigger::cancel()
 
     qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
-        action->gestureCancelled();
+        action->triggerCancelled();
     }
     reset();
 }
@@ -122,7 +122,7 @@ bool Trigger::overridesOtherTriggersOnEnd()
     }
 
     return std::any_of(m_actions.begin(), m_actions.end(), [](const auto &action) {
-        return (action->on() == On::End || action->on() == On::EndOrCancel) && action->canExecute();
+        return (action->on() == On::End || action->on() == On::EndCancel) && action->canExecute();
     });
 }
 
@@ -137,9 +137,9 @@ bool Trigger::overridesOtherTriggersOnUpdate()
     });
 }
 
-const std::vector<GestureAction *> Trigger::actions()
+const std::vector<TriggerAction *> Trigger::actions()
 {
-    std::vector<GestureAction *> result;
+    std::vector<TriggerAction *> result;
     for (auto &action : m_actions) {
         result.push_back(action.get());
     }
@@ -149,7 +149,7 @@ const std::vector<GestureAction *> Trigger::actions()
 void Trigger::updateActions(const TriggerUpdateEvent *event)
 {
     for (const auto &action : m_actions) {
-        action->gestureUpdated(event->delta(), {});
+        action->triggerUpdated(event->delta(), {});
     }
 }
 
@@ -158,7 +158,7 @@ void Trigger::setFingers(const Range<uint8_t> &fingers)
     m_fingers = fingers;
 }
 
-void Trigger::setBeginPositions(const std::vector<Range<QPointF>> &positions)
+void Trigger::setStartPositions(const std::vector<Range<QPointF>> &positions)
 {
     m_startPositions = positions;
 }

@@ -22,9 +22,9 @@
 
 #include "impl/kwininput.h"
 
-#include <libinputactions/handlers/mousetriggerhandler.h>
-#include <libinputactions/handlers/touchpadtriggerhandler.h>
-#include <libinputactions/triggers/stroketrigger.h>
+#include <libinputactions/handlers/mouse.h>
+#include <libinputactions/handlers/touchpad.h>
+#include <libinputactions/triggers/stroke.h>
 
 #include <QTimer>
 

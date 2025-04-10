@@ -21,7 +21,7 @@
 namespace libinputactions
 {
 
-void InputGestureAction::execute()
+void InputTriggerAction::execute()
 {
     const auto input = libinputactions::Input::implementation();
     for (const auto &action : m_sequence) {
@@ -51,7 +51,7 @@ void InputGestureAction::execute()
     }
 }
 
-void InputGestureAction::setSequence(const std::vector<InputAction> &sequence)
+void InputTriggerAction::setSequence(const std::vector<InputAction> &sequence)
 {
     m_sequence = sequence;
 }

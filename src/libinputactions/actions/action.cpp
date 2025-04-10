@@ -23,12 +23,12 @@ Q_LOGGING_CATEGORY(LIBGESTURES_ACTION, "libinputactions.action", QtWarningMsg)
 namespace libinputactions
 {
 
-void GestureAction::setCondition(const std::shared_ptr<const Condition> &condition)
+void TriggerAction::setCondition(const std::shared_ptr<const Condition> &condition)
 {
     m_condition = condition;
 }
 
-void GestureAction::tryExecute()
+void TriggerAction::tryExecute()
 {
     if (!canExecute()) {
         return;
@@ -39,20 +39,20 @@ void GestureAction::tryExecute()
     m_executed = true;
 }
 
-const bool &GestureAction::executed() const
+const bool &TriggerAction::executed() const
 {
     return m_executed;
 }
 
-bool GestureAction::canExecute() const
+bool TriggerAction::canExecute() const
 {
     return (!m_condition || m_condition.value()->satisfied())
         && (!m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta));
 }
 
-void GestureAction::gestureCancelled()
+void TriggerAction::triggerCancelled()
 {
-    if (m_on == On::Cancel || m_on == On::EndOrCancel) {
+    if (m_on == On::Cancel || m_on == On::EndCancel) {
         tryExecute();
     }
 
@@ -60,9 +60,9 @@ void GestureAction::gestureCancelled()
     reset();
 }
 
-void GestureAction::gestureEnded()
+void TriggerAction::triggerEnded()
 {
-    if (m_on == On::End || m_on == On::EndOrCancel) {
+    if (m_on == On::End || m_on == On::EndCancel) {
         tryExecute();
     }
 
@@ -70,7 +70,7 @@ void GestureAction::gestureEnded()
     reset();
 }
 
-void GestureAction::gestureStarted()
+void TriggerAction::triggerStarted()
 {
     m_executed = false;
     if (m_on == On::Begin) {
@@ -80,7 +80,7 @@ void GestureAction::gestureStarted()
     reset();
 }
 
-void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
+void TriggerAction::triggerUpdated(const qreal &delta, const QPointF &deltaPointMultiplied)
 {
     m_currentDeltaPointMultiplied = deltaPointMultiplied;
     if (std::signbit(m_accumulatedDelta) != std::signbit(delta)) {
@@ -113,38 +113,37 @@ void GestureAction::gestureUpdated(const qreal &delta, const QPointF &deltaPoint
     }
 }
 
-const QString &GestureAction::name() const
+const QString &TriggerAction::name() const
 {
     return m_name;
 }
 
-void GestureAction::setName(const QString &name)
+void TriggerAction::setName(const QString &name)
 {
     m_name = name;
 }
 
-const On &GestureAction::on() const
+const On &TriggerAction::on() const
 {
     return m_on;
 }
 
-
-void GestureAction::setRepeatInterval(const ActionInterval &interval)
+void TriggerAction::setRepeatInterval(const ActionInterval &interval)
 {
     m_interval = interval;
 }
 
-void GestureAction::setThreshold(const Range<qreal> &threshold)
+void TriggerAction::setThreshold(const Range<qreal> &threshold)
 {
     m_threshold = threshold;
 }
 
-void GestureAction::setOn(const libinputactions::On &on)
+void TriggerAction::setOn(const libinputactions::On &on)
 {
     m_on = on;
 }
 
-void GestureAction::reset()
+void TriggerAction::reset()
 {
     m_accumulatedDelta = 0;
     m_absoluteAccumulatedDelta = 0;

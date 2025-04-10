@@ -23,7 +23,7 @@
 namespace libinputactions
 {
 
-void CommandGestureAction::execute()
+void CommandTriggerAction::execute()
 {
     std::thread thread([this]() {
         std::ignore = std::system(m_command.c_str());
@@ -31,7 +31,7 @@ void CommandGestureAction::execute()
     thread.detach();
 }
 
-void CommandGestureAction::setCommand(const QString &command)
+void CommandTriggerAction::setCommand(const QString &command)
 {
     m_command = command.toStdString();
 }

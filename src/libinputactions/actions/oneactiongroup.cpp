@@ -21,7 +21,7 @@
 namespace libinputactions
 {
 
-void OneActionGroup::execute()
+void OneTriggerActionGroup::execute()
 {
     for (auto &action : m_actions) {
         if (action->canExecute()) {

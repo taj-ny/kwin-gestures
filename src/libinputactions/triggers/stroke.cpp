@@ -33,7 +33,7 @@
     CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
-#include "stroketrigger.h"
+#include "stroke.h"
 
 #include <math.h>
 #include <stdlib.h>

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "motiontriggerhandler.h"
+#include "motion.h"
 
 Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MULTITOUCH)
 

@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <libinputactions/handlers/motiontriggerhandler.h>
+#include <libinputactions/handlers/motion.h>
 
 Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOUSE)
 

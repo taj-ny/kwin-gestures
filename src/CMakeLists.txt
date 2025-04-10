@@ -15,15 +15,15 @@ set(libinputactions_SRCS
     libinputactions/conditions/condition.cpp
     libinputactions/conditions/conditiongroup.cpp
     libinputactions/conditions/legacycondition.cpp
-    libinputactions/handlers/motiontriggerhandler.cpp
-    libinputactions/handlers/mousetriggerhandler.cpp
-    libinputactions/handlers/multitouchmotiontriggerhandler.cpp
-    libinputactions/handlers/touchpadtriggerhandler.cpp
-    libinputactions/handlers/triggerhandler.cpp
-    libinputactions/triggers/directionalmotiontrigger.cpp
-    libinputactions/triggers/motiontrigger.cpp
-    libinputactions/triggers/presstrigger.cpp
-    libinputactions/triggers/stroketrigger.cpp
+    libinputactions/handlers/motion.cpp
+    libinputactions/handlers/mouse.cpp
+    libinputactions/handlers/multitouchmotion.cpp
+    libinputactions/handlers/touchpad.cpp
+    libinputactions/handlers/trigger.cpp
+    libinputactions/triggers/directionalmotion.cpp
+    libinputactions/triggers/motion.cpp
+    libinputactions/triggers/press.cpp
+    libinputactions/triggers/stroke.cpp
     libinputactions/triggers/trigger.cpp
     libinputactions/globals.h
     libinputactions/input.cpp

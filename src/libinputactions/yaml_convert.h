@@ -24,11 +24,11 @@
 #include <libinputactions/actions/plasmaglobalshortcut.h>
 #include <libinputactions/conditions/conditiongroup.h>
 #include <libinputactions/conditions/legacycondition.h>
-#include <libinputactions/handlers/mousetriggerhandler.h>
-#include <libinputactions/handlers/touchpadtriggerhandler.h>
-#include <libinputactions/triggers/directionalmotiontrigger.h>
-#include <libinputactions/triggers/presstrigger.h>
-#include <libinputactions/triggers/stroketrigger.h>
+#include <libinputactions/handlers/mouse.h>
+#include <libinputactions/handlers/touchpad.h>
+#include <libinputactions/triggers/directionalmotion.h>
+#include <libinputactions/triggers/press.h>
+#include <libinputactions/triggers/stroke.h>
 
 #include <QRegularExpression>
 #include <QVector>
@@ -717,7 +717,7 @@ struct convert<std::unique_ptr<Trigger>>
             trigger->setMouseButtons(mouseButtonsNode.as<Qt::MouseButtons>());
         }
         if (const auto &startPositionsNode = node["start_positions"]) {
-            trigger->setBeginPositions(startPositionsNode.as<std::vector<Range<QPointF>>>());
+            trigger->setStartPositions(startPositionsNode.as<std::vector<Range<QPointF>>>());
         }
         if (const auto &endPositionsNode = node["end_positions"]) {
             trigger->setEndPositions(endPositionsNode.as<std::vector<Range<QPointF>>>());
@@ -726,7 +726,7 @@ struct convert<std::unique_ptr<Trigger>>
             trigger->setCondition(conditionNode.as<std::shared_ptr<Condition>>());
         }
         for (const auto &actionNode : node["actions"]) {
-            trigger->addAction(actionNode.as<std::unique_ptr<GestureAction>>());
+            trigger->addAction(actionNode.as<std::unique_ptr<TriggerAction>>());
         }
 
         if (auto *motionTrigger = dynamic_cast<MotionTrigger *>(trigger.get())) {
@@ -740,16 +740,16 @@ struct convert<std::unique_ptr<Trigger>>
 };
 
 template<>
-struct convert<std::unique_ptr<GestureAction>>
+struct convert<std::unique_ptr<TriggerAction>>
 {
-    static bool decode(const Node &node, std::unique_ptr<GestureAction> &action)
+    static bool decode(const Node &node, std::unique_ptr<TriggerAction> &action)
     {
         if (node["command"].IsDefined()) {
-            auto commandAction = new CommandGestureAction();
+            auto commandAction = new CommandTriggerAction();
             commandAction->setCommand(node["command"].as<QString>());
             action.reset(commandAction);
         } else if (node["input"].IsDefined()) {
-            auto inputAction = new InputGestureAction;
+            auto inputAction = new InputTriggerAction;
             inputAction->setSequence(node["input"].as<std::vector<InputAction>>());
             action.reset(inputAction);
         } else if (node["keyboard"].IsDefined()) {
@@ -758,19 +758,19 @@ struct convert<std::unique_ptr<GestureAction>>
             Node inputNode;
             inputNode.push_back(keyboardNode);
 
-            auto inputAction = new InputGestureAction;
+            auto inputAction = new InputTriggerAction;
             inputAction->setSequence(inputNode.as<std::vector<InputAction>>());
             action.reset(inputAction);
         } else if (node["plasma_shortcut"].IsDefined()) {
-            auto plasmaShortcutAction = new PlasmaGlobalShortcutGestureAction;
+            auto plasmaShortcutAction = new PlasmaGlobalShortcutTriggerAction;
             const auto split = node["plasma_shortcut"].as<QString>().split(",");
             plasmaShortcutAction->setComponent(split[0]);
             plasmaShortcutAction->setShortcut(split[1]);
             action.reset(plasmaShortcutAction);
         } else if (node["one"].IsDefined()) {
-            auto oneActionGroup = new OneActionGroup;
+            auto oneActionGroup = new OneTriggerActionGroup;
             for (const auto &actionNode : node["one"]) {
-                oneActionGroup->add(actionNode.as<std::unique_ptr<GestureAction>>());
+                oneActionGroup->add(actionNode.as<std::unique_ptr<TriggerAction>>());
             }
             action.reset(oneActionGroup);
         } else {
@@ -968,7 +968,7 @@ ENUM_DECODER(On, "action event (on)", (std::unordered_map<QString, On> {
     {"update", On::Update},
     {"cancel", On::Cancel},
     {"end", On::End},
-    {"end_cancel", On::EndOrCancel}
+    {"end_cancel", On::EndCancel}
 }));
 
 FLAGS_DECODER(WindowStates, "window state", (std::unordered_map<QString, WindowState> {

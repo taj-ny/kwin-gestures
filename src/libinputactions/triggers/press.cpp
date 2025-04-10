@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "presstrigger.h"
+#include "press.h"
 
 namespace libinputactions
 {

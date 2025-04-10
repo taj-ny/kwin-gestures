@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "motiontrigger.h"
+#include "motion.h"
 
 namespace libinputactions
 {

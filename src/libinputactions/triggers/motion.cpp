@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "motiontrigger.h"
+#include "motion.h"
 
 namespace libinputactions
 {
@@ -41,7 +41,7 @@ void MotionTrigger::updateActions(const TriggerUpdateEvent *event)
 {
     const auto *castedEvent = dynamic_cast<const MotionTriggerUpdateEvent *>(event);
     for (auto &action : actions()) {
-        action->gestureUpdated(event->delta(), castedEvent->deltaMultiplied());
+        action->triggerUpdated(event->delta(), castedEvent->deltaMultiplied());
     }
 }
 

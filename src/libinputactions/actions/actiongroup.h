@@ -27,15 +27,15 @@ namespace libinputactions
  * Action groups control how actions are executed. Individual actions are not informed of gesture lifecycle events,
  * therefore they do not support the
  */
-class ActionGroup : public GestureAction
+class TriggerActionGroup : public TriggerAction
 {
 public:
-    void add(std::unique_ptr<GestureAction> action);
+    void add(std::unique_ptr<TriggerAction> action);
 
 protected:
-    ActionGroup() = default;
+    TriggerActionGroup() = default;
 
-    std::vector<std::unique_ptr<GestureAction>> m_actions;
+    std::vector<std::unique_ptr<TriggerAction>> m_actions;
 };
 
 }

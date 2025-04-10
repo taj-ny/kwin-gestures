@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "directionalmotiontrigger.h"
+#include "directionalmotion.h"
 
 namespace libinputactions
 {
@@ -52,7 +52,7 @@ void DirectionalMotionTrigger::updateActions(const TriggerUpdateEvent *event)
     }
 
     for (auto &action : actions()) {
-        action->gestureUpdated(delta, castedEvent->deltaMultiplied());
+        action->triggerUpdated(delta, castedEvent->deltaMultiplied());
     }
 }
 

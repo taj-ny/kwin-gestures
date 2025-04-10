@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "multitouchmotiontriggerhandler.h"
+#include "multitouchmotion.h"
 
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MULTITOUCH, "libinputactions.handler.multitouch", QtWarningMsg)
 

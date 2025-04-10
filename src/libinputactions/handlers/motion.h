@@ -18,8 +18,8 @@
 
 #pragma once
 
-#include <libinputactions/triggers/directionalmotiontrigger.h>
-#include "triggerhandler.h"
+#include <libinputactions/triggers/directionalmotion.h>
+#include "trigger.h"
 
 Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOTION)
 

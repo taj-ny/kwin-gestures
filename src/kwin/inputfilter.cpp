@@ -18,7 +18,7 @@
 
 #include "inputfilter.h"
 
-#include <libinputactions/triggers/stroketrigger.h>
+#include <libinputactions/triggers/stroke.h>
 
 #include "utils.h"
 

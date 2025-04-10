@@ -16,9 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "mousetriggerhandler.h"
+#include "mouse.h"
 
-#include <libinputactions/triggers/presstrigger.h>
+#include <libinputactions/triggers/press.h>
 
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOUSE, "libinputactions.handler.mouse", QtWarningMsg)
 

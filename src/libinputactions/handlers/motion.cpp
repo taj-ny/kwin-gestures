@@ -16,9 +16,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "motiontriggerhandler.h"
+#include "motion.h"
 
-#include <libinputactions/triggers/stroketrigger.h>
+#include <libinputactions/triggers/stroke.h>
 
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOTION, "libinputactions.handler.motion", QtWarningMsg)
 

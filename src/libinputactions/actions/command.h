@@ -28,7 +28,7 @@ namespace libinputactions
 /**
  * Runs a command.
  */
-class CommandGestureAction : public GestureAction
+class CommandTriggerAction : public TriggerAction
 {
 public:
     void execute() override;

@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "triggerhandler.h"
+#include "trigger.h"
 
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_TRIGGER, "libinputactions.handler.trigger", QtWarningMsg)
 

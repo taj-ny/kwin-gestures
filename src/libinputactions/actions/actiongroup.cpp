@@ -21,7 +21,7 @@
 namespace libinputactions
 {
 
-void ActionGroup::add(std::unique_ptr<GestureAction> action)
+void TriggerActionGroup::add(std::unique_ptr<TriggerAction> action)
 {
     m_actions.push_back(std::move(action));
 }

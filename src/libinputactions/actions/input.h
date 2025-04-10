@@ -47,7 +47,7 @@ struct InputAction
  * @remark Requires Input::keyboardKey, Input::mouseButton, Input::mouseMoveAbsolute and Input::mouseMoveRelative to be
  * implemented.
  */
-class InputGestureAction : public GestureAction
+class InputTriggerAction : public TriggerAction
 {
 public:
     void execute() override;
