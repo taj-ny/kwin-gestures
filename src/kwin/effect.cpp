@@ -1,17 +1,37 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include "effect.h"
-#include "libgestures/yaml_convert.h"
+#include <libinputactions/yaml_convert.h>
+
+#include "effect/effecthandler.h"
 
 #include <QDir>
 #include <QLoggingCategory>
 
-Q_LOGGING_CATEGORY(KWIN_GESTURES, "kwin_gestures", QtWarningMsg)
+Q_LOGGING_CATEGORY(INPUTACTIONS_KWIN, "inputactions", QtWarningMsg)
 
 const QString configFile = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) + "/kwingestures.yml";
 
 Effect::Effect()
 {
-    libgestures::Input::setImplementation(new KWinInput);
-    libgestures::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
+    libinputactions::Input::setImplementation(new KWinInput);
+    libinputactions::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_inputEventFilter.get());
@@ -60,15 +80,20 @@ void Effect::slotConfigDirectoryChanged()
 
 void Effect::reconfigure(ReconfigureFlags flags)
 {
-    Q_UNUSED(flags)
-
     try {
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);
-        auto gestureRecognizer = config["touchpad"].as<std::shared_ptr<libgestures::GestureRecognizer>>();
-        m_inputEventFilter->setTouchpadGestureRecognizer(gestureRecognizer);
+
+        m_inputEventFilter->setMouseTriggerHandler(std::make_unique<libinputactions::MouseTriggerHandler>());
+        m_inputEventFilter->setTouchpadTriggerHandler(std::make_unique<libinputactions::TouchpadTriggerHandler>());
+        if (config["mouse"].IsDefined()) {
+            m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libinputactions::MouseTriggerHandler>>());
+        }
+        if (config["touchpad"].IsDefined()) {
+            m_inputEventFilter->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libinputactions::TouchpadTriggerHandler>>());
+        }
     } catch (const YAML::Exception &e) {
-        qCritical(KWIN_GESTURES).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
+        qCritical(INPUTACTIONS_KWIN).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)
                 + " (line " + QString::number(e.mark.line) + ", column " + QString::number(e.mark.column) + ")";
     }
 }

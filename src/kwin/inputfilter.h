@@ -1,12 +1,37 @@
+/*
+    Input Actions - Input handler that executes user-defined actions
+    Copyright (C) 2024-2025 Marcin Woźniak
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
 #include "input.h"
-#include "libgestures/gestures/gesturerecognizer.h"
+
+#include "impl/kwininput.h"
+
+#include <libinputactions/handlers/mouse.h>
+#include <libinputactions/handlers/touchpad.h>
+#include <libinputactions/triggers/stroke.h>
+
 #include <QTimer>
 
 /**
- * Installed before GlobalShortcutFilter. Prevents it from receiving input events for which a custom gesture added by
- * the user has been recognized and handled.
+ * Captures input events, forwards them to the proper instance of GestureHandler, and blocks them if necessary.
+ *
+ * Installed before GlobalShortcutFilter, which is responsible for handling touchpad gestures.
  *
  * @remark If KWin version <=6.1.90, this filter is installed as the first one. For this reason, all methods that
  * process events must not do anything if the session is locked and must pass the event to the next filter. On later
@@ -21,10 +46,10 @@ class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
 public:
     GestureInputEventFilter();
 
-    void setTouchpadGestureRecognizer(const std::shared_ptr<libgestures::GestureRecognizer> &gestureRecognizer);
+    void setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler);
+    void setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler);
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
-    void holdGestureUpdate(const qreal &delta);
     bool holdGestureEnd(std::chrono::microseconds time) override;
     bool holdGestureCancelled(std::chrono::microseconds time) override;
 
@@ -39,15 +64,31 @@ public:
     bool pinchGestureCancelled(std::chrono::microseconds time) override;
 
 #ifdef KWIN_6_3_OR_GREATER
+    bool pointerMotion(KWin::PointerMotionEvent *event) override;
+    bool pointerButton(KWin::PointerButtonEvent *event) override;
     bool pointerAxis(KWin::PointerAxisEvent *event) override;
+
+    bool keyboardKey(KWin::KeyboardKeyEvent *event) override;
 #else
     bool wheelEvent(KWin::WheelEvent *event) override;
 #endif
 
+    void recordStroke();
+
+signals:
+    void strokeRecordingFinished(const libinputactions::Stroke &stroke);
+
 private:
-    std::shared_ptr<libgestures::GestureRecognizer> m_touchpadGestureRecognizer = std::make_shared<libgestures::GestureRecognizer>();
-    QTimer m_touchpadHoldGestureTimer;
-    QTimer m_scrollTimer;
+    bool isMouse(const KWin::InputDevice *device) const;
+
+    void finishStrokeRecording();
+
+    std::unique_ptr<libinputactions::MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libinputactions::MouseTriggerHandler>();
+    std::unique_ptr<libinputactions::TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libinputactions::TouchpadTriggerHandler>();
 
     bool m_pinchGestureActive = false;
+
+    bool m_isRecordingStroke = false;
+    std::vector<QPointF> m_strokePoints;
+    QTimer m_strokeRecordingTimeoutTimer;
 };
