@@ -37,7 +37,7 @@ target_link_libraries(libinputactions PRIVATE
     Qt6::DBus
 )
 target_compile_definitions(libinputactions PUBLIC TEST_VIRTUAL=$<IF:$<BOOL:${BUILD_TESTS}>,virtual,>)
-target_include_directories(libinputactions PUBLIC libinputactions)
+target_include_directories(libinputactions PRIVATE libinputactions)
 set_target_properties(libinputactions PROPERTIES PREFIX "")
 
 target_link_libraries(libinputactions PRIVATE yaml-cpp)
