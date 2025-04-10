@@ -41,7 +41,7 @@ Range<T>::Range(const std::optional<T> &min, const std::optional<T> &max)
 template <typename T>
 bool Range<T>::contains(const T &value) const
 {
-    return value >= m_min && value <= m_max;
+    return (!m_min || value >= m_min) && (!m_max || value <= m_max);
 }
 
 template <>
