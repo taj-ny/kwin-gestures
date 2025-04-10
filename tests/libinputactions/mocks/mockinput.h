@@ -11,8 +11,6 @@ class MockInput : public Input
 {
 public:
     MockInput() = default;
-
-    MOCK_METHOD(bool, isSendingInput, (), (const, override));
 };
 
 }

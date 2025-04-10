@@ -118,10 +118,10 @@ void TestTrigger::update_data()
 
     // total delta > threshold is tested to ensure the begin action only executes once
     QTest::newRow("no threshold, 0 delta") << std::optional<Range<qreal>>() << std::vector<qreal>{0} << true;
-    QTest::newRow("total delta < min_threshold") << std::optional<Range<qreal>>(Range<qreal>::minToInf(3)) << std::vector<qreal>{1, 1} << false;
-    QTest::newRow("total delta > min_threshold") << std::optional<Range<qreal>>(Range<qreal>::minToInf(3)) << std::vector<qreal>{2, 2} << true;
-    QTest::newRow("delta1, delta2 > max_threshold") << std::optional<Range<qreal>>(Range<qreal>::infToMax(3))  << std::vector<qreal>{4, 4} << false;
-    QTest::newRow("total delta > max_threshold") << std::optional<Range<qreal>>(Range<qreal>::infToMax(3)) << std::vector<qreal>{2, 2}  << true;
+    QTest::newRow("total delta < min_threshold") << std::optional<Range<qreal>>(Range<qreal>(3, {})) << std::vector<qreal>{1, 1} << false;
+    QTest::newRow("total delta > min_threshold") << std::optional<Range<qreal>>(Range<qreal>(3, {})) << std::vector<qreal>{2, 2} << true;
+    QTest::newRow("delta1, delta2 > max_threshold") << std::optional<Range<qreal>>(Range<qreal>({}, 3))  << std::vector<qreal>{4, 4} << false;
+    QTest::newRow("total delta > max_threshold") << std::optional<Range<qreal>>(Range<qreal>({}, 3)) << std::vector<qreal>{2, 2}  << true;
 }
 
 void TestTrigger::update()
@@ -235,7 +235,7 @@ void TestTrigger::overridesOtherTriggersOnEnd()
     m_action->setOn(on);
     m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
     if (!thresholdReached) {
-        m_trigger->setThreshold(Range<qreal>::minToInf(2));
+        m_trigger->setThreshold(Range<qreal>(2, {}));
     }
     m_updateEvent->setDelta(1);
 
@@ -293,7 +293,7 @@ void TestTrigger::overridesOtherTriggersOnUpdate()
     m_action->setOn(on);
     m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
     if (!thresholdReached) {
-        m_trigger->setThreshold(Range<qreal>::minToInf(2));
+        m_trigger->setThreshold(Range<qreal>(2, {}));
     }
     m_updateEvent->setDelta(1);
 

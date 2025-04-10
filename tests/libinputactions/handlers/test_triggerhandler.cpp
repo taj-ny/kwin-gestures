@@ -88,24 +88,18 @@ void TestTriggerHandler::keyboardKey_data()
 {
     QTest::addColumn<int>("key");
     QTest::addColumn<bool>("state");
-    QTest::addColumn<bool>("isSendingInput");
     QTest::addColumn<bool>("endsTriggers");
 
-    QTest::newRow("1") << static_cast<int>(Qt::Key::Key_Control) << true << false << false;
-    QTest::newRow("2") << static_cast<int>(Qt::Key::Key_Control) << false << false << true;
-    QTest::newRow("3") << static_cast<int>(Qt::Key::Key_Control) << true << true << false;
-    QTest::newRow("4") << static_cast<int>(Qt::Key::Key_Control) << false << true << false;
+    QTest::newRow("press") << static_cast<int>(Qt::Key::Key_Control) << true << false;
+    QTest::newRow("release") << static_cast<int>(Qt::Key::Key_Control) << false << true;
 }
 
 void TestTriggerHandler::keyboardKey()
 {
     QFETCH(int, key);
     QFETCH(bool, state);
-    QFETCH(bool, isSendingInput);
     QFETCH(bool, endsTriggers);
 
-    ON_CALL(*m_input, isSendingInput())
-        .WillByDefault(Return(isSendingInput));
     EXPECT_CALL(*m_handler, endTriggers(static_cast<TriggerTypes>(TriggerType::All), _))
         .Times(Exactly(endsTriggers ? 1 : 0));
 
