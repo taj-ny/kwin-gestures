@@ -47,16 +47,16 @@ public:
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool button(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state);
+    bool handleButtonEvent(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state);
     /**
      * Handles an event. Called by the input collector.
      */
-    void motion(const QPointF &delta);
+    void handleMotionEvent(const QPointF &delta);
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool wheel(const qreal &delta, const Qt::Orientation &orientation);
+    bool handleWheelEvent(const qreal &delta, const Qt::Orientation &orientation);
 
     /**
      * The amount of time in milliseconds the handler will wait for motion to be performed (wheel is considered motion

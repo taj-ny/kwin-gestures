@@ -25,7 +25,6 @@ namespace libinputactions
 
 /**
  * Handles touchpad triggers: pinch, press, rotate, stroke, swipe.
- *
  * This handler follows libinput's gesture lifecycle, making it not possible to for example ignore finger count
  * changes.
  */
@@ -38,59 +37,59 @@ public:
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool holdBegin(const uint8_t &fingers);
+    bool handleHoldBeginEvent(const uint8_t &fingers);
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool holdEnd();
+    bool handleHoldEndEvent();
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool holdCancel();
+    bool handleHoldCancelEvent();
 
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool pinchBegin(const uint8_t &fingers);
+    bool handlePinchBeginEvent(const uint8_t &fingers);
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool pinchUpdate(const qreal &scale, const qreal &angleDelta);
+    bool handlePinchUpdateEvent(const qreal &scale, const qreal &angleDelta);
     /**
       * Handles an event. Called by the input collector.
       * @return Whether the event should be blocked.
       */
-    bool pinchEnd();
+    bool handlePinchEndEvent();
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool pinchCancel();
+    bool handlePinchCancelEvent();
 
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool swipeBegin(const uint8_t &fingers);
+    bool handleSwipeBeginEvent(const uint8_t &fingers);
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool swipeUpdate(const QPointF &delta);
+    bool handleSwipeUpdateEvent(const QPointF &delta);
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool swipeEnd();
+    bool handleSwipeEndEvent();
     /**
      * Handles an event. Called by the input collector.
      * @return Whether the event should be blocked.
      */
-    bool swipeCancel();
+    bool handleSwipeCancelEvent();
 
     /**
      * Handles an event. Called by the input collector.
@@ -99,7 +98,7 @@ public:
      * @return Whether the input event should be blocked.
      * @see setScrollTimeout
      */
-    bool scroll(const qreal &delta, const Qt::Orientation &orientation, const qreal &inverted);
+    bool handleScrollEvent(const qreal &delta, const Qt::Orientation &orientation, const qreal &inverted);
 
     /**
      * The time of inactivity in milliseconds after which 2-finger motion triggers will end.

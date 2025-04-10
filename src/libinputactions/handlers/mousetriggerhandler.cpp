@@ -35,7 +35,7 @@ MouseTriggerHandler::MouseTriggerHandler()
     m_motionTimeoutTimer.setSingleShot(true);
 }
 
-bool MouseTriggerHandler::button(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state)
+bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const quint32 &nativeButton, const bool &state)
 {
     qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Event (type: PointerMotion, button: " << button << ", state: " << state << ")";
 
@@ -119,7 +119,7 @@ bool MouseTriggerHandler::button(const Qt::MouseButton &button, const quint32 &n
     return false;
 }
 
-void MouseTriggerHandler::motion(const QPointF &delta)
+void MouseTriggerHandler::handleMotionEvent(const QPointF &delta)
 {
     qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Event (type: PointerMotion, delta: " << delta << ")";
 
@@ -146,7 +146,7 @@ void MouseTriggerHandler::motion(const QPointF &delta)
     }
 
     const auto hadActiveGestures = hasActiveTriggers(TriggerType::StrokeSwipe);
-    updateMotion(delta);
+    handleMotion(delta);
     if (hadActiveGestures && !hasActiveTriggers(TriggerType::StrokeSwipe)) {
         qCDebug(LIBGESTURES_HANDLER_MOUSE, "Mouse motion gesture ended/cancelled during motion");
         // Swipe gesture cancelled due to wrong speed or direction
@@ -154,7 +154,7 @@ void MouseTriggerHandler::motion(const QPointF &delta)
     }
 }
 
-bool MouseTriggerHandler::wheel(const qreal &delta, const Qt::Orientation &orientation)
+bool MouseTriggerHandler::handleWheelEvent(const qreal &delta, const Qt::Orientation &orientation)
 {
     const auto motionDelta = orientation == Qt::Orientation::Horizontal
         ? QPointF(delta, 0)

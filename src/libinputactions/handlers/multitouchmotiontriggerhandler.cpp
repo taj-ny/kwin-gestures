@@ -23,7 +23,7 @@ Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MULTITOUCH, "libinputactions.handler.mult
 namespace libinputactions
 {
 
-bool MultiTouchMotionTriggerHandler::updatePinch(const qreal &scale, const qreal &angleDelta)
+bool MultiTouchMotionTriggerHandler::handlePinch(const qreal &scale, const qreal &angleDelta)
 {
     if (!hasActiveTriggers(TriggerType::PinchRotate)) {
         return false;

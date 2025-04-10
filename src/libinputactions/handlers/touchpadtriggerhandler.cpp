@@ -29,62 +29,62 @@ TouchpadTriggerHandler::TouchpadTriggerHandler()
     });
 }
 
-bool TouchpadTriggerHandler::holdBegin(const uint8_t &fingers)
+bool TouchpadTriggerHandler::handleHoldBeginEvent(const uint8_t &fingers)
 {
     return activateTriggers(TriggerType::Press, fingers);
 }
 
-bool TouchpadTriggerHandler::holdEnd()
+bool TouchpadTriggerHandler::handleHoldEndEvent()
 {
     return endTriggers(TriggerType::Press);
 }
 
-bool TouchpadTriggerHandler::holdCancel()
+bool TouchpadTriggerHandler::handleHoldCancelEvent()
 {
     return cancelTriggers(TriggerType::Press);
 }
 
-bool TouchpadTriggerHandler::pinchBegin(const uint8_t &fingers)
+bool TouchpadTriggerHandler::handlePinchBeginEvent(const uint8_t &fingers)
 {
     return activateTriggers(TriggerType::PinchRotate, fingers);
 }
 
-bool TouchpadTriggerHandler::pinchUpdate(const qreal &scale, const qreal &angleDelta)
+bool TouchpadTriggerHandler::handlePinchUpdateEvent(const qreal &scale, const qreal &angleDelta)
 {
-    return updatePinch(scale, angleDelta);
+    return handlePinch(scale, angleDelta);
 }
 
-bool TouchpadTriggerHandler::pinchEnd()
+bool TouchpadTriggerHandler::handlePinchEndEvent()
 {
     return endTriggers(TriggerType::PinchRotate);
 }
 
-bool TouchpadTriggerHandler::pinchCancel()
+bool TouchpadTriggerHandler::handlePinchCancelEvent()
 {
     return cancelTriggers(TriggerType::PinchRotate);
 }
 
-bool TouchpadTriggerHandler::swipeBegin(const uint8_t &fingers)
+bool TouchpadTriggerHandler::handleSwipeBeginEvent(const uint8_t &fingers)
 {
     return activateTriggers(TriggerType::StrokeSwipe, fingers);
 }
 
-bool TouchpadTriggerHandler::swipeUpdate(const QPointF &delta)
+bool TouchpadTriggerHandler::handleSwipeUpdateEvent(const QPointF &delta)
 {
-    return updateMotion(delta);
+    return handleMotion(delta);
 }
 
-bool TouchpadTriggerHandler::swipeEnd()
+bool TouchpadTriggerHandler::handleSwipeEndEvent()
 {
     return endTriggers(TriggerType::StrokeSwipe);
 }
 
-bool TouchpadTriggerHandler::swipeCancel()
+bool TouchpadTriggerHandler::handleSwipeCancelEvent()
 {
     return cancelTriggers(TriggerType::StrokeSwipe);
 }
 
-bool TouchpadTriggerHandler::scroll(const qreal &delta, const Qt::Orientation &orientation, const qreal &inverted)
+bool TouchpadTriggerHandler::handleScrollEvent(const qreal &delta, const Qt::Orientation &orientation, const qreal &inverted)
 {
     auto motionDelta = orientation == Qt::Orientation::Horizontal
         ? QPointF(delta, 0)
@@ -97,7 +97,7 @@ bool TouchpadTriggerHandler::scroll(const qreal &delta, const Qt::Orientation &o
         activateTriggers(TriggerType::StrokeSwipe, 2);
     }
     m_scrollTimeoutTimer.start(m_scrollTimeout);
-    if (updateMotion(motionDelta)) {
+    if (handleMotion(motionDelta)) {
         return true;
     }
     m_scrollTimeoutTimer.stop();

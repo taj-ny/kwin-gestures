@@ -64,7 +64,7 @@ protected:
      * Does nothing if there are no active pinch or rotate triggers.
      * @return Whether there are any active pinch or rotate triggers.
      */
-    bool updateMotion(const QPointF &delta);
+    bool handleMotion(const QPointF &delta);
 
     /**
      * If false is returned, speed is being determined and methods processing triggers must also return true

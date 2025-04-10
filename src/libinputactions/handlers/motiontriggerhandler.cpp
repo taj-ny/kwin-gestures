@@ -62,7 +62,7 @@ void MotionTriggerHandler::setSwipeDeltaMultiplier(const qreal &multiplier)
     m_swipeDeltaMultiplier = multiplier;
 }
 
-bool MotionTriggerHandler::updateMotion(const QPointF &delta)
+bool MotionTriggerHandler::handleMotion(const QPointF &delta)
 {
     if (!hasActiveTriggers(TriggerType::StrokeSwipe)) {
         return false;

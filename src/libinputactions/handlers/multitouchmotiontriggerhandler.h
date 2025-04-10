@@ -43,10 +43,9 @@ protected:
 
     /**
      * Does nothing if there are no active pinch or rotate triggers.
-     *
      * @return Whether there are any active pinch or rotate triggers.
      */
-    bool updatePinch(const qreal &scale, const qreal &angleDelta);
+    bool handlePinch(const qreal &scale, const qreal &angleDelta);
 
     void reset() override;
 

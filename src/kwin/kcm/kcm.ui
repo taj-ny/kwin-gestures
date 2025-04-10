@@ -28,7 +28,7 @@
         <widget class="QLabel">
          <property name="text">
           <string>How to use:
-1. If using a mouse, place the window so that the record button
+1. If using a mouse, place the window so that the record buttonEvent
 is located where you would like to start the stroke
 2. Press record
 3. Perform the stroke using a mouse or touchpad
