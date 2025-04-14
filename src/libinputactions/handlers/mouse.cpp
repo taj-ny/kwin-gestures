@@ -40,6 +40,7 @@ bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const
     qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Event (type: PointerMotion, button: " << button << ", state: " << state << ")";
 
     if (state) {
+        m_buttons |= button;
         m_mouseMotionSinceButtonPress = 0;
         m_hadMouseGestureSinceButtonPress = false;
         cancelTriggers(TriggerType::All);
@@ -91,6 +92,7 @@ bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const
             return true;
         }
     } else {
+        m_buttons &= ~button;
         endTriggers(TriggerType::All);
 
         // Prevent gesture skipping when clicking rapidly
@@ -204,7 +206,7 @@ void MouseTriggerHandler::triggerActivating(const Trigger *trigger)
 std::unique_ptr<TriggerActivationEvent> MouseTriggerHandler::createActivationEvent() const
 {
     auto event = TriggerHandler::createActivationEvent();
-    event->mouseButtons = Input::implementation()->mouseButtons();
+    event->mouseButtons = m_buttons;
     event->position = Input::implementation()->mousePosition();
     return event;
 }

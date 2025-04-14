@@ -26,11 +26,6 @@ Qt::KeyboardModifiers Input::keyboardModifiers() const
     return Qt::KeyboardModifier::NoModifier;
 }
 
-Qt::MouseButtons Input::mouseButtons() const
-{
-    return Qt::MouseButton::NoButton;
-}
-
 QPointF Input::mousePosition() const
 {
     return {};

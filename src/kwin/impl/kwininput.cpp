@@ -113,11 +113,6 @@ void KWinInput::mouseMoveRelative(const QPointF &pos)
     m_isSendingInput = false;
 }
 
-Qt::MouseButtons KWinInput::mouseButtons() const
-{
-    return m_pointer->buttons();
-}
-
 QPointF KWinInput::mousePosition() const
 {
     QPointF position;
