@@ -105,15 +105,16 @@ bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const
             }
         }
 
+        const auto block = m_blockedMouseButtons.contains(nativeButton);
         if (m_blockedMouseButtons.removeAll(nativeButton) && !m_hadMouseGestureSinceButtonPress) {
             qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Mouse button pressed and released (button: " << nativeButton << ")";
             Input::implementation()->mouseButton(nativeButton, true);
             Input::implementation()->mouseButton(nativeButton, false);
         }
-
         if (m_blockedMouseButtons.empty()) {
             m_hadMouseGestureSinceButtonPress = false;
         }
+        return block;
     }
 
     return false;
