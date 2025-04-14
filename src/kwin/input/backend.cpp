@@ -235,7 +235,7 @@ bool KWinInputBackend::pointerAxis(KWin::PointerAxisEvent *event)
     const auto orientation = event->orientation;
     const auto inverted = event->inverted;
 #else
-bool GestureInputEventFilter::wheelEvent(KWin::WheelEvent *event)
+bool KWinInputBackend::wheelEvent(KWin::WheelEvent *event)
 {
     const auto device = event->device();
     const auto eventDelta = event->delta();
