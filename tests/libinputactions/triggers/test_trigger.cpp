@@ -145,10 +145,10 @@ void TestTrigger::update()
 
 void TestTrigger::end_started_informsActionProperly()
 {
-    EXPECT_CALL(*m_action, gestureStarted()).Times(Exactly(1));
-    EXPECT_CALL(*m_action, gestureUpdated(_, _)).Times(Exactly(1));
-    EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(1));
-    EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerStarted()).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerUpdated(_, _)).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerEnded()).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerCancelled()).Times(Exactly(0));
 
     m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     m_updateEvent->setDelta(0);
@@ -161,10 +161,10 @@ void TestTrigger::end_started_informsActionProperly()
 
 void TestTrigger::end_notStarted_doesntInformActions()
 {
-    EXPECT_CALL(*m_action, gestureStarted()).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureUpdated(_, _)).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerStarted()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerUpdated(_, _)).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerEnded()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerCancelled()).Times(Exactly(0));
 
     m_action->setOn(On::End);
     m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
@@ -176,10 +176,10 @@ void TestTrigger::end_notStarted_doesntInformActions()
 
 void TestTrigger::cancel_started_informsActionProperly()
 {
-    EXPECT_CALL(*m_action, gestureStarted()).Times(Exactly(1));
-    EXPECT_CALL(*m_action, gestureUpdated(_, _)).Times(Exactly(1));
-    EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerStarted()).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerUpdated(_, _)).Times(Exactly(1));
+    EXPECT_CALL(*m_action, triggerEnded()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerCancelled()).Times(Exactly(1));
 
     m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     m_updateEvent->setDelta(0);
@@ -192,10 +192,10 @@ void TestTrigger::cancel_started_informsActionProperly()
 
 void TestTrigger::cancel_notStarted_doesntInformActions()
 {
-    EXPECT_CALL(*m_action, gestureStarted()).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureUpdated(_, _)).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(0));
-    EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerStarted()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerUpdated(_, _)).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerEnded()).Times(Exactly(0));
+    EXPECT_CALL(*m_action, triggerCancelled()).Times(Exactly(0));
 
     m_action->setOn(On::Cancel);
     m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));

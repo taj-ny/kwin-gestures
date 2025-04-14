@@ -18,9 +18,7 @@ public:
     MOCK_METHOD(void, tryExecute, (), (override));
 
     MOCK_METHOD(void, triggerStarted, (), (override));
-    MOCK_METHOD(void, triggerUpdated, (const qreal &, const QPointF &), (override))const qreal &const QPointF &
-
-    ;
+    MOCK_METHOD(void, triggerUpdated, (const qreal &, const QPointF &), (override));
     MOCK_METHOD(void, triggerEnded, (), (override));
     MOCK_METHOD(void, triggerCancelled, (), (override));
 };
