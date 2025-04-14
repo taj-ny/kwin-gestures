@@ -70,6 +70,7 @@ public:
     /**
      * @return Whether the direction matches.
      * @see MotionTrigger::canUpdate
+     * @internal
      */
     bool canUpdate(const TriggerUpdateEvent *event) const override;
 

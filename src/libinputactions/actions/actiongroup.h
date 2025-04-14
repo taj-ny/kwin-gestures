@@ -24,8 +24,7 @@ namespace libinputactions
 {
 
 /**
- * Action groups control how actions are executed. Individual actions are not informed of gesture lifecycle events,
- * therefore they do not support the
+ * Action groups control how actions are executed. Individual actions are not informed of trigger lifecycle events.
  */
 class TriggerActionGroup : public TriggerAction
 {

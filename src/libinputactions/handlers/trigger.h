@@ -42,7 +42,7 @@ class TriggerHandler : public QObject
 public:
     void addTrigger(std::unique_ptr<Trigger> trigger);
 
-    void keyboardKey(const Qt::Key &key, const bool &state);
+    void handleKeyEvent(const Qt::Key &key, const bool &state);
 
 protected:
     TriggerHandler();

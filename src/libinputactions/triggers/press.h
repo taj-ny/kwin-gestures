@@ -29,6 +29,11 @@ public:
     PressTrigger();
 
     const bool &instant() const;
+    /**
+     * Currently only applies to mouse gestures.
+     * @param instant Whether the trigger should be activated immediately, preventing normal clicks from being
+     * performed.
+     */
     void setInstant(const bool &instant);
 
 private:

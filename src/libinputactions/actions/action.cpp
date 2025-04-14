@@ -23,53 +23,6 @@ Q_LOGGING_CATEGORY(LIBGESTURES_ACTION, "libinputactions.action", QtWarningMsg)
 namespace libinputactions
 {
 
-void TriggerAction::setCondition(const std::shared_ptr<const Condition> &condition)
-{
-    m_condition = condition;
-}
-
-void TriggerAction::tryExecute()
-{
-    if (!canExecute()) {
-        return;
-    }
-
-    qCDebug(LIBGESTURES_ACTION).noquote() << QString("Action executed (name: %1)").arg(m_name);
-    execute();
-    m_executed = true;
-}
-
-const bool &TriggerAction::executed() const
-{
-    return m_executed;
-}
-
-bool TriggerAction::canExecute() const
-{
-    return (!m_condition || m_condition.value()->satisfied())
-        && (!m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta));
-}
-
-void TriggerAction::triggerCancelled()
-{
-    if (m_on == On::Cancel || m_on == On::EndCancel) {
-        tryExecute();
-    }
-
-    m_executed = false;
-    reset();
-}
-
-void TriggerAction::triggerEnded()
-{
-    if (m_on == On::End || m_on == On::EndCancel) {
-        tryExecute();
-    }
-
-    m_executed = false;
-    reset();
-}
-
 void TriggerAction::triggerStarted()
 {
     m_executed = false;
@@ -113,6 +66,59 @@ void TriggerAction::triggerUpdated(const qreal &delta, const QPointF &deltaPoint
     }
 }
 
+void TriggerAction::triggerEnded()
+{
+    if (m_on == On::End || m_on == On::EndCancel) {
+        tryExecute();
+    }
+
+    m_executed = false;
+    reset();
+}
+
+void TriggerAction::triggerCancelled()
+{
+    if (m_on == On::Cancel || m_on == On::EndCancel) {
+        tryExecute();
+    }
+
+    m_executed = false;
+    reset();
+}
+
+void TriggerAction::tryExecute()
+{
+    if (!canExecute()) {
+        return;
+    }
+
+    qCDebug(LIBGESTURES_ACTION).noquote() << QString("Action executed (name: %1)").arg(m_name);
+    execute();
+    m_executed = true;
+}
+
+bool TriggerAction::canExecute() const
+{
+    return (!m_condition || m_condition.value()->satisfied())
+        && (!m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta));
+}
+
+void TriggerAction::reset()
+{
+    m_accumulatedDelta = 0;
+    m_absoluteAccumulatedDelta = 0;
+}
+
+void TriggerAction::setCondition(const std::shared_ptr<const Condition> &condition)
+{
+    m_condition = condition;
+}
+
+const bool &TriggerAction::executed() const
+{
+    return m_executed;
+}
+
 const QString &TriggerAction::name() const
 {
     return m_name;
@@ -141,12 +147,6 @@ void TriggerAction::setThreshold(const Range<qreal> &threshold)
 void TriggerAction::setOn(const libinputactions::On &on)
 {
     m_on = on;
-}
-
-void TriggerAction::reset()
-{
-    m_accumulatedDelta = 0;
-    m_absoluteAccumulatedDelta = 0;
 }
 
 bool ActionInterval::matches(const qreal &value) const

@@ -7,7 +7,7 @@
 namespace libinputactions
 {
 
-class MockGestureAction : public GestureAction
+class MockGestureAction : public TriggerAction
 {
 public:
     MockGestureAction() = default;
@@ -17,10 +17,12 @@ public:
     MOCK_METHOD(const bool &, executed, (), (const, override));
     MOCK_METHOD(void, tryExecute, (), (override));
 
-    MOCK_METHOD(void, gestureStarted, (), (override));
-    MOCK_METHOD(void, gestureUpdated, (const qreal &, const QPointF &), (override));
-    MOCK_METHOD(void, gestureEnded, (), (override));
-    MOCK_METHOD(void, gestureCancelled, (), (override));
+    MOCK_METHOD(void, triggerStarted, (), (override));
+    MOCK_METHOD(void, triggerUpdated, (const qreal &, const QPointF &), (override))const qreal &const QPointF &
+
+    ;
+    MOCK_METHOD(void, triggerEnded, (), (override));
+    MOCK_METHOD(void, triggerCancelled, (), (override));
 };
 
 }

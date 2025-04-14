@@ -39,7 +39,7 @@ void TriggerHandler::addTrigger(std::unique_ptr<Trigger> trigger)
     m_triggers.push_back(std::move(trigger));
 }
 
-void TriggerHandler::keyboardKey(const Qt::Key &key, const bool &state)
+void TriggerHandler::handleKeyEvent(const Qt::Key &key, const bool &state)
 {
     // Lazy way of detecting modifier release during mouse gestures
     if (state) {

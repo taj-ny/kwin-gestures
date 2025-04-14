@@ -42,7 +42,7 @@ void TestAction::canExecute()
         m_action->setThreshold(*threshold ? Range<qreal>(0) : Range<qreal>(1));
     }
 
-    QCOMPARE(m_action->GestureAction::canExecute(), result);
+    QCOMPARE(m_action->TriggerAction::canExecute(), result);
 }
 
 void TestAction::tryExecute_canExecute_executes()
@@ -52,7 +52,7 @@ void TestAction::tryExecute_canExecute_executes()
     EXPECT_CALL(*m_action, execute())
         .Times(Exactly(1));
 
-    m_action->GestureAction::tryExecute();
+    m_action->TriggerAction::tryExecute();
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
@@ -64,7 +64,7 @@ void TestAction::tryExecute_cantExecute_doesntExecute()
     EXPECT_CALL(*m_action, execute())
         .Times(Exactly(0));
 
-    m_action->GestureAction::tryExecute();
+    m_action->TriggerAction::tryExecute();
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
@@ -78,7 +78,7 @@ void TestAction::gestureStarted_data()
     QTest::newRow("update") << On::Update << false;
     QTest::newRow("end") << On::End << false;
     QTest::newRow("cancel") << On::Cancel << false;
-    QTest::newRow("end or cancel") << On::EndOrCancel << false;
+    QTest::newRow("end or cancel") << On::EndCancel << false;
 }
 
 void TestAction::gestureStarted()
@@ -90,7 +90,7 @@ void TestAction::gestureStarted()
         .Times(Exactly(executes ? 1 : 0));
 
     m_action->setOn(on);
-    m_action->GestureAction::gestureStarted();
+    m_action->TriggerAction::triggerStarted();
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
@@ -126,7 +126,7 @@ void TestAction::gestureUpdated()
     m_action->setRepeatInterval(interval);
 
     for (const auto &delta : deltas) {
-        m_action->GestureAction::gestureUpdated(delta, {});
+        m_action->TriggerAction::triggerUpdated(delta, {});
     }
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
@@ -141,7 +141,7 @@ void TestAction::gestureEnded_data()
     QTest::newRow("update") << On::Update << false;
     QTest::newRow("end") << On::End << true;
     QTest::newRow("cancel") << On::Cancel << false;
-    QTest::newRow("end or cancel") << On::EndOrCancel << true;
+    QTest::newRow("end or cancel") << On::EndCancel << true;
 }
 
 void TestAction::gestureEnded()
@@ -153,7 +153,7 @@ void TestAction::gestureEnded()
         .Times(Exactly(executes ? 1 : 0));
 
     m_action->setOn(on);
-    m_action->GestureAction::gestureEnded();
+    m_action->TriggerAction::triggerEnded();
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }
@@ -167,7 +167,7 @@ void TestAction::gestureCancelled_data()
     QTest::newRow("update") << On::Update << false;
     QTest::newRow("end") << On::End << false;
     QTest::newRow("cancel") << On::Cancel << true;
-    QTest::newRow("end or cancel") << On::EndOrCancel << true;
+    QTest::newRow("end or cancel") << On::EndCancel << true;
 }
 
 void TestAction::gestureCancelled()
@@ -179,7 +179,7 @@ void TestAction::gestureCancelled()
         .Times(Exactly(executes ? 1 : 0));
 
     m_action->setOn(on);
-    m_action->GestureAction::gestureCancelled();
+    m_action->TriggerAction::triggerCancelled();
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_action.get()));
 }

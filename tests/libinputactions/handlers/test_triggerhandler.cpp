@@ -103,7 +103,7 @@ void TestTriggerHandler::keyboardKey()
     EXPECT_CALL(*m_handler, endTriggers(static_cast<TriggerTypes>(TriggerType::All), _))
         .Times(Exactly(endsTriggers ? 1 : 0));
 
-    m_handler->keyboardKey(static_cast<Qt::Key>(key), state);
+    m_handler->handleKeyEvent(static_cast<Qt::Key>(key), state);
 
     QVERIFY(Mock::VerifyAndClearExpectations(m_handler.get()));
 }

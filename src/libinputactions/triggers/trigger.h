@@ -75,59 +75,65 @@ public:
 
     void addAction(std::unique_ptr<TriggerAction> action);
     /**
-     * To add multiple conditions, use a condition group.
-     *
-     * Ignored unless set.
+     * @param condition Must be satisfied in order for the trigger to be activated. To add multiple conditions, use a
+     * condition group.
      */
     void setCondition(const std::shared_ptr<const Condition> &condition);
 
     /**
      * @return Whether conditions, fingers, keyboard modifiers, mouse buttons and begin positions are satisfied.
+     * @internal
      */
     TEST_VIRTUAL bool canActivate(const TriggerActivationEvent *event) const;
 
     /**
      * Called by the trigger handler before updating a trigger. If true is returned, that trigger will be cancelled.
+     * @internal
      */
     virtual bool canUpdate(const TriggerUpdateEvent *event) const;
+    /**
+     * @internal
+     */
     TEST_VIRTUAL void update(const TriggerUpdateEvent *event);
 
     /**
      * Called by the trigger handler before ending a trigger. If true is returned, that trigger will be cancelled
      * instead of ended.
-     *
      * @return Whether the trigger can be ended.
+     * @internal
      */
     bool canEnd(const TriggerEndEvent *event) const;
     /**
      * Resets the trigger and notifies all actions that it has ended.
+     * @internal
      */
     void end();
 
     /**
      * Resets the trigger and notifies all actions that it has been cancelled.
+     * @internal
      */
     void cancel();
 
     /**
      * The trigger handler calls this method before ending a trigger. If true is returned, that trigger is ended and
      * all others are cancelled.
-     *
      * @return Whether the trigger has an action that executes on trigger and can be executed.
+     * @internal
      */
     bool overridesOtherTriggersOnEnd();
     /**
      * The trigger handler calls this method after updating a trigger. If true is returned for one, all other triggers
      * are cancelled.
-     *
      * @return Whether the trigger has any action that has been executed or is an update action and can be executed.
+     * @internal
      */
     bool overridesOtherTriggersOnUpdate();
 
     /**
      * Ignored unless set. Does not apply to mouse triggers.
-     *
      * @param fingers Range of fingers the trigger must be performed with.
+     * @internal
      */
     void setFingers(const Range<uint8_t> &fingers);
     /**
@@ -174,7 +180,7 @@ public:
 
     const TriggerType &type() const;
     /**
-     * Must be set.
+     * Required.
      */
     void setType(const TriggerType &type);
 
@@ -188,6 +194,8 @@ private:
 
     QString m_name = "Unnamed gesture";
     TriggerType m_type{0};
+    std::vector<std::unique_ptr<TriggerAction>> m_actions;
+    bool m_started = false;
 
     std::optional<std::shared_ptr<const Condition>> m_condition;
     std::optional<Range<uint8_t>> m_fingers;
@@ -199,9 +207,6 @@ private:
     std::optional<Range<qreal>> m_threshold;
     bool m_thresholdReached = false;
     qreal m_absoluteAccumulatedDelta = 0;
-
-    std::vector<std::unique_ptr<TriggerAction>> m_actions;
-    bool m_started = false;
 
     friend class TestTrigger;
 };

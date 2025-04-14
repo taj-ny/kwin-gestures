@@ -131,7 +131,7 @@ void TestTrigger::update()
     QFETCH(bool, actionExecuted);
 
     m_action->setOn(On::Begin);
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     if (threshold) {
         m_trigger->setThreshold(*threshold);
     }
@@ -150,7 +150,7 @@ void TestTrigger::end_started_informsActionProperly()
     EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(1));
     EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
 
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     m_updateEvent->setDelta(0);
 
     m_trigger->update(m_updateEvent.get());
@@ -167,7 +167,7 @@ void TestTrigger::end_notStarted_doesntInformActions()
     EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
 
     m_action->setOn(On::End);
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
 
     m_trigger->end();
 
@@ -181,7 +181,7 @@ void TestTrigger::cancel_started_informsActionProperly()
     EXPECT_CALL(*m_action, gestureEnded()).Times(Exactly(0));
     EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(1));
 
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     m_updateEvent->setDelta(0);
 
     m_trigger->update(m_updateEvent.get());
@@ -198,7 +198,7 @@ void TestTrigger::cancel_notStarted_doesntInformActions()
     EXPECT_CALL(*m_action, gestureCancelled()).Times(Exactly(0));
 
     m_action->setOn(On::Cancel);
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
 
     m_trigger->cancel();
 
@@ -216,7 +216,7 @@ void TestTrigger::overridesOtherTriggersOnEnd_data()
     QTest::newRow("2") << On::Update << true << true << false;
     QTest::newRow("3") << On::Cancel << true << true << false;
     QTest::newRow("4") << On::End << true << true << true;
-    QTest::newRow("5") << On::EndOrCancel << true << true << true;
+    QTest::newRow("5") << On::EndCancel << true << true << true;
     QTest::newRow("6") << On::End << false << true << false;
     QTest::newRow("7") << On::End << false << true << false;
     QTest::newRow("8") << On::End << false << false << false;
@@ -233,7 +233,7 @@ void TestTrigger::overridesOtherTriggersOnEnd()
         .WillByDefault(::testing::Return(canExecute));
 
     m_action->setOn(on);
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     if (!thresholdReached) {
         m_trigger->setThreshold(Range<qreal>(2, {}));
     }
@@ -254,7 +254,7 @@ void TestTrigger::overridesOtherTriggersOnEnd_noActions_false()
 
 void TestTrigger::overridesOtherTriggersOnEnd_noUpdate_false()
 {
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
 
     QCOMPARE(m_trigger->overridesOtherTriggersOnEnd(), false);
 }
@@ -291,7 +291,7 @@ void TestTrigger::overridesOtherTriggersOnUpdate()
         .WillByDefault(::testing::ReturnRef(executed));
 
     m_action->setOn(on);
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
     if (!thresholdReached) {
         m_trigger->setThreshold(Range<qreal>(2, {}));
     }
@@ -313,7 +313,7 @@ void TestTrigger::overridesOtherTriggersOnUpdate_noActions_false()
 
 void TestTrigger::overridesOtherTriggersOnUpdate_noUpdate_false()
 {
-    m_trigger->addAction(std::unique_ptr<GestureAction>(m_action));
+    m_trigger->addAction(std::unique_ptr<TriggerAction>(m_action));
 
     QCOMPARE(m_trigger->overridesOtherTriggersOnUpdate(), false);
 }

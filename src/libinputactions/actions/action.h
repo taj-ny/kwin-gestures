@@ -65,25 +65,25 @@ enum class IntervalDirection
 class ActionInterval
 {
 public:
-    const qreal &value() const;
-
     /**
      * @return Whether the specified delta matches the interval's direction.
      */
     bool matches(const qreal &delta) const;
 
+    const qreal &value() const;
     /**
      * @param value Will be converted to an absolute value. 0 means execute exactly once per input event, direction
      * still applies. Default is 0.
      */
     void setValue(const qreal &value);
+
     /**
      * @param direction Default is Any.
      */
     void setDirection(const IntervalDirection &direction);
 
 private:
-    qreal m_value = 0;
+    qreal m_value{};
     IntervalDirection m_direction = IntervalDirection::Any;
 };
 
@@ -97,39 +97,54 @@ public:
 
     /**
      * Called by the trigger.
+     * @internal
      */
     TEST_VIRTUAL void triggerStarted();
     /**
      * Called by the trigger.
+     * @internal
      */
     TEST_VIRTUAL void triggerUpdated(const qreal &delta, const QPointF &deltaPointMultiplied);
     /**
      * Called by the trigger.
+     * @internal
      */
     TEST_VIRTUAL void triggerEnded();
     /**
      * Called by the trigger.
+     * @internal
      */
     TEST_VIRTUAL void triggerCancelled();
 
     /**
-     * Executes the action if conditions are satisfied and the threshold reached, does nothing otherwise.
+     * Executes the action if it can be executed.
+     * @see canExecute
      */
     TEST_VIRTUAL void tryExecute();
+    /**
+     * @return Whether the action had been executed during the trigger.
+     */
     TEST_VIRTUAL const bool &executed() const;
+    /**
+     * @return Whether the condition and threshold are satisfied.
+     */
     TEST_VIRTUAL bool canExecute() const;
 
     /**
-     * At least one condition (or zero if none added) has to be satisfied in order for this action to be executed.
+     * @param condition Must be satisfied in order for the action to be executed. To add multiple conditions, use a
+     * condition group.
      */
     void setCondition(const std::shared_ptr<const Condition> &condition);
 
     const QString &name() const;
+    /**
+     * @param name Used in debug logs.
+     */
     void setName(const QString &name);
 
     const On &on() const;
     /**
-     * @param on The point of the trigger-s lifecycle at which the action should be executed.
+     * @param on The point of the trigger's lifecycle at which the action should be executed.
      */
     void setOn(const On &on);
 
@@ -139,9 +154,9 @@ public:
     void setRepeatInterval(const ActionInterval &interval);
 
     /**
-     * Sets how far the gesture needs to progress in order for the action to be executed. Thresholds are always
-     * positive no matter the direction. 0 - no threshold.
-     * @remark Begin actions can't have thresholds. Set the threshold on the gesture instead.
+     * Sets how far the trigger needs to progress in order for the action to be executed. Thresholds are always
+     * positive.
+     * @remark Begin actions can't have thresholds. Set the threshold on the trigger instead.
      */
     void setThreshold(const Range<qreal> &threshold);
 
@@ -157,31 +172,26 @@ protected:
     QPointF m_currentDeltaPointMultiplied;
 
 private:
+    /**
+     * Resets member variables that hold information about the performed input action.
+     */
     void reset();
 
     QString m_name = "Unnamed action";
-
-    std::optional<std::shared_ptr<const Condition>> m_condition;
-
-    /**
-     * The sum of deltas from each update event. Reset when the direction changes, the gesture begins, ends or is
-     * cancelled.
-     */
-    qreal m_accumulatedDelta = 0;
-    /**
-     * The sum of absolute deltas from each update event. Used for thresholds. Reset when the gesture begins, ends or
-     * is cancelled.
-     */
-    qreal m_absoluteAccumulatedDelta = 0;
-
-    /**
-     * Whether the action has been executed during the gesture. Reset when the gesture begins, ends or is cancelled.
-     */
-    bool m_executed = false;
-
+    On m_on = On::End;
     ActionInterval m_interval;
     std::optional<Range<qreal>> m_threshold;
-    On m_on = On::Update;
+    std::optional<std::shared_ptr<const Condition>> m_condition;
+    bool m_executed{};
+
+    /**
+     * The sum of deltas from update events. Reset when the direction changes.
+     */
+    qreal m_accumulatedDelta{};
+    /**
+     * The sum of absolute deltas from updates event, used for thresholds.
+     */
+    qreal m_absoluteAccumulatedDelta{};
 
     friend class TestTrigger;
 };

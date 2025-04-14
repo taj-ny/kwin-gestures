@@ -44,7 +44,7 @@ struct InputAction
 /**
  * Sends input.
  *
- * @remark Requires Input::keyboardKey, Input::mouseButton, Input::mouseMoveAbsolute and Input::mouseMoveRelative to be
+ * @remark Requires Input::handleKeyEvent, Input::mouseButton, Input::mouseMoveAbsolute and Input::mouseMoveRelative to be
  * implemented.
  */
 class InputTriggerAction : public TriggerAction

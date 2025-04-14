@@ -230,8 +230,8 @@ bool GestureInputEventFilter::keyboardKey(KWin::KeyboardKeyEvent *event)
         return false;
     }
 
-    m_mouseTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
-    m_touchpadTriggerHandler->keyboardKey(event->key, event->state == KeyboardKeyStatePressed);
+    m_mouseTriggerHandler->handleKeyEvent(event->key, event->state == KeyboardKeyStatePressed);
+    m_touchpadTriggerHandler->handleKeyEvent(event->key, event->state == KeyboardKeyStatePressed);
     return false;
 }
 #endif

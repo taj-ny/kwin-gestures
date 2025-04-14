@@ -1,6 +1,6 @@
 #pragma once
 
-#include <libinputactions/handlers/triggerhandler.h>
+#include <libinputactions/handlers/trigger.h>
 
 #include "mocks/mockinput.h"
 #include "mocks/mocktrigger.h"
