@@ -8,8 +8,6 @@ namespace libinputactions
 void TestTriggerHandler::init()
 {
     m_handler = std::make_unique<MockTriggerHandler>();
-    m_input = new MockInput;
-    Input::setImplementation(m_input);
 }
 
 void TestTriggerHandler::triggers_data()

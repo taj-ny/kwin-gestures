@@ -2,7 +2,6 @@
 
 #include <libinputactions/handlers/trigger.h>
 
-#include "mocks/mockinput.h"
 #include "mocks/mocktrigger.h"
 #include "mocks/mocktriggerhandler.h"
 
@@ -31,7 +30,6 @@ private:
     MockTrigger *makeTrigger(const TriggerType &type, const bool &activatable);
 
     std::unique_ptr<MockTriggerHandler> m_handler;
-    MockInput *m_input;
 };
 
 }
