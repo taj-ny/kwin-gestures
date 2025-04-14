@@ -33,7 +33,6 @@ KWinInput::KWinInput()
 {
     m_input = KWin::input();
     m_input->addInputDevice(m_device.get());
-    m_device.get()->isTouchpad();
     m_pointer = m_input->pointer();
     m_keyboard = m_input->keyboard();
 
