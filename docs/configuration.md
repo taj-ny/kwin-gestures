@@ -16,8 +16,6 @@ inputactions: Failed to load configuration: Invalid swipe direction (line 4, col
 # Configuration file structure
 Bold properties must be set.
 
-Subsections have their own properties, in addition to all the parent section's properties.
-
 ## Inheritance
 ``B : A`` means that B inherits all properties from A unless stated otherwise. 
 
