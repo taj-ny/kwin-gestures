@@ -18,6 +18,8 @@
 
 #include "mouse.h"
 
+#include <libinputactions/input/emitter.h>
+#include <libinputactions/input/state.h>
 #include <libinputactions/triggers/press.h>
 
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOUSE, "libinputactions.handler.mouse", QtWarningMsg)
@@ -110,8 +112,8 @@ bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const
         const auto block = m_blockedMouseButtons.contains(nativeButton);
         if (m_blockedMouseButtons.removeAll(nativeButton) && !m_hadMouseGestureSinceButtonPress) {
             qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Mouse button pressed and released (button: " << nativeButton << ")";
-            Input::implementation()->mouseButton(nativeButton, true);
-            Input::implementation()->mouseButton(nativeButton, false);
+            InputEmitter::instance()->mouseButton(nativeButton, true);
+            InputEmitter::instance()->mouseButton(nativeButton, false);
         }
         if (m_blockedMouseButtons.empty()) {
             m_hadMouseGestureSinceButtonPress = false;
@@ -143,7 +145,7 @@ void MouseTriggerHandler::handleMotionEvent(const QPointF &delta)
             qCDebug(LIBGESTURES_HANDLER_MOUSE, "No motion gestures");
             pressBlockedMouseButtons();
         }
-    } else if (!hasActiveTriggers(TriggerType::StrokeSwipe) && Input::implementation()->keyboardModifiers()) {
+    } else if (!hasActiveTriggers(TriggerType::StrokeSwipe) && InputState::instance()->keyboardModifiers()) {
         qCDebug(LIBGESTURES_HANDLER_MOUSE, "Keyboard modifiers present, attempting to start mouse motion gestures");
         activateTriggers(TriggerType::StrokeSwipe);
     }
@@ -207,14 +209,14 @@ std::unique_ptr<TriggerActivationEvent> MouseTriggerHandler::createActivationEve
 {
     auto event = TriggerHandler::createActivationEvent();
     event->mouseButtons = m_buttons;
-    event->position = Input::implementation()->mousePosition();
+    event->position = InputState::instance()->mousePosition();
     return event;
 }
 
 std::unique_ptr<TriggerEndEvent> MouseTriggerHandler::createEndEvent() const
 {
     auto event = TriggerHandler::createEndEvent();
-    event->position = Input::implementation()->mousePosition();
+    event->position = InputState::instance()->mousePosition();
     return event;
 }
 
@@ -236,7 +238,7 @@ bool MouseTriggerHandler::shouldBlockMouseButton(const Qt::MouseButton &button)
 void MouseTriggerHandler::pressBlockedMouseButtons()
 {
     for (const auto &button : m_blockedMouseButtons) {
-        Input::implementation()->mouseButton(button, true);
+        InputEmitter::instance()->mouseButton(button, true);
         qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Mouse button unblocked (button: " << button << ")";
     }
     m_blockedMouseButtons.clear();

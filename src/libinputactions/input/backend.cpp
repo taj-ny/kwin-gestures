@@ -16,23 +16,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "input/backend.h"
+#include "backend.h"
 
-#include <QDBusConnection>
-#include <QDBusMessage>
-#include <QObject>
-
-class DBusInterface : public QObject
+namespace libinputactions
 {
-    Q_OBJECT
-public:
-    DBusInterface(KWinInputBackend *backend);
-    ~DBusInterface();
 
-public slots:
-    Q_NOREPLY void recordStroke(const QDBusMessage &message);
+void InputBackend::setMouseTriggerHandler(std::unique_ptr<MouseTriggerHandler> handler)
+{
+    m_mouseTriggerHandler = std::move(handler);
+}
 
-private:
-    KWinInputBackend *m_inputBackend;
-    QDBusConnection m_bus = QDBusConnection::sessionBus();
-};
+void InputBackend::setTouchpadTriggerHandler(std::unique_ptr<TouchpadTriggerHandler> handler)
+{
+    m_touchpadTriggerHandler = std::move(handler);
+}
+
+}

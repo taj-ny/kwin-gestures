@@ -21,7 +21,6 @@
 #include <libinputactions/actions/action.h>
 #include <libinputactions/conditions/condition.h>
 #include <libinputactions/globals.h>
-#include <libinputactions/input.h>
 
 #include <QLoggingCategory>
 #include <QString>

@@ -16,30 +16,32 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "input.h"
+#include "state.h"
 
 namespace libinputactions
 {
 
-Qt::KeyboardModifiers Input::keyboardModifiers() const
+std::optional<Qt::KeyboardModifiers> InputState::keyboardModifiers() const
 {
-    return Qt::KeyboardModifier::NoModifier;
+    return std::nullopt;
 }
 
-QPointF Input::mousePosition() const
+std::optional<QPointF> InputState::mousePosition() const
 {
-    return {};
+    return std::nullopt;
 }
 
-bool Input::isSendingInput() const
+InputState *InputState::instance()
 {
-    return false;
+    return s_instance.get();
 }
 
-std::unique_ptr<Input> Input::s_implementation = std::make_unique<Input>();
-void Input::setImplementation(Input *implementation)
+void InputState::setInstance(std::unique_ptr<InputState> instance)
 {
-    s_implementation = std::unique_ptr<Input>(implementation);
+    s_instance = std::move(instance);
 }
+
+std::unique_ptr<InputState> InputState::s_instance = std::unique_ptr<InputState>(new InputState);
+
 
 }

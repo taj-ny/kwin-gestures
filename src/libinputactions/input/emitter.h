@@ -18,51 +18,42 @@
 
 #pragma once
 
-#include <memory>
-
-#include <QPointF>
+#include <libinputactions/handlers/mouse.h>
+#include <libinputactions/handlers/touchpad.h>
 
 namespace libinputactions
 {
 
-/**
- * Provides access to input.
- */
-class Input
+class InputEmitter
 {
 public:
-    Input() = default;
-    virtual ~Input() = default;
+    virtual ~InputEmitter() = default;
 
     /**
-     * @param state True to press, false to release.
+     * @param key input-event-codes.h
+     * @param state True - press, false - release
      */
     virtual void keyboardKey(const uint32_t &key, const bool &state) { };
-
-    /**
-     * @return Currently pressed modifier keys on the keyboard, or Qt::KeyboardModifier::NoModifier if not implemented.
-     */
-    virtual Qt::KeyboardModifiers keyboardModifiers() const;
     virtual void keyboardClearModifiers() { };
 
     /**
-     * @param state True to press, false to release.
+     * @param button input-event-codes.h
+     * @param state True - press, false - release
      */
     virtual void mouseButton(const uint32_t &button, const bool &state) { };
     virtual void mouseMoveAbsolute(const QPointF &pos) { };
     virtual void mouseMoveRelative(const QPointF &pos) { };
-    virtual QPointF mousePosition() const;
 
-    virtual bool isSendingInput() const;
+    virtual bool isEmittingInput() const;
 
-    static Input *implementation()
-    {
-        return s_implementation.get();
-    }
-    static void setImplementation(Input *implementation);
+    static InputEmitter *instance();
+    static void setInstance(std::unique_ptr<InputEmitter> instance);
+
+protected:
+    InputEmitter() = default;
 
 private:
-    static std::unique_ptr<Input> s_implementation;
+    static std::unique_ptr<InputEmitter> s_instance;
 };
 
 }

@@ -17,6 +17,9 @@
 */
 
 #include "effect.h"
+#include "input/emitter.h"
+#include "input/state.h"
+
 #include <libinputactions/yaml_convert.h>
 
 #include "effect/effecthandler.h"
@@ -30,13 +33,14 @@ const QString configFile = QStandardPaths::writableLocation(QStandardPaths::Conf
 
 Effect::Effect()
 {
-    libinputactions::Input::setImplementation(new KWinInput);
+    libinputactions::InputEmitter::setInstance(std::make_unique<KWinInputEmitter>());
+    libinputactions::InputState::setInstance(std::make_unique<KWinInputState>());
     libinputactions::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
 
 #ifdef KWIN_6_2_OR_GREATER
-    KWin::input()->installInputEventFilter(m_inputEventFilter.get());
+    KWin::input()->installInputEventFilter(m_inputBackend.get());
 #else
-    KWin::input()->prependInputEventFilter(m_inputEventFilter.get());
+    KWin::input()->prependInputEventFilter(m_inputBackend.get());
 #endif
 
     reconfigure(ReconfigureAll);
@@ -53,7 +57,7 @@ Effect::Effect()
 Effect::~Effect()
 {
     if (KWin::input()) {
-        KWin::input()->uninstallInputEventFilter(m_inputEventFilter.get());
+        KWin::input()->uninstallInputEventFilter(m_inputBackend.get());
     }
 }
 
@@ -84,13 +88,13 @@ void Effect::reconfigure(ReconfigureFlags flags)
         const auto config = YAML::LoadFile(configFile.toStdString());
         m_autoReload = config["autoreload"].as<bool>(true);
 
-        m_inputEventFilter->setMouseTriggerHandler(std::make_unique<libinputactions::MouseTriggerHandler>());
-        m_inputEventFilter->setTouchpadTriggerHandler(std::make_unique<libinputactions::TouchpadTriggerHandler>());
+        m_inputBackend->setMouseTriggerHandler(std::make_unique<libinputactions::MouseTriggerHandler>());
+        m_inputBackend->setTouchpadTriggerHandler(std::make_unique<libinputactions::TouchpadTriggerHandler>());
         if (config["mouse"].IsDefined()) {
-            m_inputEventFilter->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libinputactions::MouseTriggerHandler>>());
+            m_inputBackend->setMouseTriggerHandler(config["mouse"].as<std::unique_ptr<libinputactions::MouseTriggerHandler>>());
         }
         if (config["touchpad"].IsDefined()) {
-            m_inputEventFilter->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libinputactions::TouchpadTriggerHandler>>());
+            m_inputBackend->setTouchpadTriggerHandler(config["touchpad"].as<std::unique_ptr<libinputactions::TouchpadTriggerHandler>>());
         }
     } catch (const YAML::Exception &e) {
         qCritical(INPUTACTIONS_KWIN).noquote() << QStringLiteral("Failed to load configuration: ") + QString::fromStdString(e.msg)

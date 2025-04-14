@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include <libinputactions/input.h>
+#include <libinputactions/input/emitter.h>
 
 #include "core/inputdevice.h"
 #include "kwin/input.h"
@@ -37,7 +37,6 @@ typedef KWin::InputRedirection::KeyboardKeyState KeyboardKeyState;
 #define PointerButtonStatePressed KWin::InputRedirection::PointerButtonPressed
 #define PointerButtonStateReleased KWin::InputRedirection::PointerButtonReleased
 #endif
-
 
 class InputDevice : public KWin::InputDevice
 {
@@ -61,35 +60,25 @@ public:
 #endif
 };
 
-class KWinInput : public QObject, public libinputactions::Input
+class KWinInputEmitter : public libinputactions::InputEmitter
 {
-    Q_OBJECT
-
 public:
-    KWinInput();
-    ~KWinInput() override;
+    KWinInputEmitter();
+    ~KWinInputEmitter() override;
 
     void keyboardKey(const uint32_t &key, const bool &state) override;
-    Qt::KeyboardModifiers keyboardModifiers() const override;
     void keyboardClearModifiers() override;
 
     void mouseButton(const uint32_t &button, const bool &state) override;
     void mouseMoveAbsolute(const QPointF &pos) override;
     void mouseMoveRelative(const QPointF &pos) override;
-    QPointF mousePosition() const override;
 
-    bool isSendingInput() const override;
-
-private slots:
-    void slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state);
+    bool isEmittingInput() const override;
 
 private:
-    KWin::InputRedirection *m_input;
     KWin::PointerInputRedirection *m_pointer;
     KWin::KeyboardInputRedirection *m_keyboard;
-    std::unique_ptr<InputDevice> m_device;
 
-    Qt::KeyboardModifiers m_modifiers = Qt::KeyboardModifier::NoModifier;
-    bool m_ignoreModifierUpdates = false;
-    bool m_isSendingInput = false;
+    bool m_isEmittingInput{};
+    std::unique_ptr<InputDevice> m_device;
 };

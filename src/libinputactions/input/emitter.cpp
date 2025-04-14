@@ -16,23 +16,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "input/backend.h"
+#include "emitter.h"
 
-#include <QDBusConnection>
-#include <QDBusMessage>
-#include <QObject>
-
-class DBusInterface : public QObject
+namespace libinputactions
 {
-    Q_OBJECT
-public:
-    DBusInterface(KWinInputBackend *backend);
-    ~DBusInterface();
 
-public slots:
-    Q_NOREPLY void recordStroke(const QDBusMessage &message);
+bool InputEmitter::isEmittingInput() const
+{
+    return false;
+}
 
-private:
-    KWinInputBackend *m_inputBackend;
-    QDBusConnection m_bus = QDBusConnection::sessionBus();
-};
+InputEmitter *InputEmitter::instance()
+{
+    return s_instance.get();
+}
+
+void InputEmitter::setInstance(std::unique_ptr<InputEmitter> instance)
+{
+    s_instance = std::move(instance);
+}
+
+std::unique_ptr<InputEmitter> InputEmitter::s_instance = std::unique_ptr<InputEmitter>(new InputEmitter);
+
+}

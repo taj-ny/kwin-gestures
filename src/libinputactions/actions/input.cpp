@@ -17,13 +17,14 @@
 */
 
 #include <libinputactions/actions/input.h>
+#include <libinputactions/input/emitter.h>
 
 namespace libinputactions
 {
 
 void InputTriggerAction::execute()
 {
-    const auto input = libinputactions::Input::implementation();
+    const auto input = InputEmitter::instance();
     for (const auto &action : m_sequence) {
         for (const auto &key : action.keyboardPress) {
             input->keyboardKey(key, true);

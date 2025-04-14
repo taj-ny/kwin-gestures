@@ -18,11 +18,12 @@ if(${KWin_VERSION} VERSION_GREATER_EQUAL 6.2.90)
 endif()
 
 set(kwin_gestures_SOURCES
-    impl/kwininput.cpp
+    input/backend.cpp
+    input/emitter.cpp
+    input/state.cpp
     impl/kwinwindowinfoprovider.cpp
     dbusinterface.cpp
     effect.cpp
-    inputfilter.cpp
     main.cpp
     utils.h
 )

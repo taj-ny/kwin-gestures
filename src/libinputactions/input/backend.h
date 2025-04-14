@@ -16,47 +16,28 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "action.h"
+#pragma once
 
-#include <linux/input-event-codes.h>
-
-#include <map>
-
-#include <QString>
+#include <libinputactions/handlers/mouse.h>
+#include <libinputactions/handlers/touchpad.h>
 
 namespace libinputactions
 {
 
 /**
- * Input actions are performed in order as defined in the struct.
+ * Collects input events and forwards them to handlers.
  */
-struct InputAction
-{
-    std::vector<uint32_t> keyboardPress;
-    std::vector<uint32_t> keyboardRelease;
-
-    std::vector<uint32_t> mousePress;
-    std::vector<uint32_t> mouseRelease;
-
-    QPointF mouseMoveAbsolute;
-    QPointF mouseMoveRelative;
-    bool mouseMoveRelativeByDelta = false;
-};
-
-/**
- * Sends input.
- *
- * @remark Requires Input::handleKeyEvent, Input::mouseButton, Input::mouseMoveAbsolute and Input::mouseMoveRelative to be
- * implemented.
- */
-class InputTriggerAction : public TriggerAction
+class InputBackend
 {
 public:
-    void execute() override;
-    void setSequence(const std::vector<InputAction> &sequence);
+    void setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler);
+    void setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler);
 
-private:
-    std::vector<InputAction> m_sequence;
+protected:
+    InputBackend() = default;
+
+    std::unique_ptr<MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libinputactions::MouseTriggerHandler>();
+    std::unique_ptr<TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libinputactions::TouchpadTriggerHandler>();
 };
 
 }

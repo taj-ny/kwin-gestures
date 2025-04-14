@@ -23,8 +23,8 @@
 static QString s_service = "org.inputactions";
 static QString s_path = "/";
 
-DBusInterface::DBusInterface(GestureInputEventFilter *filter)
-    : m_filter(filter)
+DBusInterface::DBusInterface(KWinInputBackend *backend)
+    : m_inputBackend(backend)
 {
     m_bus.registerService(s_service);
     m_bus.registerObject(s_path, this, QDBusConnection::ExportAllSlots);
@@ -43,7 +43,7 @@ void DBusInterface::recordStroke(const QDBusMessage &message)
     message.setDelayedReply(true);
     auto reply = message.createReply();
 
-    connect(m_filter, &GestureInputEventFilter::strokeRecordingFinished, this, [this, reply](const auto &stroke) {
+    connect(m_inputBackend, &KWinInputBackend::strokeRecordingFinished, this, [this, reply](const auto &stroke) {
         QByteArray bytes;
         const auto &points = stroke.points();
         for (size_t i = 0; i < points.size(); i++) {
@@ -59,5 +59,5 @@ void DBusInterface::recordStroke(const QDBusMessage &message)
 
         KWin::effects->hideOnScreenMessage();
     }, Qt::SingleShotConnection);
-    m_filter->recordStroke();
+    m_inputBackend->recordStroke();
 }

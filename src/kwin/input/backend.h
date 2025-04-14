@@ -20,10 +20,7 @@
 
 #include "input.h"
 
-#include "impl/kwininput.h"
-
-#include <libinputactions/handlers/mouse.h>
-#include <libinputactions/handlers/touchpad.h>
+#include <libinputactions/input/backend.h>
 #include <libinputactions/triggers/stroke.h>
 
 #include <QTimer>
@@ -40,14 +37,12 @@
  * @returns All methods that process events should return @c true to stop further event processing, @c false to pass to
  * next filter.
  */
-class GestureInputEventFilter : public QObject, public KWin::InputEventFilter
+class KWinInputBackend : public QObject, public libinputactions::InputBackend, public KWin::InputEventFilter
 {
     Q_OBJECT
-public:
-    GestureInputEventFilter();
 
-    void setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler);
-    void setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler);
+public:
+    KWinInputBackend();
 
     bool holdGestureBegin(int fingerCount, std::chrono::microseconds time) override;
     bool holdGestureEnd(std::chrono::microseconds time) override;
@@ -82,9 +77,6 @@ private:
     bool isMouse(const KWin::InputDevice *device) const;
 
     void finishStrokeRecording();
-
-    std::unique_ptr<libinputactions::MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libinputactions::MouseTriggerHandler>();
-    std::unique_ptr<libinputactions::TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libinputactions::TouchpadTriggerHandler>();
 
     bool m_pinchGestureActive = false;
 

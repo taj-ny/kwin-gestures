@@ -18,39 +18,24 @@
 
 #pragma once
 
-#include "effect/effect.h"
-#include "dbusinterface.h"
-#include "impl/kwinwindowinfoprovider.h"
-#include "input/backend.h"
+#include "emitter.h"
 
-#include <kwin/effect.h>
+#include <libinputactions/input/state.h>
 
-#include <QFileSystemWatcher>
-
-class Effect : public KWin::Effect
+class KWinInputState : public QObject, public libinputactions::InputState
 {
+    Q_OBJECT
+
 public:
-    Effect();
-    ~Effect() override;
+    KWinInputState();
 
-    static bool supported()
-    {
-        return true;
-    };
-    static bool enabledByDefault()
-    {
-        return false;
-    };
-
-    void reconfigure(ReconfigureFlags flags) override;
+    std::optional<Qt::KeyboardModifiers> keyboardModifiers() const override;
+    std::optional<QPointF> mousePosition() const override;
 
 private slots:
-    void slotConfigFileChanged();
-    void slotConfigDirectoryChanged();
+    void slotKeyStateChanged(quint32 keyCode, KeyboardKeyState state);
 
 private:
-    bool m_autoReload = true;
-    std::unique_ptr<KWinInputBackend> m_inputBackend = std::make_unique<KWinInputBackend>();
-    std::unique_ptr<DBusInterface> m_dbusInterface = std::make_unique<DBusInterface>(m_inputBackend.get());
-    QFileSystemWatcher m_configFileWatcher;
+    Qt::KeyboardModifiers m_modifiers{};
+    bool m_isSendingInput{};
 };

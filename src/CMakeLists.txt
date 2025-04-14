@@ -20,13 +20,15 @@ set(libinputactions_SRCS
     libinputactions/handlers/multitouchmotion.cpp
     libinputactions/handlers/touchpad.cpp
     libinputactions/handlers/trigger.cpp
+    libinputactions/input/backend.cpp
+    libinputactions/input/emitter.cpp
+    libinputactions/input/state.cpp
     libinputactions/triggers/directionalmotion.cpp
     libinputactions/triggers/motion.cpp
     libinputactions/triggers/press.cpp
     libinputactions/triggers/stroke.cpp
     libinputactions/triggers/trigger.cpp
     libinputactions/globals.h
-    libinputactions/input.cpp
     libinputactions/range.cpp
     libinputactions/windowinfoprovider.cpp
 )

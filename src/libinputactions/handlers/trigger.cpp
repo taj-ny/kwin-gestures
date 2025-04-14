@@ -18,6 +18,9 @@
 
 #include "trigger.h"
 
+#include <libinputactions/input/emitter.h>
+#include <libinputactions/input/state.h>
+
 Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_TRIGGER, "libinputactions.handler.trigger", QtWarningMsg)
 
 namespace libinputactions
@@ -84,7 +87,7 @@ bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerAc
         qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote() << QString("Trigger activated (name: %1)").arg(trigger->name());
     }
     if (hasKeyboardModifiers) {
-        Input::implementation()->keyboardClearModifiers();
+        InputEmitter::instance()->keyboardClearModifiers();
     }
 
     const auto triggerCount = m_activeTriggers.size();
@@ -288,7 +291,7 @@ void TriggerHandler::pressUpdate(const qreal &delta)
 std::unique_ptr<TriggerActivationEvent> TriggerHandler::createActivationEvent() const
 {
     auto event = std::make_unique<TriggerActivationEvent>();
-    event->keyboardModifiers = Input::implementation()->keyboardModifiers();
+    event->keyboardModifiers = InputState::instance()->keyboardModifiers();
     return event;
 }
 

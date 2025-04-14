@@ -18,39 +18,39 @@
 
 #pragma once
 
-#include "effect/effect.h"
-#include "dbusinterface.h"
-#include "impl/kwinwindowinfoprovider.h"
-#include "input/backend.h"
+#include <memory>
 
-#include <kwin/effect.h>
+#include <QPointF>
 
-#include <QFileSystemWatcher>
+namespace libinputactions
+{
 
-class Effect : public KWin::Effect
+/**
+ * Provides read-only access to input state.
+ */
+class InputState
 {
 public:
-    Effect();
-    ~Effect() override;
+    virtual ~InputState() = default;
 
-    static bool supported()
-    {
-        return true;
-    };
-    static bool enabledByDefault()
-    {
-        return false;
-    };
+    /**
+     * @return Currently pressed keyboard modifiers or std::nullopt if not available.
+     */
+    virtual std::optional<Qt::KeyboardModifiers> keyboardModifiers() const;
 
-    void reconfigure(ReconfigureFlags flags) override;
+    /**
+     * @return Mouse position on the current screen ranging from (0,0) to (1,1) or std::nullopt if not available.
+     */
+    virtual std::optional<QPointF> mousePosition() const;
 
-private slots:
-    void slotConfigFileChanged();
-    void slotConfigDirectoryChanged();
+    static InputState *instance();
+    static void setInstance(std::unique_ptr<InputState> instance);
+
+protected:
+    InputState() = default;
 
 private:
-    bool m_autoReload = true;
-    std::unique_ptr<KWinInputBackend> m_inputBackend = std::make_unique<KWinInputBackend>();
-    std::unique_ptr<DBusInterface> m_dbusInterface = std::make_unique<DBusInterface>(m_inputBackend.get());
-    QFileSystemWatcher m_configFileWatcher;
+    static std::unique_ptr<InputState> s_instance;
 };
+
+}
