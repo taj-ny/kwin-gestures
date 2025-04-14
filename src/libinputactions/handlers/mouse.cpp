@@ -128,16 +128,19 @@ void MouseTriggerHandler::handleMotionEvent(const QPointF &delta)
 {
     qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Event (type: PointerMotion, delta: " << delta << ")";
 
-    m_mouseMotionSinceButtonPress += std::hypot(delta.x(), delta.y());
-    if (m_mouseMotionSinceButtonPress < 5) {
-        qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Insufficient movement to start mouse motion gestures (delta: " << delta << ")";
+    if (m_pressTimeoutTimer.isActive()) {
+        qCDebug(LIBGESTURES_HANDLER_MOUSE, "Event processed (type: PointerMotion, status: PressingButtons)");
         return;
     }
 
-    if (m_pressTimeoutTimer.isActive() || m_motionTimeoutTimer.isActive()) {
-        cancelTriggers(TriggerType::All);
+    m_mouseMotionSinceButtonPress += std::hypot(delta.x(), delta.y());
+    if (m_mouseMotionSinceButtonPress < 5) {
+        qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Event processed (type: PointerMotion, status: InsufficientMotion, delta: " << delta << ")";
+        return;
+    }
 
-        m_pressTimeoutTimer.stop();
+    if (m_motionTimeoutTimer.isActive()) {
+        cancelTriggers(TriggerType::All);
         m_motionTimeoutTimer.stop();
 
         qCDebug(LIBGESTURES_HANDLER_MOUSE, "Attempting to activate mouse motion gestures");
