@@ -148,7 +148,7 @@ void MouseTriggerHandler::handleMotionEvent(const QPointF &delta)
             qCDebug(LIBGESTURES_HANDLER_MOUSE, "No motion gestures");
             pressBlockedMouseButtons();
         }
-    } else if (!hasActiveTriggers(TriggerType::StrokeSwipe) && InputState::instance()->keyboardModifiers()) {
+    } else if (!hasActiveTriggers(TriggerType::StrokeSwipe) && *InputState::instance()->keyboardModifiers()) {
         qCDebug(LIBGESTURES_HANDLER_MOUSE, "Keyboard modifiers present, attempting to start mouse motion gestures");
         activateTriggers(TriggerType::StrokeSwipe);
     }
