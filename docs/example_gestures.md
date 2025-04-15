@@ -1,13 +1,11 @@
 # Example gestures
-All gestures provided here are instant - actions trigger immediately when the gesture begins. If you don't like that, replace ``on: begin`` with ``on: end``.
-
 ## Mouse
 <details>
-  <summary>Right + Draw circle - Close window</summary>
+  <summary>Right + Draw circle clockwise - Close window</summary>
 
   ```yaml
   - type: stroke
-    strokes: [ 'PAsAXx8PClkXEg1PDRkRRwUiFj8BLBo1ADcdKQJAIR0ISCQUEU8oCilYMQBFWDv4TlU/8FpPRORgR0fXZDtLzGMzTsReJ1O8WyFVslEZWqo4DmQA' ]
+    strokes: [ 'OAMAAUkEBRZZEgwkYCARMmA6GUBSViRPQGMrYyNkNLAOVT3DAzhH0AUdUOkYC1j2OQBkAA==' ]
     mouse_buttons: [ right ]
 
     actions:
@@ -92,7 +90,7 @@ All gestures provided here are instant - actions trigger immediately when the ge
   - type: press
     mouse_buttons: [ left ]
     start_positions: [ 0%;0% - 0.01%;0.01% ]
-    press_instant: true
+    instant: true
 
     actions:
       - on: begin
@@ -185,131 +183,79 @@ All gestures provided here are instant - actions trigger immediately when the ge
           - keyboard: [ volumeup ]
   ```
 </details>
+<details>
+  <summary>Swipe 4 left/right - Switch window</summary>
 
-## Window management
-- Swipe 4 fingers up to maximize window if not maximized
-- Swipe 4 fingers down to unmaximize window if maximized
-- Swipe 4 fingers down to minimize window if not maximized and not fullscreen
-- Swipe 4 fingers left quickly to tile the window left
-- Swipe 4 fingers right quickly to tile the window right
-- Pinch 2 fingers in to close window
+  Swipe slow - Switch window<br>
+  Swipe fast - Open alt+tab switcher 
 
-```yaml
-# Unmaximize/minimize
-- type: swipe
-  fingers: 4
-  direction: down
+  ```yaml
+  - type: swipe
+    direction: left_right
+    fingers: 4
+    speed: fast
 
-  actions:
-    # Unmaximize window if maximized
-    - on: begin
-      plasma_shortcut: kwin,Window Maximize
-      block_other: true # Prevent the minimize window action from triggering during the same gesture
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ +leftalt, tab ]
 
-      conditions:
-        - window_state: [ maximized ]
+      - on: update
+        interval: -75
+        input:
+          - keyboard: [ leftshift+tab ]
 
-    # Minimize window if not fullscreen and not maximized
-    - on: begin
-      plasma_shortcut: kwin,Window Minimize
+      - on: update
+        interval: 75
+        input:
+          - keyboard: [ tab ]
 
-      conditions:
-        - negate: [ window_state ]
-          window_state: [ fullscreen, maximized ]
+      - on: end_cancel
+        input:
+          - keyboard: [ -leftalt ]
 
-# Maximize
-- type: swipe
-  fingers: 4
-  direction: up
+  # Quick window switching (left)
+  - type: swipe
+    direction: left
+    fingers: 4
+    speed: slow
 
-  actions:
-    # Maximize window if not already maximized
-    - on: begin
-      plasma_shortcut: kwin,Window Maximize
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftalt+leftshift+tab ]
 
-      conditions:
-        - negate: [ window_state ]
-          window_state: [ maximized ]
+  # Quick window switching (right)
+  - type: swipe
+    direction: right
+    fingers: 4
+    speed: slow
 
-# Close window
-- type: pinch
-  fingers: 2
-  direction: in
+    actions:
+      - on: begin
+        input:
+          - keyboard: [ leftalt+tab ]
+  ```
+</details>
+<details>
+  <summary>Swipe 4 down - Exit fullscreen/Unmaximize/Minimize</summary>
+  
+  ```yaml
+  - type: swipe
+    fingers: 4
+    direction: down
 
-  actions:
-    - on: begin
-      plasma_shortcut: kwin,Window Close
+    actions:
+      - on: begin
+        one:
+          - plasma_shortcut: kwin,Window Fullscreen
+            conditions:
+              - window_state: [ fullscreen ]
 
-# Tile left
-- type: swipe
-  fingers: 4
-  direction: left
-  speed: fast
+          - plasma_shortcut: kwin,Window Maximize
+            conditions:
+              - window_state: [ maximized ]
 
-  actions:
-    - on: begin
-      plasma_shortcut: kwin,Window Quick Tile Left
-
-# Tile right
-- type: swipe
-  fingers: 4
-  direction: right
-  speed: fast
-
-  actions:
-    - on: begin
-      plasma_shortcut: kwin,Window Quick Tile Right
-```
-
-## Window switching
-- Swipe 4 fingers left/right slowly to switch window
-- Swipe 4 fingers left/right fast to open the alt+tab menu
-
-```yaml
-# Window switching
-- type: swipe
-  direction: left_right
-  fingers: 4
-  speed: fast
-
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ +leftalt, tab ]
-
-    - on: update
-      interval: -75
-      input:
-        - keyboard: [ leftshift+tab ]
-
-    - on: update
-      interval: 75
-      input:
-        - keyboard: [ tab ]
-
-    - on: end_cancel
-      input:
-        - keyboard: [ -leftalt ]
-
-# Quick window switching (left)
-- type: swipe
-  direction: left
-  fingers: 4
-  speed: slow
-
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ leftalt+leftshift+tab ]
-
-# Quick window switching (right)
-- type: swipe
-  direction: right
-  fingers: 4
-  speed: slow
-
-  actions:
-    - on: begin
-      input:
-        - keyboard: [ leftalt+tab ]
-```
+          - plasma_shortcut: kwin,Window Minimize
+  ```
+</details>
