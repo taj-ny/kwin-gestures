@@ -70,7 +70,9 @@ bool MouseTriggerHandler::handleButtonEvent(const Qt::MouseButton &button, const
                 qCDebug(LIBGESTURES_HANDLER_MOUSE, "Attempting to activate mouse press gestures");
                 if (!activateTriggers(TriggerType::Press, m_activationEvent.get())) {
                     qCDebug(LIBGESTURES_HANDLER_MOUSE, "No wheel or press mouse gestures");
-                    pressBlockedMouseButtons();
+                    if (m_unblockButtonsOnTimeout) {
+                        pressBlockedMouseButtons();
+                    }
                 }
             };
 
@@ -245,6 +247,11 @@ void MouseTriggerHandler::pressBlockedMouseButtons()
         qCDebug(LIBGESTURES_HANDLER_MOUSE).nospace() << "Mouse button unblocked (button: " << button << ")";
     }
     m_blockedMouseButtons.clear();
+}
+
+void MouseTriggerHandler::setUnblockButtonsOnTimeout(const bool &unblock)
+{
+    m_unblockButtonsOnTimeout = unblock;
 }
 
 }

@@ -883,6 +883,10 @@ struct convert<std::unique_ptr<MouseTriggerHandler>>
         if (const auto &pressTimeoutNode = node["press_timeout"]) {
             mouseTriggerHandler->setPressTimeout(pressTimeoutNode.as<uint32_t>());
         }
+        if (const auto &unblockButtonsOnTimeout = node["unblock_buttons_on_timeout"]) {
+            mouseTriggerHandler->setUnblockButtonsOnTimeout(unblockButtonsOnTimeout.as<bool>());
+        }
+
         return true;
     }
 };

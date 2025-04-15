@@ -70,6 +70,12 @@ public:
      */
     void setPressTimeout(const uint32_t &timeout);
 
+    /**
+     * @param unblock Whether blocked mouse buttons should be pressed immediately on timeout. If false, they will be
+     * pressed and instantly released on button release.
+     */
+    void setUnblockButtonsOnTimeout(const bool &unblock);
+
 protected:
     void triggerActivating(const Trigger *trigger) override;
 
@@ -120,6 +126,7 @@ private:
 
     QList<quint32> m_blockedMouseButtons;
     Qt::MouseButtons m_buttons{};
+    bool m_unblockButtonsOnTimeout = true;
 };
 
 }
