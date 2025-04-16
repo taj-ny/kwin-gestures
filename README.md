@@ -1,5 +1,5 @@
 # Input Actions
-Customizable input handler built on top of libinput and KWin. It is currently in a very early stage of development.
+Input handler built on top of libinput and KWin, currently in a very early stage of development.
 
 Supported environments: Plasma 6 Wayland
 
