@@ -21,7 +21,7 @@
 #include <libinputactions/input/emitter.h>
 #include <libinputactions/input/state.h>
 
-Q_LOGGING_CATEGORY(LIBGESTURES_HANDLER_TRIGGER, "libinputactions.handler.trigger", QtWarningMsg)
+Q_LOGGING_CATEGORY(LIBINPUTACTIONS_HANDLER_TRIGGER, "libinputactions.handler.trigger", QtWarningMsg)
 
 namespace libinputactions
 {
@@ -68,7 +68,7 @@ void TriggerHandler::registerTriggerEndCancelHandler(const TriggerType &type, co
 
 bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerActivationEvent *event)
 {
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote().nospace() << "Triggers activating (types: " << types << ", fingers: " << event->fingers << ", mouseButtons: " << event->mouseButtons << ", keyboardModifiers: " << event->keyboardModifiers << ", position: " << event->position << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).noquote().nospace() << "Triggers activating (types: " << types << ", fingers: " << event->fingers << ", mouseButtons: " << event->mouseButtons << ", keyboardModifiers: " << event->keyboardModifiers << ", position: " << event->position << ")";
     cancelTriggers(TriggerType::All);
     reset();
 
@@ -84,14 +84,14 @@ bool TriggerHandler::activateTriggers(const TriggerTypes &types, const TriggerAc
         triggerActivating(trigger);
         hasKeyboardModifiers = hasKeyboardModifiers || (trigger->keyboardModifiers() && *trigger->keyboardModifiers() != Qt::KeyboardModifier::NoModifier);
         m_activeTriggers.push_back(trigger);
-        qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote() << QString("Trigger activated (name: %1)").arg(trigger->name());
+        qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).noquote() << QString("Trigger activated (name: %1)").arg(trigger->name());
     }
     if (hasKeyboardModifiers) {
         InputEmitter::instance()->keyboardClearModifiers();
     }
 
     const auto triggerCount = m_activeTriggers.size();
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote().nospace() << "Triggers activated (count: " << triggerCount << ", hasModifiers: " << hasKeyboardModifiers << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).noquote().nospace() << "Triggers activated (count: " << triggerCount << ", hasModifiers: " << hasKeyboardModifiers << ")";
     return triggerCount != 0;
 }
 
@@ -115,7 +115,7 @@ bool TriggerHandler::updateTriggers(const std::map<TriggerType, const TriggerUpd
         types |= type;
     }
 
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote().nospace() << "Updating gestures (types: " << types << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).noquote().nospace() << "Updating gestures (types: " << types << ")";
 
     auto hasTriggers = false;
     for (auto it = m_activeTriggers.begin(); it != m_activeTriggers.end();) {
@@ -137,7 +137,7 @@ bool TriggerHandler::updateTriggers(const std::map<TriggerType, const TriggerUpd
         trigger->update(event);
 
         if (!m_conflictsResolved && m_activeTriggers.size() > 1) {
-            qCDebug(LIBGESTURES_TRIGGER, "Cancelling conflicting triggers");
+            qCDebug(LIBINPUTACTIONS_TRIGGER, "Cancelling conflicting triggers");
             m_conflictsResolved = true;
             if (trigger->overridesOtherTriggersOnUpdate()) {
                 cancelTriggers(trigger);
@@ -164,7 +164,7 @@ bool TriggerHandler::endTriggers(const TriggerTypes &types, const TriggerEndEven
         return false;
     }
 
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).nospace() << "Ending gestures (types: " << types << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).nospace() << "Ending gestures (types: " << types << ")";
 
     for (const auto &[type, handler] : m_triggerEndHandlers) {
         if (!(types & type)) {
@@ -216,7 +216,7 @@ bool TriggerHandler::cancelTriggers(const TriggerTypes &types)
         return false;
     }
 
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).nospace() << "Cancelling triggers (types: " << types << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).nospace() << "Cancelling triggers (types: " << types << ")";
     for (auto it = m_activeTriggers.begin(); it != m_activeTriggers.end();) {
         auto trigger = *it;
         if (!(types & trigger->type())) {
@@ -232,7 +232,7 @@ bool TriggerHandler::cancelTriggers(const TriggerTypes &types)
 
 void TriggerHandler::cancelTriggers(Trigger *except)
 {
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).noquote().nospace() << "Cancelling triggers (except: " << except->name() << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).noquote().nospace() << "Cancelling triggers (except: " << except->name() << ")";
     for (auto it = m_activeTriggers.begin(); it != m_activeTriggers.end();) {
         auto gesture = *it;
         if (gesture != except) {
@@ -281,11 +281,11 @@ void TriggerHandler::pressUpdate(const qreal &delta)
         return;
     }
 
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).nospace() << "Event (type: Press, delta: " << delta << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).nospace() << "Event (type: Press, delta: " << delta << ")";
     TriggerUpdateEvent event;
     event.setDelta(delta);
     const auto hasGestures = updateTriggers(TriggerType::Press, &event);
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER).nospace() << "Event processed (type: Pinch, hasGestures: " << hasGestures << ")";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER).nospace() << "Event processed (type: Pinch, hasGestures: " << hasGestures << ")";
 }
 
 std::unique_ptr<TriggerActivationEvent> TriggerHandler::createActivationEvent() const
@@ -311,13 +311,13 @@ void TriggerHandler::reset()
 
 void TriggerHandler::pressTriggerActivateHandler()
 {
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER) << "Starting press timer";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER) << "Starting press timer";
     m_pressTimer.start(s_pressDelta);
 }
 
 void TriggerHandler::pressTriggerEndCancelHandler()
 {
-    qCDebug(LIBGESTURES_HANDLER_TRIGGER) << "Stopping press timer";
+    qCDebug(LIBINPUTACTIONS_HANDLER_TRIGGER) << "Stopping press timer";
     m_pressTimer.stop();
 }
 

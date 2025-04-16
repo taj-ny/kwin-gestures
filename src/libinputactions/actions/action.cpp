@@ -18,7 +18,7 @@
 
 #include "action.h"
 
-Q_LOGGING_CATEGORY(LIBGESTURES_ACTION, "libinputactions.action", QtWarningMsg)
+Q_LOGGING_CATEGORY(LIBINPUTACTIONS_ACTION, "libinputactions.action", QtWarningMsg)
 
 namespace libinputactions
 {
@@ -39,12 +39,12 @@ void TriggerAction::triggerUpdated(const qreal &delta, const QPointF &deltaPoint
     if (std::signbit(m_accumulatedDelta) != std::signbit(delta)) {
         // Direction changed
         m_accumulatedDelta = delta;
-        qCDebug(LIBGESTURES_ACTION).noquote() << QString("Gesture direction changed (name: %1)").arg(m_name);
+        qCDebug(LIBINPUTACTIONS_ACTION).noquote() << QString("Gesture direction changed (name: %1)").arg(m_name);
     } else {
         m_accumulatedDelta += delta;
         m_absoluteAccumulatedDelta += std::abs(delta);
     }
-    qCDebug(LIBGESTURES_ACTION()).noquote() << QString("Action updated (name: %1, accumulatedDelta: %2)").arg(m_name, QString::number(m_accumulatedDelta));
+    qCDebug(LIBINPUTACTIONS_ACTION()).noquote() << QString("Action updated (name: %1, accumulatedDelta: %2)").arg(m_name, QString::number(m_accumulatedDelta));
 
     if (m_on != On::Update) {
         return;
@@ -92,7 +92,7 @@ void TriggerAction::tryExecute()
         return;
     }
 
-    qCDebug(LIBGESTURES_ACTION).noquote() << QString("Action executed (name: %1)").arg(m_name);
+    qCDebug(LIBINPUTACTIONS_ACTION).noquote() << QString("Action executed (name: %1)").arg(m_name);
     execute();
     m_executed = true;
 }

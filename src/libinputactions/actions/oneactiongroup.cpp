@@ -25,7 +25,7 @@ void OneTriggerActionGroup::execute()
 {
     for (auto &action : m_actions) {
         if (action->canExecute()) {
-            qCDebug(LIBGESTURES_ACTION).noquote() << action->name();
+            qCDebug(LIBINPUTACTIONS_ACTION).noquote() << action->name();
             action->tryExecute();
             break;
         }

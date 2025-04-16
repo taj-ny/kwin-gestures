@@ -20,7 +20,7 @@
 
 #include <libinputactions/handlers/motion.h>
 
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_HANDLER_MOUSE)
+Q_DECLARE_LOGGING_CATEGORY(LIBINPUTACTIONS_HANDLER_MOUSE)
 
 namespace libinputactions
 {

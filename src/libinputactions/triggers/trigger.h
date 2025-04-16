@@ -25,7 +25,7 @@
 #include <QLoggingCategory>
 #include <QString>
 
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_TRIGGER)
+Q_DECLARE_LOGGING_CATEGORY(LIBINPUTACTIONS_TRIGGER)
 
 namespace libinputactions
 {

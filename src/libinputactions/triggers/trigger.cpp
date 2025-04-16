@@ -18,7 +18,7 @@
 
 #include "trigger.h"
 
-Q_LOGGING_CATEGORY(LIBGESTURES_TRIGGER, "libinputactions.trigger", QtWarningMsg)
+Q_LOGGING_CATEGORY(LIBINPUTACTIONS_TRIGGER, "libinputactions.trigger", QtWarningMsg)
 
 namespace libinputactions
 {
@@ -57,16 +57,16 @@ void Trigger::update(const TriggerUpdateEvent *event)
     m_absoluteAccumulatedDelta += std::abs(event->delta());
     m_thresholdReached = !m_threshold || m_threshold->contains(m_absoluteAccumulatedDelta);
     if (!m_thresholdReached) {
-        qCDebug(LIBGESTURES_TRIGGER).noquote()
+        qCDebug(LIBINPUTACTIONS_TRIGGER).noquote()
             << QString("Threshold not reached (name: %1, current: %2, min: %3, max: %4")
                 .arg(m_name, QString::number(m_absoluteAccumulatedDelta), QString::number(m_threshold->min().value_or(-1)), QString::number(m_threshold->max().value_or(-1)));
         return;
     }
 
-    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger updated (name: %1, delta: %2)").arg(m_name, QString::number(event->delta()));
+    qCDebug(LIBINPUTACTIONS_TRIGGER).noquote() << QString("Trigger updated (name: %1, delta: %2)").arg(m_name, QString::number(event->delta()));
 
     if (!m_started) {
-        qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger started (name: %1)").arg(m_name);
+        qCDebug(LIBINPUTACTIONS_TRIGGER).noquote() << QString("Trigger started (name: %1)").arg(m_name);
         m_started = true;
         for (const auto &action : m_actions) {
             action->triggerStarted();
@@ -94,7 +94,7 @@ void Trigger::end()
         return;
     }
 
-    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
+    qCDebug(LIBINPUTACTIONS_TRIGGER).noquote() << QString("Trigger ended (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
         action->triggerEnded();
     }
@@ -108,7 +108,7 @@ void Trigger::cancel()
         return;
     }
 
-    qCDebug(LIBGESTURES_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
+    qCDebug(LIBINPUTACTIONS_TRIGGER).noquote() << QString("Trigger cancelled (name: %1)").arg(m_name);
     for (const auto &action : m_actions) {
         action->triggerCancelled();
     }

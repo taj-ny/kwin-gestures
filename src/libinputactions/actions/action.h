@@ -27,7 +27,7 @@
 #include <QPointF>
 #include <QString>
 
-Q_DECLARE_LOGGING_CATEGORY(LIBGESTURES_ACTION)
+Q_DECLARE_LOGGING_CATEGORY(LIBINPUTACTIONS_ACTION)
 
 namespace libinputactions
 {
