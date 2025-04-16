@@ -23,6 +23,7 @@
 
     devShells.default = pkgs.mkShell {
       inputsFrom = [ packages.debug ];
+      packages = [ pkgs.gtest ];
     };
   });
 }
