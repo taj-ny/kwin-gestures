@@ -18,12 +18,9 @@
 
 #pragma once
 
-#include "effect/effect.h"
 #include "dbusinterface.h"
-#include "impl/kwinwindowinfoprovider.h"
+#include "effect/effect.h"
 #include "input/backend.h"
-
-#include <kwin/effect.h>
 
 #include <QFileSystemWatcher>
 
@@ -50,7 +47,7 @@ private slots:
 
 private:
     bool m_autoReload = true;
-    std::unique_ptr<KWinInputBackend> m_inputBackend = std::make_unique<KWinInputBackend>();
-    std::unique_ptr<DBusInterface> m_dbusInterface = std::make_unique<DBusInterface>(m_inputBackend.get());
+    KWinInputBackend *m_backend;
+    DBusInterface m_dbusInterface;
     QFileSystemWatcher m_configFileWatcher;
 };

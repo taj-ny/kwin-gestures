@@ -46,10 +46,6 @@ KWinInputBackend::KWinInputBackend()
     : KWin::InputEventFilter(KWin::InputFilterOrder::TabBox)
 #endif
 {
-    m_strokeRecordingTimeoutTimer.setSingleShot(true);
-    connect(&m_strokeRecordingTimeoutTimer, &QTimer::timeout, this, [this] {
-        finishStrokeRecording();
-    });
 }
 
 bool KWinInputBackend::holdGestureBegin(int fingerCount, std::chrono::microseconds time)
@@ -272,16 +268,4 @@ bool KWinInputBackend::wheelEvent(KWin::WheelEvent *event)
 bool KWinInputBackend::isMouse(const KWin::InputDevice *device) const
 {
     return device->isPointer() && !device->isTouch() && !device->isTouchpad();
-}
-
-void KWinInputBackend::recordStroke()
-{
-    m_isRecordingStroke = true;
-}
-
-void KWinInputBackend::finishStrokeRecording()
-{
-    m_isRecordingStroke = false;
-    Q_EMIT strokeRecordingFinished(libinputactions::Stroke(m_strokePoints));
-    m_strokePoints.clear();
 }

@@ -20,6 +20,7 @@
 
 #include <libinputactions/handlers/mouse.h>
 #include <libinputactions/handlers/touchpad.h>
+#include <libinputactions/triggers/stroke.h>
 
 namespace libinputactions
 {
@@ -27,17 +28,36 @@ namespace libinputactions
 /**
  * Collects input events and forwards them to handlers.
  */
-class InputBackend
+class InputBackend : public QObject
 {
+    Q_OBJECT
+
 public:
-    void setMouseTriggerHandler(std::unique_ptr<libinputactions::MouseTriggerHandler> handler);
-    void setTouchpadTriggerHandler(std::unique_ptr<libinputactions::TouchpadTriggerHandler> handler);
+    void recordStroke();
+
+    void setMouseTriggerHandler(std::unique_ptr<MouseTriggerHandler> handler);
+    void setTouchpadTriggerHandler(std::unique_ptr<TouchpadTriggerHandler> handler);
+
+    static InputBackend *instance();
+    static void setInstance(std::unique_ptr<InputBackend> instance);
+
+signals:
+    void strokeRecordingFinished(const Stroke &stroke);
 
 protected:
-    InputBackend() = default;
+    InputBackend();
 
-    std::unique_ptr<MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<libinputactions::MouseTriggerHandler>();
-    std::unique_ptr<TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<libinputactions::TouchpadTriggerHandler>();
+    void finishStrokeRecording();
+
+    std::unique_ptr<MouseTriggerHandler> m_mouseTriggerHandler = std::make_unique<MouseTriggerHandler>();
+    std::unique_ptr<TouchpadTriggerHandler> m_touchpadTriggerHandler = std::make_unique<TouchpadTriggerHandler>();
+
+    bool m_isRecordingStroke = false;
+    std::vector<QPointF> m_strokePoints;
+    QTimer m_strokeRecordingTimeoutTimer;
+
+private:
+    static std::unique_ptr<InputBackend> s_instance;
 };
 
 }

@@ -43,5 +43,4 @@ void InputState::setInstance(std::unique_ptr<InputState> instance)
 
 std::unique_ptr<InputState> InputState::s_instance = std::unique_ptr<InputState>(new InputState);
 
-
 }

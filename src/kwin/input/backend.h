@@ -37,10 +37,8 @@
  * @returns All methods that process events should return @c true to stop further event processing, @c false to pass to
  * next filter.
  */
-class KWinInputBackend : public QObject, public libinputactions::InputBackend, public KWin::InputEventFilter
+class KWinInputBackend : public libinputactions::InputBackend, public KWin::InputEventFilter
 {
-    Q_OBJECT
-
 public:
     KWinInputBackend();
 
@@ -68,19 +66,8 @@ public:
     bool wheelEvent(KWin::WheelEvent *event) override;
 #endif
 
-    void recordStroke();
-
-signals:
-    void strokeRecordingFinished(const libinputactions::Stroke &stroke);
-
 private:
     bool isMouse(const KWin::InputDevice *device) const;
 
-    void finishStrokeRecording();
-
     bool m_pinchGestureActive = false;
-
-    bool m_isRecordingStroke = false;
-    std::vector<QPointF> m_strokePoints;
-    QTimer m_strokeRecordingTimeoutTimer;
 };

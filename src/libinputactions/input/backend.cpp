@@ -21,6 +21,24 @@
 namespace libinputactions
 {
 
+InputBackend::InputBackend()
+{
+    m_strokeRecordingTimeoutTimer.setSingleShot(true);
+    connect(&m_strokeRecordingTimeoutTimer, &QTimer::timeout, this, &InputBackend::finishStrokeRecording);
+}
+
+void InputBackend::recordStroke()
+{
+    m_isRecordingStroke = true;
+}
+
+void InputBackend::finishStrokeRecording()
+{
+    m_isRecordingStroke = false;
+    Q_EMIT strokeRecordingFinished(Stroke(m_strokePoints));
+    m_strokePoints.clear();
+}
+
 void InputBackend::setMouseTriggerHandler(std::unique_ptr<MouseTriggerHandler> handler)
 {
     m_mouseTriggerHandler = std::move(handler);
@@ -30,5 +48,17 @@ void InputBackend::setTouchpadTriggerHandler(std::unique_ptr<TouchpadTriggerHand
 {
     m_touchpadTriggerHandler = std::move(handler);
 }
+
+InputBackend *InputBackend::instance()
+{
+    return s_instance.get();
+}
+
+void InputBackend::setInstance(std::unique_ptr<InputBackend> instance)
+{
+    s_instance = std::move(instance);
+}
+
+std::unique_ptr<InputBackend> InputBackend::s_instance = std::unique_ptr<InputBackend>(new InputBackend);
 
 }

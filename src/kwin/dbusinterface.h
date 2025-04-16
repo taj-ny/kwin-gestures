@@ -25,14 +25,20 @@
 class DBusInterface : public QObject
 {
     Q_OBJECT
+
 public:
-    DBusInterface(KWinInputBackend *backend);
-    ~DBusInterface();
+    /**
+     * Registers the interface.
+     */
+    DBusInterface();
+    /**
+     * Unregisters the interface.
+     */
+    ~DBusInterface() override;
 
 public slots:
     Q_NOREPLY void recordStroke(const QDBusMessage &message);
 
 private:
-    KWinInputBackend *m_inputBackend;
     QDBusConnection m_bus = QDBusConnection::sessionBus();
 };
