@@ -18,12 +18,29 @@
 
 #pragma once
 
-#include <libinputactions/windowinfoprovider.h>
+#include <libinputactions/window.h>
 
-class KWinWindowInfoProvider : public libinputactions::WindowInfoProvider
+#include <kwin/window.h>
+
+class KWinWindow : public libinputactions::Window
 {
 public:
-    KWinWindowInfoProvider() = default;
+    KWinWindow(KWin::Window *window);
 
-    std::optional<const libinputactions::WindowInfo> activeWindow() const override;
+    QString title() const override;
+    QString resourceClass() const override;
+    QString resourceName() const override;
+    bool maximized() const override;
+    bool fullscreen() const override;
+
+private:
+    KWin::Window *m_window;
+};
+
+class KWinWindowProvider : public libinputactions::WindowProvider
+{
+public:
+    KWinWindowProvider() = default;
+
+    std::optional<std::shared_ptr<libinputactions::Window>> active() const override;
 };

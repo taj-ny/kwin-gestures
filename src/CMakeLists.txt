@@ -30,7 +30,7 @@ set(libinputactions_SRCS
     libinputactions/triggers/trigger.cpp
     libinputactions/globals.h
     libinputactions/range.cpp
-    libinputactions/windowinfoprovider.cpp
+    libinputactions/window.cpp
 )
 
 add_library(libinputactions STATIC ${libinputactions_SRCS})

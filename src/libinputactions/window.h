@@ -16,25 +16,44 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "windowinfoprovider.h"
+#pragma once
 
-#include <utility>
+#include <QString>
 
 namespace libinputactions
 {
 
-WindowInfo::WindowInfo(QString title, QString resourceClass, QString resourceName, WindowStates state)
-    : m_title(std::move(title))
-    , m_resourceClass(std::move(resourceClass))
-    , m_resourceName(std::move(resourceName))
-    , m_state(state)
+class Window
 {
-}
+public:
+    virtual ~Window() = default;
 
-std::unique_ptr<WindowInfoProvider> WindowInfoProvider::s_implementation = std::make_unique<WindowInfoProvider>();
-void WindowInfoProvider::setImplementation(WindowInfoProvider *implementation)
+    virtual QString title() const = 0;
+    virtual QString resourceClass() const = 0;
+    virtual QString resourceName() const = 0;
+    virtual bool maximized() const = 0;
+    virtual bool fullscreen() const = 0;
+
+protected:
+    Window() = default;
+};
+
+class WindowProvider
 {
-    s_implementation = std::unique_ptr<WindowInfoProvider>(implementation);
-}
+public:
+    WindowProvider() = default;
+    virtual ~WindowProvider() = default;
+
+    /**
+     * @return The currently active window, or std::nullopt if no window is active.
+     */
+    virtual std::optional<std::shared_ptr<Window>> active() const;
+
+    static WindowProvider *instance();
+    static void setInstance(std::unique_ptr<WindowProvider> instance);
+
+private:
+    static std::unique_ptr<WindowProvider> s_instance;
+};
 
 }

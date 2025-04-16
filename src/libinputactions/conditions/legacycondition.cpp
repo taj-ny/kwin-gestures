@@ -23,33 +23,33 @@ namespace libinputactions
 
 bool LegacyCondition::satisfied() const
 {
-    const auto windowData = WindowInfoProvider::implementation()->activeWindow();
-    if (!windowData)
+    const auto window = WindowProvider::instance()->active();
+    if (!window)
         return false;
 
-    return isWindowClassRegexSubConditionSatisfied(windowData.value())
-        && isWindowStateSubConditionSatisfied(windowData.value());
+    return isWindowClassRegexSubConditionSatisfied(window.value().get())
+        && isWindowStateSubConditionSatisfied(window.value().get());
 }
 
-bool LegacyCondition::isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const
+bool LegacyCondition::isWindowClassRegexSubConditionSatisfied(const Window *window) const
 {
     if (!m_windowClass || m_windowClass->pattern().isEmpty()) {
         return true;
     }
 
-    return ((*m_windowClass).match(data.resourceClass()).hasMatch()
-            || (*m_windowClass).match(data.resourceName()).hasMatch())
+    return ((*m_windowClass).match(window->resourceClass()).hasMatch()
+            || (*m_windowClass).match(window->resourceName()).hasMatch())
         == !m_negateWindowClass;
 }
 
-bool LegacyCondition::isWindowStateSubConditionSatisfied(const WindowInfo &data) const
+bool LegacyCondition::isWindowStateSubConditionSatisfied(const Window *window) const
 {
     if (m_windowState == WindowState::All)
         return true;
 
     const bool satisfied =
-        ((m_windowState & WindowState::Fullscreen) && (data.state() & WindowState::Fullscreen))
-        || ((m_windowState & WindowState::Maximized) && (data.state() & WindowState::Maximized));
+        ((m_windowState & WindowState::Fullscreen) && window->fullscreen())
+        || ((m_windowState & WindowState::Maximized) && window->maximized());
     return m_negateWindowState == !satisfied;
 }
 

@@ -17,9 +17,9 @@
 */
 
 #include "effect.h"
-#include "impl/kwinwindowinfoprovider.h"
 #include "input/emitter.h"
 #include "input/state.h"
+#include "kwinwindow.h"
 
 #include <libinputactions/yaml_convert.h>
 
@@ -38,7 +38,7 @@ Effect::Effect()
     libinputactions::InputBackend::setInstance(std::unique_ptr<KWinInputBackend>(m_backend));
     libinputactions::InputEmitter::setInstance(std::make_unique<KWinInputEmitter>());
     libinputactions::InputState::setInstance(std::make_unique<KWinInputState>());
-    libinputactions::WindowInfoProvider::setImplementation(new KWinWindowInfoProvider);
+    libinputactions::WindowProvider::setInstance(std::make_unique<KWinWindowProvider>());
 
 #ifdef KWIN_6_2_OR_GREATER
     KWin::input()->installInputEventFilter(m_backend);

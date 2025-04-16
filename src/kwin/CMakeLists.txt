@@ -21,9 +21,9 @@ set(kwin_gestures_SOURCES
     input/backend.cpp
     input/emitter.cpp
     input/state.cpp
-    impl/kwinwindowinfoprovider.cpp
     dbusinterface.cpp
     effect.cpp
+    kwinwindow.cpp
     main.cpp
     utils.h
 )

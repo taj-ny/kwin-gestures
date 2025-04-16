@@ -16,21 +16,28 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "kwinwindowinfoprovider.h"
-#include "effect/effecthandler.h"
 #include "window.h"
 
-std::optional<const libinputactions::WindowInfo> KWinWindowInfoProvider::activeWindow() const
+#include <utility>
+
+namespace libinputactions
 {
-    const auto window = KWin::effects->activeWindow();
-    if (!window)
-        return std::nullopt;
 
-    libinputactions::WindowStates state = static_cast<libinputactions::WindowState>(0);
-    if (window->isFullScreen())
-        state = state | libinputactions::WindowState::Fullscreen;
-    if (window->window()->maximizeMode() == KWin::MaximizeMode::MaximizeFull)
-        state = state | libinputactions::WindowState::Maximized;
+std::optional<std::shared_ptr<Window>> WindowProvider::active() const
+{
+    return std::nullopt;
+}
 
-    return libinputactions::WindowInfo(window->caption(), window->window()->resourceClass(), window->window()->resourceName(), state);
+WindowProvider *WindowProvider::instance()
+{
+    return s_instance.get();
+}
+
+void WindowProvider::setInstance(std::unique_ptr<WindowProvider> instance)
+{
+    s_instance = std::move(instance);
+}
+
+std::unique_ptr<WindowProvider> WindowProvider::s_instance = std::make_unique<WindowProvider>();
+
 }

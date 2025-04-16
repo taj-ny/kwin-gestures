@@ -20,12 +20,21 @@
 
 #include "condition.h"
 
-#include <libinputactions/windowinfoprovider.h>
+#include <libinputactions/window.h>
 
 #include <QRegularExpression>
 
 namespace libinputactions
 {
+
+enum class WindowState : uint32_t
+{
+    Maximized = 1u << 0,
+    Fullscreen = 1u << 1,
+    All = UINT32_MAX
+};
+Q_DECLARE_FLAGS(WindowStates, WindowState)
+Q_DECLARE_OPERATORS_FOR_FLAGS(WindowStates)
 
 // TODO Replace
 class LegacyCondition : public Condition
@@ -54,8 +63,8 @@ public:
     void setNegateWindowState(const bool &negate);
 
 private:
-    bool isWindowClassRegexSubConditionSatisfied(const WindowInfo &data) const;
-    bool isWindowStateSubConditionSatisfied(const WindowInfo &data) const;
+    bool isWindowClassRegexSubConditionSatisfied(const Window *window) const;
+    bool isWindowStateSubConditionSatisfied(const Window *window) const;
 
     std::optional<QRegularExpression> m_windowClass = std::nullopt;
     bool m_negateWindowClass = false;
